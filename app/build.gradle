@@ -59,6 +59,10 @@ android {
             applicationId 'nl.mpcjanssen.simpletask'
             manifestPlaceholders = [ providerFlavour:"cloudless"]
         }
+				taskwarrior {
+            applicationId 'nl.mpcjanssen.simpletask.tw'
+            manifestPlaceholders = [ providerFlavour:"tw"]
+        }
     }
 
     signingConfigs {
