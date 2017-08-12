@@ -77,25 +77,7 @@ object FileStore : FileStoreInterface {
 
     override fun loadTasksFromFile(path: String, backup: BackupInterface?, eol: String): List<String> {
         log.info(TAG, "Loading tasks")
-        val result = CopyOnWriteArrayList<String>()
-        isLoading = true
-        try {
-            val completeFile = ArrayList<String>()
-            val lines = File(path).readLines()
-            log.info(TAG, "Read ${lines.size} lines from $path")
-            for (line in lines) {
-                completeFile.add(line)
-                result.add(line)
-            }
-            backup?.backup(path, join(completeFile, "\n"))
-        } catch (e: IOException) {
-            log.info(TAG, "Read read failed", e)
-            e.printStackTrace()
-        } finally {
-            isLoading = false
-        }
-        setWatching(path)
-        return result
+        return TaskWarrior.taskList()
     }
 
     override fun sync() {
