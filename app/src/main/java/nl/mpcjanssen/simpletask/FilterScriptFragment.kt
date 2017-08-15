@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,7 @@ class FilterScriptFragment : Fragment() {
     private var cbUseScript: CheckBox? = null
     private var txtTestTask: EditText? = null
     private var spnCallback: Spinner? = null
-    private val log: Log = Log
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

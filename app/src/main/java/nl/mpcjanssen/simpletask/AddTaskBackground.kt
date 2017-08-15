@@ -31,6 +31,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TodoList
@@ -40,11 +41,9 @@ import java.io.IOException
 import java.util.*
 
 class AddTaskBackground : Activity() {
-    private var log = Log
     val TAG = "AddTaskBackground"
 
     public override fun onCreate(instance: Bundle?) {
-        log = Log
         Log.d(TAG, "onCreate()")
         super.onCreate(instance)
 
@@ -82,7 +81,7 @@ class AddTaskBackground : Activity() {
                 if (intent.hasExtra(Constants.EXTRA_BACKGROUND_TASK)) {
                     addBackgroundTask(intent.getStringExtra(Constants.EXTRA_BACKGROUND_TASK), append_text)
                 } else {
-                    log.warn(TAG, "Task was not in extras")
+                    Log.w(TAG, "Task was not in extras")
                 }
 
             }

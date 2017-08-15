@@ -6,6 +6,7 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.util.Log
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -14,7 +15,6 @@ class CachedFileProvider : ContentProvider() {
 
     // UriMatcher used to match against incoming requests
     private var uriMatcher: UriMatcher? = null
-    private val log = Log
 
     override fun onCreate(): Boolean {
 

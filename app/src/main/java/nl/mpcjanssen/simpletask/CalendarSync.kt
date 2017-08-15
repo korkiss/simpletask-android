@@ -40,6 +40,7 @@ import android.net.Uri
 import android.provider.CalendarContract
 import android.provider.CalendarContract.*
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.task.TToken
 import nl.mpcjanssen.simpletask.task.Task
@@ -259,7 +260,6 @@ private class EvtMap private constructor() : HashMap<EvtKey, LinkedList<Evt>>() 
 }
 
 object CalendarSync {
-    private val log: Log
 
     private val ACCOUNT_NAME = "Simpletask Calendar"
     private val ACCOUNT_TYPE = CalendarContract.ACCOUNT_TYPE_LOCAL
@@ -412,7 +412,6 @@ object CalendarSync {
     }
 
     init {
-        log = Log
         m_sync_runnable = SyncRunnable()
         m_cr = TodoApplication.app.contentResolver
         m_stpe = ScheduledThreadPoolExecutor(1)

@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
@@ -23,12 +24,10 @@ class AppWidgetService : RemoteViewsService() {
 }
 
 data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.RemoteViewsFactory {
-    private val log: Log
     val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
     var visibleTasks = ArrayList<Task>()
 
     init {
-        log = Log
         Log.d(TAG, "Creating view for widget: " + widgetId)
     }
 
@@ -220,7 +219,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
     }
 
     companion object {
-        val TAG = "AppWidgetRemoteViewsFactory"
+        val TAG = "WdgtRemoteViewsFactory"
     }
 }
 
