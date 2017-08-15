@@ -3,6 +3,7 @@ package nl.mpcjanssen.simpletask
 import android.app.SearchManager
 import android.content.Intent
 import android.content.SharedPreferences
+import android.util.Log
 
 import nl.mpcjanssen.simpletask.task.*
 import nl.mpcjanssen.simpletask.util.isEmptyOrNull
@@ -18,7 +19,6 @@ data class FilterOptions(val luaModule: String, val showSelected : Boolean = fal
  * Active filter, has methods for serialization in several formats
  */
 class ActiveFilter (val options : FilterOptions) {
-    private val log: Log
     var priorities = ArrayList<Priority>()
     var contexts = ArrayList<String>()
     var projects = ArrayList<String>()
@@ -46,10 +46,6 @@ class ActiveFilter (val options : FilterOptions) {
     var prefName: String? = null
 
     var name: String? = null
-
-    init {
-        log = Log
-    }
 
     val prefill
         get() : String  {
