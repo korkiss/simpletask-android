@@ -73,7 +73,7 @@ object TodoList {
         }
     }
 
-    fun queue(description: String, body : () -> Unit ) {
+    fun queue(description: String, body: () -> Unit) {
         val r = Runnable(body)
         ActionQueue.add(description, r)
     }
@@ -245,32 +245,25 @@ object TodoList {
             if (!FileStore.isAuthenticated) return@queue
             lbm.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
             val filename = Config.todoFileName
-            val cached = Config.todoList
-            if (cached == null || FileStore.needsRefresh(Config.currentVersionId)) {
-                try {
-                    todoItems.clear()
-                    val items = ArrayList<Task>(
-                            FileStore.loadTasksFromFile(filename, backup, eol).map { text ->
-                                Task(text)
-                            })
-                    todoItems.addAll(items)
-                    updateCache()
-                    clearSelection()
-                    Config.currentVersionId = FileStore.getVersion(filename)
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-
-                } catch (e: IOException) {
-                    Log.e(TAG, "TodoList load failed: {}" + filename, e)
-                    showToastShort(TodoApplication.app, "Loading of todo file failed")
-                }
-                Log.i(TAG, "TodoList loaded from storage")
-            } else {
-                Log.i(TAG, "Todolist not changed, loaded from cache")
+            try {
                 todoItems.clear()
-                todoItems.addAll(cached)
+                val items = ArrayList<Task>(
+                        FileStore.loadTasksFromFile(filename, backup, eol).map { text ->
+                            Task(text)
+                        })
+                todoItems.addAll(items)
+                clearSelection()
+                Config.currentVersionId = FileStore.getVersion(filename)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+
+            } catch (e: IOException) {
+                Log.e(TAG, "TodoList load failed: {}" + filename, e)
+                showToastShort(TodoApplication.app, "Loading of todo file failed")
             }
+            Log.i(TAG, "TodoList loaded from storage")
+
             notifyChanged(filename, eol, backup, false)
         }
     }
@@ -283,7 +276,6 @@ object TodoList {
 
             Log.i(TAG, "Saving todo list, size ${lines.size}")
             fileStore.saveTasksToFile(todoFileName, lines, backup, eol = eol, updateVersion = true)
-            updateCache()
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -345,12 +337,6 @@ object TodoList {
     fun getTaskCount(): Long {
         val items = todoItems
         return items.filter { it.inFileFormat().isNotBlank() }.size.toLong()
-    }
-
-    fun updateCache() {
-        queue("Update cache") {
-            Config.todoList = todoItems
-        }
     }
 
     fun editTasks(from: Activity, tasks: List<Task>, prefill: String) {

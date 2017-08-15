@@ -215,11 +215,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
         prefs.edit().remove(getString(R.string.file_current_version_id)).apply()
     }
 
-    fun clearCache() {
-        todoList = null
-        currentVersionId = null
-    }
-
     val isAutoArchive by BooleanPreference(R.string.auto_archive_pref_key, false)
 
     val hasPrependDate by BooleanPreference(R.string.prepend_date_pref_key, true)
@@ -236,20 +231,5 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     val hasColorDueDates by BooleanPreference(R.string.color_due_date_key, true)
 
-    private var cachedContents by StringOrNullPreference(R.string.cached_todo_file)
-
-    var todoList: CopyOnWriteArrayList<Task>?
-        get() = cachedContents?.let {
-            CopyOnWriteArrayList<Task>().apply {
-                addAll(it.lines().map { line -> Task(line) })
-            }
-        }
-        set(items) {
-            if (items == null) {
-                prefs.edit().remove(getString(R.string.cached_todo_file)).apply()
-            } else {
-                cachedContents = items.map { it.inFileFormat() }.joinToString("\n")
-            }
-        }
     val  useUUIDs by BooleanPreference(R.string.use_uuids, false)
 }

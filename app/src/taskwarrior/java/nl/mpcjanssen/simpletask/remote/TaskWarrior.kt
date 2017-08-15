@@ -106,7 +106,14 @@ object TaskWarrior {
         val json = JSONObject(jsonStr)
         val uuid = json.getString("uuid")
         val desc = json.getString("description")
-        var result = desc
+        var result = ""
+        json.optString("entry", null)?.let {
+            val year = it.slice(0..3)
+            val month = it.slice(4..5)
+            val day = it.slice(6..7)
+            result+= "$year-$month-$day "
+        }
+        result += "$desc"
         json.optJSONArray("tags")?.let {
             for (i in 0..it.length() - 1) {
                 result += " +${it.getString(i)}"
@@ -114,6 +121,12 @@ object TaskWarrior {
         }
         json.optString("project", null)?.let {
             result += " @$it"
+        }
+        json.optString("wait", null)?.let {
+            val year = it.slice(0..3)
+            val month = it.slice(4..5)
+            val day = it.slice(6..7)
+            result+= " t:$year-$month-$day"
         }
         result += " uuid:$uuid"
         return result
