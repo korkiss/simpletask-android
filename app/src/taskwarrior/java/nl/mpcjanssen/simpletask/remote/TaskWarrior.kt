@@ -204,17 +204,10 @@ object TaskWarrior {
     }
 
     private fun readStream(stream: InputStream,  consumer: StreamConsumer): Thread? {
-        val reader: Reader
-        try {
-            reader = InputStreamReader(stream, "utf-8")
-        } catch (e: UnsupportedEncodingException) {
-            Log.e(TAG,"Error opening stream")
-            return null
-        }
 
         val thread = object : Thread() {
             override fun run() {
-                stream.bufferedReader().lineSequence().forEach {
+                stream.bufferedReader().forEachLine {
                     consumer.eat(it)
                 }
             }
