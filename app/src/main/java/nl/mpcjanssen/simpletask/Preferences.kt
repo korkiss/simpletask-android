@@ -35,6 +35,7 @@ import android.preference.*
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import android.view.MenuItem
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.FontManager
@@ -220,12 +221,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
             rootPref.setOnPreferenceChangeListener { preference, any ->
                 preference.summary = getString(R.string.local_file_root_summary)
                 preference.valueInSummary(any)
-                true
-            }
-
-            val debugPref = findPreference("debug_info")
-            debugPref.setOnPreferenceClickListener {
-                startActivity(Intent(activity, DebugInfoScreen::class.java))
                 true
             }
         }

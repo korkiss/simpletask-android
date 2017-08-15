@@ -37,6 +37,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableString
 import android.text.TextUtils
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
@@ -83,7 +84,6 @@ class Simpletask : ThemedNoActionBarActivity() {
     private var m_savedInstanceState: Bundle? = null
     internal var m_scrollPosition = 0
 
-    private var log = Log
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -538,7 +538,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun isDrawerOpen(drawer: Int): Boolean {
         if (drawer_layout == null) {
-            log.warn(TAG, "Layout was null")
+            Log.w(TAG, "Layout was null")
             return false
         }
         return drawer_layout.isDrawerOpen(drawer)
@@ -977,7 +977,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
         } else if (CalendarContract.ACTION_HANDLE_CUSTOM_EVENT == intent.action) {
             // Uri uri = Uri.parse(intent.getStringExtra(CalendarContract.EXTRA_CUSTOM_APP_URI));
-            log.warn(TAG, "Not implemented search")
+            Log.w(TAG, "Not implemented search")
         } else if (intent.extras != null) {
             // Only change intent if it actually contains a filter
             setIntent(intent)
@@ -1075,7 +1075,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val prefs_xml = File(prefs_path, prefsName + ".xml")
         val deleted = prefs_xml.delete()
         if (!deleted) {
-            log.warn(TAG, "Failed to delete saved filter: " + deleted_filter.name!!)
+            Log.w(TAG, "Failed to delete saved filter: " + deleted_filter.name!!)
         }
         updateNavDrawer()
     }
@@ -1520,7 +1520,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskText.setHorizontallyScrolling(true)
                 taskText.ellipsize = truncateAt
             } else {
-                log.warn(TAG, "Unrecognized preference value for task text ellipsis: {} !" + ellipsizePref)
+                Log.w(TAG, "Unrecognized preference value for task text ellipsis: {} !" + ellipsizePref)
             }
         }
     }

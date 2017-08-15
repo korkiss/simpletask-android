@@ -6,6 +6,7 @@ package nl.mpcjanssen.simpletask
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
+import android.util.Log
 import android.widget.EditText
 import android.view.Menu
 import android.view.MenuItem
@@ -17,7 +18,6 @@ import org.luaj.vm2.LuaError
 
 class LuaConfigScreen : ThemedActionBarActivity() {
 
-    private val log = Log
     private lateinit var m_app : TodoApplication
     private lateinit var scriptEdit : EditText
     private var m_menu: Menu? = null

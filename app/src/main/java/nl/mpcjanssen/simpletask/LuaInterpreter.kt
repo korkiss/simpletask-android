@@ -1,5 +1,6 @@
 package nl.mpcjanssen.simpletask
 
+import android.util.Log
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.*
 import org.luaj.vm2.*
@@ -9,7 +10,7 @@ import java.util.*
 
 object LuaInterpreter {
     val globals = JsePlatform.standardGlobals()!!
-    private val log = Log
+
     private val TAG = "LuaInterpreter"
 
     val ON_FILTER_NAME = "onFilter"
@@ -25,7 +26,7 @@ object LuaInterpreter {
             evalScript(null, Config.luaConfig)
 
         } catch (e: LuaError) {
-            nl.mpcjanssen.simpletask.util.log.warn(Config.TAG, "Lua execution failed " + e.message)
+            Log.w(Config.TAG, "Lua execution failed " + e.message)
             showToastLong(TodoApplication.app, "${getString(R.string.lua_error)}:  ${e.message}")
         }
 
