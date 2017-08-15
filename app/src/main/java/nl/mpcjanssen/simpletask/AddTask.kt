@@ -266,7 +266,7 @@ class AddTask : ThemedActionBarActivity() {
 
         // Don't add empty tasks
         if (input.trim { it <= ' ' }.isEmpty()) {
-            log.info(TAG, "Not adding empty line")
+            Log.i(TAG, "Not adding empty line")
             finish()
             return
         }
@@ -274,7 +274,7 @@ class AddTask : ThemedActionBarActivity() {
         // Update the TodoList with changes
         // Create new tasks
         val enteredTasks = getTasks().dropLastWhile { it.text.isEmpty() }
-        log.info(TAG, "Saving ${enteredTasks.size} tasks, updating ${m_backup.size} tasks" )
+        Log.i(TAG, "Saving ${enteredTasks.size} tasks, updating ${m_backup.size} tasks" )
         for (task in enteredTasks) {
             if (m_backup.size > 0) {
                 // Don't modify create date for updated tasks

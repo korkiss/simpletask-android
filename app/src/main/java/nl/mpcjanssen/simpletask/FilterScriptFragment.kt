@@ -59,7 +59,7 @@ class FilterScriptFragment : Fragment() {
             val callbackToTest = selectedCallback
             val t = Task(testTask)
             try {
-                log.info(TAG, "Running $callbackToTest test Lua callback in module $environment")
+                Log.i(TAG, "Running $callbackToTest test Lua callback in module $environment")
                 val script = script
                 val snackBar = Snackbar.make(activity.findViewById(android.R.id.content), "", Snackbar.LENGTH_LONG)
                 val barView = snackBar.view

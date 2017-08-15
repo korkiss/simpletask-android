@@ -67,10 +67,10 @@ object FileStore : FileStoreInterface {
 
     override fun pause(pause: Boolean) {
         if (pause) {
-            log.info(TAG, "App went to background stop watching")
+            Log.i(TAG, "App went to background stop watching")
             stopWatching()
         } else {
-            log.info(TAG, "App came to foreground continue watching ${Config.todoFileName}")
+            Log.i(TAG, "App came to foreground continue watching ${Config.todoFileName}")
             startWatching(Config.todoFileName)
         }
     }
@@ -121,7 +121,7 @@ object FileStore : FileStoreInterface {
     }
 
     fun queueRunnable(description: String, r: Runnable) {
-        log.info(TAG, "Handler: Queue " + description)
+        Log.i(TAG, "Handler: Queue " + description)
         while (fileOperationsQueue == null) {
             try {
                 Thread.sleep(100)
@@ -142,7 +142,7 @@ object FileStore : FileStoreInterface {
     }
 
     private fun saveToCache(fileName: String, rev: String?, contents: String) {
-        log.info(TAG, "Storing file in cache rev: $rev of file: $fileName")
+        Log.i(TAG, "Storing file in cache rev: $rev of file: $fileName")
         if (mPrefs == null) {
             return
         }
@@ -158,7 +158,7 @@ object FileStore : FileStoreInterface {
             return
         }
         if (pending) {
-            log.info(TAG, "Changes are pending")
+            Log.i(TAG, "Changes are pending")
         }
         val edit = mPrefs.edit()
         edit.putBoolean(LOCAL_CHANGES_PENDING, pending).apply()
@@ -179,7 +179,7 @@ object FileStore : FileStoreInterface {
         // our local changes, instead we upload local and handle any conflicts
         // on the dropbox side.
 
-        log.info(TAG, "Loading file fom dropnbox: " + path)
+        Log.i(TAG, "Loading file fom dropnbox: " + path)
         isLoading = true
         if (!isAuthenticated) {
             isLoading = false
@@ -187,7 +187,7 @@ object FileStore : FileStoreInterface {
         }
         val readFile = ArrayList<String>()
         if (changesPending()) {
-            log.info(TAG, "Not loading, changes pending")
+            Log.i(TAG, "Not loading, changes pending")
             isLoading = false
             val tasks = tasksFromCache()
             saveTasksToFile(path, tasks, backup, eol)
@@ -197,7 +197,7 @@ object FileStore : FileStoreInterface {
             val download = dbxClient.files().download(path)
             val openFileStream = download.inputStream
             val fileInfo = download.result
-            log.info(TAG, "The file's rev is: " + fileInfo.rev)
+            Log.i(TAG, "The file's rev is: " + fileInfo.rev)
 
             val reader = BufferedReader(InputStreamReader(openFileStream, "UTF-8"))
 
@@ -244,7 +244,7 @@ object FileStore : FileStoreInterface {
     override fun browseForNewFile(act: Activity, path: String, listener: FileStoreInterface.FileSelectedListener, txtOnly: Boolean) {
         if (!isOnline) {
             showToastLong(mApp, "Device is offline")
-            log.info(TAG, "Device is offline, browse closed")
+            Log.i(TAG, "Device is offline, browse closed")
             return
         }
         val dialog = FileDialog(act, path, true)
@@ -262,7 +262,7 @@ object FileStore : FileStoreInterface {
             try {
                 val toStore = contents.toByteArray(charset("UTF-8"))
                 val `in` = ByteArrayInputStream(toStore)
-                log.info(TAG, "Saving to file " + path)
+                Log.i(TAG, "Saving to file " + path)
                 val uploadBuilder = dbxClient.files().uploadBuilder(path)
                 if (rev != null) {
                     uploadBuilder.withAutorename(true).withMode(WriteMode.update(rev))
@@ -287,7 +287,7 @@ object FileStore : FileStoreInterface {
             if (newName != path) {
                 // The file was written under another name
                 // Usually this means the was a conflict.
-                log.info(TAG, "Filename was changed remotely. New name is: " + newName)
+                Log.i(TAG, "Filename was changed remotely. New name is: " + newName)
                 showToastLong(mApp, "Filename was changed remotely. New name is: " + newName)
                 mApp.switchTodoFile(newName)
             }
@@ -309,7 +309,7 @@ object FileStore : FileStoreInterface {
                     doneContents.add(it)
                 }
                 val rev = download.result.rev
-                log.info(TAG, "The file's rev is: " + rev)
+                Log.i(TAG, "The file's rev is: " + rev)
                 download.close()
 
                 // Then append
@@ -349,7 +349,7 @@ object FileStore : FileStoreInterface {
         isLoading = true
 
         val download = dbxClient.files().download(file)
-        log.info(TAG, "The file's rev is: " + download.result.rev)
+        Log.i(TAG, "The file's rev is: " + download.result.rev)
 
         val reader = BufferedReader(InputStreamReader(download.inputStream, "UTF-8"))
         val readFile = ArrayList<String>()
@@ -377,7 +377,7 @@ object FileStore : FileStoreInterface {
             if (onOnline == null || !onOnline!!.isAlive) {
                 queueRunnable("onOnline", Runnable {
                     // Check if we are still online
-                    log.info(TAG, "Device went online, reloading in 5 seconds")
+                    Log.i(TAG, "Device went online, reloading in 5 seconds")
                     try {
                         Thread.sleep(5000)
                     } catch (e: InterruptedException) {
@@ -388,7 +388,7 @@ object FileStore : FileStoreInterface {
                         broadcastFileChanged(mApp.localBroadCastManager)
                     } else {
 
-                        log.info(TAG, "Device no longer online skipping reloadLuaConfig")
+                        Log.i(TAG, "Device no longer online skipping reloadLuaConfig")
                     }
                 })
             }
@@ -398,7 +398,7 @@ object FileStore : FileStoreInterface {
         }
         if (prevOnline && !mOnline) {
             mApp.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
-            log.info(TAG, "Device went offline")
+            Log.i(TAG, "Device went offline")
         }
     }
 

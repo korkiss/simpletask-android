@@ -85,10 +85,10 @@ object FileStore : FileStoreInterface {
 
     override fun pause(pause: Boolean) {
         if (pause) {
-            log.info(TAG, "App went to background stop watching")
+            Log.i(TAG, "App went to background stop watching")
             stopWatching()
         } else {
-            log.info(TAG, "App came to foreground continue watching ${Config.todoFileName}")
+            Log.i(TAG, "App came to foreground continue watching ${Config.todoFileName}")
             startWatching(Config.todoFileName)
         }
     }
@@ -118,7 +118,7 @@ object FileStore : FileStoreInterface {
     }
 
     fun queueRunnable(description: String, r: Runnable) {
-        log.info(TAG, "Handler: Queue " + description)
+        Log.i(TAG, "Handler: Queue " + description)
         while (fileOperationsQueue == null) {
             try {
                 Thread.sleep(100)
@@ -139,7 +139,7 @@ object FileStore : FileStoreInterface {
     }
 
     private fun saveToCache(fileName: String, rev: String?, contents: String) {
-        log.info(TAG, "Storing file in cache rev: $rev of file: $fileName")
+        Log.i(TAG, "Storing file in cache rev: $rev of file: $fileName")
         if (mPrefs == null) {
             return
         }
@@ -155,7 +155,7 @@ object FileStore : FileStoreInterface {
             return
         }
         if (pending) {
-            log.info(TAG, "Changes are pending")
+            Log.i(TAG, "Changes are pending")
         }
         val edit = mPrefs.edit()
         edit.putBoolean(LOCAL_CHANGES_PENDING, pending).apply()
@@ -175,7 +175,7 @@ object FileStore : FileStoreInterface {
         // If we load a file and changes are pending, we do not want to overwrite
         // our local changes, instead we try to upload local
 
-        log.info(TAG, "Loading file from Nextcloud: " + path)
+        Log.i(TAG, "Loading file from Nextcloud: " + path)
         isLoading = true
         if (!isAuthenticated) {
             isLoading = false
@@ -183,7 +183,7 @@ object FileStore : FileStoreInterface {
         }
         val readFile = ArrayList<String>()
         if (changesPending()) {
-            log.info(TAG, "Not loading, changes pending")
+            Log.i(TAG, "Not loading, changes pending")
             isLoading = false
             val tasks = tasksFromCache()
             saveTasksToFile(path, tasks, backup, eol)
@@ -243,7 +243,7 @@ object FileStore : FileStoreInterface {
     override fun browseForNewFile(act: Activity, path: String, listener: FileStoreInterface.FileSelectedListener, txtOnly: Boolean) {
         if (!isOnline) {
             showToastLong(mApp, "Device is offline")
-            log.info(TAG, "Device is offline, browse closed")
+            Log.i(TAG, "Device is offline, browse closed")
             return
         }
         val dialog = FileDialog(act, path, true)
@@ -258,7 +258,7 @@ object FileStore : FileStoreInterface {
         val r = Runnable {
             val timestamp = timeStamp()
             try {
-                log.info(TAG, "Saving to file " + path)
+                Log.i(TAG, "Saving to file " + path)
                 val cacheDir = mApp.applicationContext.cacheDir
                 val tmpFile = File(cacheDir, "tmp.txt")
                 tmpFile.writeText(contents)
@@ -390,7 +390,7 @@ object FileStore : FileStoreInterface {
             if (onOnline == null || !onOnline!!.isAlive) {
                 queueRunnable("onOnline", Runnable {
                     // Check if we are still online
-                    log.info(TAG, "Device went online, reloading in 5 seconds")
+                    Log.i(TAG, "Device went online, reloading in 5 seconds")
                     try {
                         Thread.sleep(5000)
                     } catch (e: InterruptedException) {
@@ -401,7 +401,7 @@ object FileStore : FileStoreInterface {
                         broadcastFileChanged(mApp.localBroadCastManager)
                     } else {
 
-                        log.info(TAG, "Device no longer online skipping reloadLuaConfig")
+                        Log.i(TAG, "Device no longer online skipping reloadLuaConfig")
                     }
                 })
             }
@@ -411,7 +411,7 @@ object FileStore : FileStoreInterface {
         }
         if (prevOnline && !mOnline) {
             mApp.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
-            log.info(TAG, "Device went offline")
+            Log.i(TAG, "Device went offline")
         }
     }
 

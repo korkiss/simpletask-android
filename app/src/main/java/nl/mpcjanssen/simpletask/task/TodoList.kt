@@ -32,6 +32,7 @@ package nl.mpcjanssen.simpletask.task
 import android.app.Activity
 import android.content.Intent
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import nl.mpcjanssen.simpletask.*
 
 import nl.mpcjanssen.simpletask.remote.BackupInterface
@@ -52,7 +53,6 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @author Mark Janssen
  */
 object TodoList {
-    private val log: Log = Log
 
     private var mLists: ArrayList<String>? = null
     private var mTags: ArrayList<String>? = null
@@ -202,7 +202,7 @@ object TodoList {
         }
 
     fun notifyChanged(todoName: String, eol: String, backup: BackupInterface?, save: Boolean) {
-        log.info(TAG, "Handler: Queue notifychanged")
+        Log.i(TAG, "Handler: Queue notifychanged")
         queue("Notified changed") {
             if (save) {
                 save(FileStore, todoName, backup, eol)
@@ -218,7 +218,7 @@ object TodoList {
 
     fun startAddTaskActivity(act: Activity, prefill: String) {
         queue("Start add/edit task activity") {
-            log.info(TAG, "Starting addTask activity")
+            Log.i(TAG, "Starting addTask activity")
             val intent = Intent(act, AddTask::class.java)
             intent.putExtra(Constants.EXTRA_PREFILL_TEXT, prefill)
             act.startActivity(intent)
@@ -265,9 +265,9 @@ object TodoList {
                     Log.e(TAG, "TodoList load failed: {}" + filename, e)
                     showToastShort(TodoApplication.app, "Loading of todo file failed")
                 }
-                log.info(TAG, "TodoList loaded from storage")
+                Log.i(TAG, "TodoList loaded from storage")
             } else {
-                log.info(TAG, "Todolist not changed, loaded from cache")
+                Log.i(TAG, "Todolist not changed, loaded from cache")
                 todoItems.clear()
                 todoItems.addAll(cached)
             }
@@ -281,7 +281,7 @@ object TodoList {
                 it.inFileFormat()
             }
 
-            log.info(TAG, "Saving todo list, size ${lines.size}")
+            Log.i(TAG, "Saving todo list, size ${lines.size}")
             fileStore.saveTasksToFile(todoFileName, lines, backup, eol = eol, updateVersion = true)
             updateCache()
         } catch (e: IOException) {

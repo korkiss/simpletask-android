@@ -8,7 +8,7 @@ import nl.mpcjanssen.simpletask.dao.Daos
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.info(TAG, "Executing Alarm callback")
+        Log.i(TAG, "Executing Alarm callback")
         Daos.cleanLogging()
 
         // Update UI (widgets and main screen)

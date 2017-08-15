@@ -87,7 +87,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        log.info(TAG, "onCreate")
+        Log.i(TAG, "onCreate")
         m_app = application as TodoApplication
         m_savedInstanceState = savedInstanceState
         val intentFilter = IntentFilter()
@@ -102,7 +102,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         intentFilter.addAction(Constants.BROADCAST_HIGHLIGHT_SELECTION)
 
         textSize = Config.tasklistTextSize ?: textSize
-        log.info(TAG, "Text size = $textSize")
+        Log.i(TAG, "Text size = $textSize")
         setContentView(R.layout.main)
 
         localBroadcastManager = m_app.localBroadCastManager
@@ -113,12 +113,12 @@ class Simpletask : ThemedNoActionBarActivity() {
                     archiveTasks()
                 } else {
                     if (receivedIntent.action == Constants.BROADCAST_ACTION_LOGOUT) {
-                        log.info(TAG, "Logging out from Dropbox")
+                        Log.i(TAG, "Logging out from Dropbox")
                         FileStore.logout()
                         finish()
                         FileStore.startLogin(this@Simpletask)
                     } else if (receivedIntent.action == Constants.BROADCAST_UPDATE_UI) {
-                        log.info(TAG, "Updating UI because of broadcast")
+                        Log.i(TAG, "Updating UI because of broadcast")
                         textSize = Config.tasklistTextSize ?: textSize
                         if (m_adapter == null) {
                             return
@@ -225,7 +225,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun handleIntent() {
         if (!m_app.isAuthenticated) {
-            log.info(TAG, "handleIntent: not authenticated")
+            Log.i(TAG, "handleIntent: not authenticated")
             startLogin()
             return
         }
@@ -275,7 +275,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val intent = intent
         if (Constants.INTENT_START_FILTER == intent.action) {
             MainFilter.initFromIntent(intent)
-            log.info(TAG, "handleIntent: launched with filter" + MainFilter)
+            Log.i(TAG, "handleIntent: launched with filter" + MainFilter)
             val extras = intent.extras
             if (extras != null) {
                 for (key in extras.keySet()) {
@@ -289,11 +289,11 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
 
             }
-            log.info(TAG, "handleIntent: saving filter in prefs")
+            Log.i(TAG, "handleIntent: saving filter in prefs")
             MainFilter.saveInPrefs(Config.prefs)
         } else {
             // Set previous filters and sort
-            log.info(TAG, "handleIntent: from m_prefs state")
+            Log.i(TAG, "handleIntent: from m_prefs state")
             MainFilter.initFromPrefs(Config.prefs)
         }
 
@@ -386,7 +386,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     override fun onResume() {
         super.onResume()
-        log.info(TAG, "onResume")
+        Log.i(TAG, "onResume")
         FileStore.pause(false)
         handleIntent()
     }
@@ -398,7 +398,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             val position = manager.findFirstVisibleItemPosition()
             val firstItemView = manager.findViewByPosition(position)
             val offset = firstItemView?.top ?: 0
-            Log.info(TAG, "Saving scroll offset $position, $offset")
+            Log.i(TAG, "Saving scroll offset $position, $offset")
             Config.lastScrollPosition = position
             Config.lastScrollOffset = offset
         }
@@ -407,7 +407,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     @SuppressLint("Recycle")
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        log.info(TAG, "Recreating options menu")
+        Log.i(TAG, "Recreating options menu")
         this.options_menu = menu
 
         val inflater = menuInflater
@@ -465,7 +465,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
 
                 cbItem.setOnMenuItemClickListener { _ ->
-                    log.info(TAG, "Clicked on completion checkbox, state: $cbState")
+                    Log.i(TAG, "Clicked on completion checkbox, state: $cbState")
                     when (cbState) {
                         false -> completeTasks(selectedTasks)
                         true -> uncompleteTasks(selectedTasks)
@@ -734,7 +734,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        log.info(TAG, "onMenuItemSelected: " + item.itemId)
+        Log.i(TAG, "onMenuItemSelected: " + item.itemId)
         val checkedTasks = TodoList.selectedTasks
         when (item.itemId) {
             androidId.home -> {
@@ -824,7 +824,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun startAddTaskActivity() {
-        log.info(TAG, "Starting addTask activity")
+        Log.i(TAG, "Starting addTask activity")
 
         TodoList.editTasks(this, TodoList.selectedTasks, " ${MainFilter.prefill}")
     }
@@ -983,7 +983,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             setIntent(intent)
         }
         Config.lastScrollPosition = -1
-        log.info(TAG, "onNewIntent: " + intent)
+        Log.i(TAG, "onNewIntent: " + intent)
 
     }
 
@@ -1289,7 +1289,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             handleEllipsis(taskText)
 
             if (completed) {
-                // log.info( "Striking through " + task.getText());
+                // Log.i( "Striking through " + task.getText());
                 taskText.paintFlags = taskText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 taskAge.paintFlags = taskAge.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 cb.setOnClickListener({
@@ -1387,7 +1387,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     build.setItems(titleArray) { _, which ->
                         val actionIntent: Intent
                         val url = links[which]
-                        log.info(TAG, "" + actions[which] + ": " + url)
+                        Log.i(TAG, "" + actions[which] + ": " + url)
                         when (actions[which]) {
                             ACTION_LINK -> if (url.startsWith("todo://")) {
                                 val todoFolder = Config.todoFile.parentFile
@@ -1407,7 +1407,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                                     actionIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                     startActivity(actionIntent)
                                 } catch (e: ActivityNotFoundException) {
-                                    log.info(TAG, "No handler for task action $url")
+                                    Log.i(TAG, "No handler for task action $url")
                                     showToastLong(TodoApplication.app, "No handler for $url" )
                                 }
                             }
@@ -1441,7 +1441,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     showListViewProgress(true)
                 }
                 val visibleTasks: Sequence<Task>
-                log.info(TAG, "setFilteredTasks called: " + TodoList)
+                Log.i(TAG, "setFilteredTasks called: " + TodoList)
                 val sorts = MainFilter.getSort(Config.defaultSorts)
                 visibleTasks = TodoList.getSortedTasks(MainFilter, sorts, Config.sortCaseSensitive)
                 val newVisibleLines = ArrayList<VisibleLine>()
@@ -1458,7 +1458,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                         val manager = listView?.layoutManager as LinearLayoutManager?
                         val position = Config.lastScrollPosition
                         val offset = Config.lastScrollOffset
-                        Log.info(TAG, "Restoring scroll offset $position, $offset")
+                        Log.i(TAG, "Restoring scroll offset $position, $offset")
                         manager?.scrollToPositionWithOffset(position, offset )
                         Config.lastScrollPosition = -1
                     }

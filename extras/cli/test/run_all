@@ -33,7 +33,7 @@ def run_test(testqueue, outqueue, threadname):
         except Empty:
             break
 
-        log.info("Running test %s", test)
+        Log.i("Running test %s", test)
 
         try:
             p = Popen(os.path.abspath(test), stdout=PIPE, stderr=PIPE,
@@ -79,8 +79,8 @@ class TestRunner(object):
             else:
                 Log.d("Ignored test %s as it is not executable", test)
 
-        log.info("Parallel tests: %s", self._parallelq.qsize())
-        log.info("Serial tests: %s", self._serialq.qsize())
+        Log.i("Parallel tests: %s", self._parallelq.qsize())
+        Log.i("Serial tests: %s", self._serialq.qsize())
 
     def _prepare_threads(self):
         # Serial thread
@@ -92,7 +92,7 @@ class TestRunner(object):
             Thread(target=run_test, args=(self._parallelq, self._outputq, "Parallel"))
             for i in range(cpu_count())
         ])
-        log.info("Spawned %s threads to run tests", len(self.threads))
+        Log.i("Spawned %s threads to run tests", len(self.threads))
 
     def _start_threads(self):
         for thread in self.threads:

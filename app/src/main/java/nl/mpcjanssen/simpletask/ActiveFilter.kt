@@ -227,7 +227,7 @@ class ActiveFilter (val options : FilterOptions) {
 
     fun apply(items: Sequence<Task>?): Sequence<Task> {
         if (useScript) {
-            log.info(TAG, "Filtering with Lua $script")
+            Log.i(TAG, "Filtering with Lua $script")
         }
         val filter = AndFilter()
         if (items == null) {
@@ -236,7 +236,7 @@ class ActiveFilter (val options : FilterOptions) {
         val code = if (useScript) { script } else { null }
         val today = todayAsString
         try {
-            log.info(TAG, "Resetting onFilter callback in module ${options.luaModule}")
+            Log.i(TAG, "Resetting onFilter callback in module ${options.luaModule}")
             LuaInterpreter.clearOnFilter(options.luaModule)
             LuaInterpreter.evalScript(options.luaModule, code)
             return items.filter {

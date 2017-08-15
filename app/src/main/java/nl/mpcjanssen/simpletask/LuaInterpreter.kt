@@ -195,7 +195,7 @@ object LuaInterpreter {
 class LuaToastShort : OneArgFunction() {
     override fun call(text: LuaValue?): LuaValue? {
         val string = text?.tojstring() ?: ""
-        log.info(TAG, "Toast called $string")
+        Log.i(TAG, "Toast called $string")
         showToastShort(TodoApplication.app, string)
         return LuaValue.NIL
     }

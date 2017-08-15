@@ -19,7 +19,7 @@ class FlavourPrefFragment : PreferenceFragment() {
 
         val dropboxPref = findPreference("logout_dropbox")
         dropboxPref.setOnPreferenceClickListener {
-            log.info(TAG, "Logging out from Dropbox")
+            Log.i(TAG, "Logging out from Dropbox")
             showConfirmationDialog(activity, R.string.logout_message,
                     DialogInterface.OnClickListener { dialogInterface, i ->
                         FileStore.logout()

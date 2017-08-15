@@ -59,12 +59,12 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
         m_broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, receivedIntent: Intent) {
                 if (receivedIntent.action == Constants.BROADCAST_THEME_CHANGED) {
-                    Log.info(TAG, "Reloading preference screen with fragment ${intent.getStringExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT)}")
+                    Log.i(TAG, "Reloading preference screen with fragment ${intent.getStringExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT)}")
                     recreate()
                 }
             }
         }
-        Log.info(TAG, "Registering broadcast receiver")
+        Log.i(TAG, "Registering broadcast receiver")
         localBroadcastManager.registerReceiver(m_broadcastReceiver, intentFilter)
     }
 

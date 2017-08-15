@@ -2,6 +2,7 @@ package nl.mpcjanssen.simpletask.util
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 
 object ActionQueue : Thread() {
     private var mHandler: Handler? = null
@@ -31,7 +32,7 @@ object ActionQueue : Thread() {
             }
         }
         if (!silent) {
-            log.info(TAG, "Adding to queue: $description" )
+            Log.i(TAG, "Adding to queue: $description" )
             mHandler?.post(LoggingRunnable(description, r))
         } else {
             mHandler?.post (r)
@@ -56,7 +57,7 @@ class LoggingRunnable (val description: String, val runnable: Runnable) : Runnab
     }
 
     override fun run() {
-        log.info(TAG, "Executing action " + description)
+        Log.i(TAG, "Executing action " + description)
         runnable.run()
     }
 }

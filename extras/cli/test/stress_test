@@ -20,7 +20,7 @@ def find_tests():
         else:
             Log.d("Ignored test %s as it is not executable", test)
 
-    log.info("Tests found: %s", len(tests))
+    Log.i("Tests found: %s", len(tests))
 
     return tests
 
@@ -62,7 +62,7 @@ def main():
             if not (r and r[0] in ["y", "Y"]):
                 return
 
-        log.info("Stress testing all tests")
+        Log.i("Stress testing all tests")
         for test in find_tests():
             run_test(test)
 
