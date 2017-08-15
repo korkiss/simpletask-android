@@ -112,7 +112,7 @@ object TaskWarrior {
                 result += " +${it.getString(i)}"
             }
         }
-        json.optString("project")?.let {
+        json.optString("project", null)?.let {
             result += " @$it"
         }
         result += " uuid:$uuid"
