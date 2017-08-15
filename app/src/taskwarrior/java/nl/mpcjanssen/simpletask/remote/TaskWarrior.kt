@@ -50,7 +50,7 @@ object TaskWarrior {
         Arm7, X86
     };
     val executable = eabiExecutable()
-    var config = clientConfig()
+    val config = HashMap<String,String>()
 
     var configLinePattern = Pattern.compile("^([A-Za-z0-9\\._]+)\\s+(\\S.*)$")
 
@@ -98,12 +98,12 @@ object TaskWarrior {
                 line?.let{result.add(it)}
             }}, *params.toTypedArray())
         Log.d(TAG, "List for size  ${result.size}")
-        return result
+        return result.map(this::jsonToTodotxt)
     }
 
 
-    fun jsonToTodotxt (json: JSONObject) : String {
-        return json.toString()
+    fun jsonToTodotxt (jsonStr: String) : String {
+        val json = JSONObject(jsonStr) 
         val uuid = json.getString("uuid")
         val desc = json.getString("description")
         var result = desc
@@ -117,6 +117,7 @@ object TaskWarrior {
     }
 
     fun callTask(vararg arguments: String) {
+        Log.d(TAG, "Calltask: ${arguments.joinToString(", ")}")
         callTask(outConsumer, errConsumer, *arguments)
     }
 
@@ -125,6 +126,7 @@ object TaskWarrior {
             Log.d(TAG, "Error in binary call: no arguments provided")
             return 255
         }
+
         try {
             val exec = executable
             if (null == exec) {
@@ -179,28 +181,22 @@ object TaskWarrior {
         }
     }
 
-    private fun reloadConfig() {
-        // Reload config
-        val newConfig = clientConfig()
-        config = clientConfig()
-    }
 
-    fun clientConfig() : Map<String,String> {
-        var result = HashMap<String,String>()
+    fun reloadConfig()  {
+        Log.d(TAG, "Loading config")
         callTask( object: StreamConsumer {
             override fun eat(line: String?) {
                 line?.let {
-                    Log.d(TAG, line)
                     val match = configLinePattern.matcher(line)
                     if (match.matches()) {
                         val configKey = match.group(1)
                         val value = match.group(2)
-                        result[configKey] = value
+                        config[configKey] = value
                     }
                 }
             }
         }, errConsumer, "show")
-        return result
+        Log.d(TAG, "Loading config done" + config.toString())
     }
 
     private fun readStream(stream: InputStream,  consumer: StreamConsumer): Thread? {

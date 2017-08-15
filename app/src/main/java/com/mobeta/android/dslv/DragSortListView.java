@@ -33,6 +33,7 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.view.Gravity;
@@ -40,7 +41,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import nl.mpcjanssen.simpletask.Log;
 import nl.mpcjanssen.simpletask.R;
 
 import java.io.File;
@@ -59,7 +59,6 @@ public class DragSortListView extends ListView {
 
 
     private static final String TAG = "DragSortListView";
-    private final Log log;
     /**
      * The View that floats above the ListView and represents
      * the dragged item.
@@ -427,7 +426,6 @@ public class DragSortListView extends ListView {
 
     public DragSortListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        log = Log.INSTANCE;
 
         int defaultDuration = 150;
         int removeAnimDuration = defaultDuration; // ms

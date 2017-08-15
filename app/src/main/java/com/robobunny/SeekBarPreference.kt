@@ -4,18 +4,17 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.preference.Preference
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
-import nl.mpcjanssen.simpletask.Log
 import nl.mpcjanssen.simpletask.R
 
 class SeekBarPreference : Preference, OnSeekBarChangeListener {
 
     private val TAG = javaClass.name
-    private val log: Log
 
     private var mMaxValue = 100
     private var mMinValue = 0
@@ -27,12 +26,10 @@ class SeekBarPreference : Preference, OnSeekBarChangeListener {
     private var mStatusText: TextView? = null
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        log = Log
         initPreference(context, attrs)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        log = Log
         initPreference(context, attrs)
     }
 

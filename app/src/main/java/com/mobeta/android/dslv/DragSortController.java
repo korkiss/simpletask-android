@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.*;
 import android.widget.AdapterView;
-import nl.mpcjanssen.simpletask.Log;
 
 
 /**
@@ -113,7 +112,6 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     public DragSortController(@NonNull DragSortListView dslv, int dragHandleId, int dragInitMode,
             int removeMode, int clickRemoveId, int flingHandleId) {
         super(dslv);
-        Log log = Log.INSTANCE;
         mDslv = dslv;
         if (mFlingRemoveListener == null) {
             mFlingRemoveListener =
