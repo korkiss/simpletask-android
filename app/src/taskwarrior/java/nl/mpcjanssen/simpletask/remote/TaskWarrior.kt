@@ -103,7 +103,7 @@ object TaskWarrior {
 
 
     fun jsonToTodotxt (jsonStr: String) : String {
-        val json = JSONObject(jsonStr) 
+        val json = JSONObject(jsonStr)
         val uuid = json.getString("uuid")
         val desc = json.getString("description")
         var result = desc

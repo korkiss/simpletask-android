@@ -82,8 +82,10 @@ object FileStore : FileStoreInterface {
     }
 
     override fun sync() {
+        queue("FileStore sync") {
             TaskWarrior.callTask("sync")
             broadcastFileChanged(mApp.localBroadCastManager)
+        }
     }
 
     override fun writeFile(file: File, contents: String) {
