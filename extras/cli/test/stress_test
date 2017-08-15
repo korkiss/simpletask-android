@@ -18,7 +18,7 @@ def find_tests():
             # Executables only
             tests.append(test)
         else:
-            log.debug("Ignored test %s as it is not executable", test)
+            Log.d("Ignored test %s as it is not executable", test)
 
     log.info("Tests found: %s", len(tests))
 
@@ -35,7 +35,7 @@ def run_test(test):
         exit = call([test], stdout=sys.stdout, stderr=sys.stderr)
 
         if exit != 0:
-            log.error("Failed to run test %s on repetition %s", test, i)
+            Log.e("Failed to run test %s on repetition %s", test, i)
             break
 
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     )
     log = logging.getLogger(__name__)
 
-    log.debug("Parsed commandline arguments: %s", cmd_args)
+    Log.d("Parsed commandline arguments: %s", cmd_args)
 
     try:
         main()

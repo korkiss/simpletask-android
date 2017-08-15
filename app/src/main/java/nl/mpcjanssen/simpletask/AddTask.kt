@@ -38,7 +38,7 @@ class AddTask : ThemedActionBarActivity() {
     private lateinit var textInputField: EditText
     private var m_broadcastReceiver: BroadcastReceiver? = null
     private var localBroadcastManager: LocalBroadcastManager? = null
-    private val log = Logger
+    private val log = Log
 
     /*
         Deprecated functions still work fine.
@@ -46,7 +46,7 @@ class AddTask : ThemedActionBarActivity() {
      */
     @Suppress("DEPRECATION")
     public override fun onCreate(savedInstanceState: Bundle?) {
-        log.debug(TAG, "onCreate()")
+        Log.d(TAG, "onCreate()")
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
         super.onCreate(savedInstanceState)
 
@@ -586,7 +586,7 @@ class AddTask : ThemedActionBarActivity() {
         // save current selection and length
         val start = textInputField.selectionStart
         val end = textInputField.selectionEnd
-        log.debug(TAG, "Current selection: $start-$end")
+        Log.d(TAG, "Current selection: $start-$end")
         val length = textInputField.text.length
         val lines = ArrayList<String>()
         Collections.addAll(lines, *textInputField.text.toString().split("\\n".toRegex()).toTypedArray())
@@ -599,7 +599,7 @@ class AddTask : ThemedActionBarActivity() {
         }
         if (currentLine != -1) {
             val t = Task(lines[currentLine])
-            log.debug(TAG, "Changing priority from " + t.priority.toString() + " to " + newPriority.toString())
+            Log.d(TAG, "Changing priority from " + t.priority.toString() + " to " + newPriority.toString())
             t.priority = Priority.toPriority(newPriority.toString())
             lines[currentLine] = t.inFileFormat()
             textInputField.setText(join(lines, "\n"))

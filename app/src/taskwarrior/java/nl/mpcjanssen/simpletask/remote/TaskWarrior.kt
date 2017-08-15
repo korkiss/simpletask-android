@@ -2,23 +2,18 @@ package nl.mpcjanssen.simpletask.remote
 
 import android.net.LocalServerSocket
 import android.os.Build
-import nl.mpcjanssen.simpletask.Logger
 import nl.mpcjanssen.simpletask.R
 
 import nl.mpcjanssen.simpletask.TodoApplication
 import org.json.JSONObject
-import android.text.TextUtils
 import nl.mpcjanssen.simpletask.TodoException
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.showToastLong
-import org.luaj.vm2.ast.Str
 import java.io.*
-import java.util.Collections.addAll
 import java.util.regex.Pattern
 
-import java.nio.ByteOrder.BIG_ENDIAN
-import android.R.attr.order
 import android.net.LocalSocket
+import android.util.Log
 import com.taskwc2.controller.sync.SSLHelper
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,11 +31,11 @@ private class ToLogConsumer(private val level: String, private val tag: String) 
     override fun eat(line: String?) {
         line?.let {
             when (level) {
-                "error" -> Logger.error(tag, line)
-                "debug" -> Logger.debug(tag, line)
-                "warning" -> Logger.warn(tag, line)
-                "info" -> Logger.info(tag, line)
-                else -> Logger.warn(tag, line)
+                "error" -> Log.e(tag, line)
+                "debug" -> Log.d(tag, line)
+                "warning" -> Log.w(tag, line)
+                "info" -> Log.i(tag, line)
+                else -> Log.w(tag, line)
             }
         }
     }
@@ -84,39 +79,41 @@ object TaskWarrior {
             file.setExecutable(true, true)
             return file.getAbsolutePath()
         } catch (e: IOException) {
-            Logger.error(TAG, "Error preparing file", e)
+            Log.e(TAG, "Error preparing file", e)
         }
         return null
     }
 
     fun taskList(): List<String> {
-        val result = ArrayList<JSONObject>()
+        val result = ArrayList<String>()
         val params = ArrayList<String>()
         params.add("rc.json.array=off")
         params.add("export")
         callTask(object : StreamConsumer {
             override fun eat(line: String?) {
-                if (!TextUtils.isEmpty(line)) {
-                    try {
-                        result.add(JSONObject(line))
-                    } catch (e: Exception) {
-                        Logger.error(TAG, "Not JSON object: ${line}" ,e )
-                    }
-
-                }
+                line?.let{result.add(it)}
             }
-        }, errConsumer, *params.toTypedArray())
-        Logger.debug(TAG, "List for size  ${result.size}")
-        return result.map {jsonToTodotxt(it)}
+        }, object : StreamConsumer {
+            override fun eat(line: String?) {
+                line?.let{result.add(it)}
+            }}, *params.toTypedArray())
+        Log.d(TAG, "List for size  ${result.size}")
+        return result
     }
 
-    private val  ID = "uuid"
-    private val  DESC = "description"
 
     fun jsonToTodotxt (json: JSONObject) : String {
-            val uuid = json.getString(ID)
-            val desc = json.getString(DESC)
-            return "$desc $ID:$uuid"
+        return json.toString()
+        val uuid = json.getString("uuid")
+        val desc = json.getString("description")
+        var result = desc
+        json.optJSONArray("tags")?.let {
+            for (i in 0..it.length() - 1) {
+                result += " +${it.getString(i)}"
+            }
+        }
+        result += " uuid:$uuid"
+        return result
     }
 
     fun callTask(vararg arguments: String) {
@@ -125,20 +122,20 @@ object TaskWarrior {
 
     private fun callTask(out: StreamConsumer, err: StreamConsumer, vararg arguments: String): Int {
         if (arguments.isEmpty()) {
-            Logger.debug(TAG, "Error in binary call: no arguments provided")
+            Log.d(TAG, "Error in binary call: no arguments provided")
             return 255
         }
         try {
             val exec = executable
             if (null == exec) {
-                Logger.debug(TAG, "Error in binary call: executable not found")
+                Log.d(TAG, "Error in binary call: executable not found")
                 throw TodoException("Invalid executable")
             }
             val taskRc = Config.todoFile
             val taskRcFolder = taskRc.parentFile
 
             if (!taskRcFolder.exists()) {
-                Logger.debug(TAG, "Error in binary call: invalid .taskrc folder: ${taskRcFolder.absolutePath}" )
+                Log.d(TAG, "Error in binary call: invalid .taskrc folder: ${taskRcFolder.absolutePath}" )
                 throw TodoException("Invalid folder")
             }
             var syncSocket : LocalServerSocket? = null
@@ -159,15 +156,15 @@ object TaskWarrior {
 
             val pb = ProcessBuilder(args)
             pb.directory(taskRcFolder)
-            Logger.debug(TAG,"Calling now: ${taskRcFolder}  ${args}")
-            Logger.debug(TAG,"TASKRC: ${taskRc.absolutePath}")
+            Log.d(TAG,"Calling now: ${taskRcFolder}  ${args}")
+            Log.d(TAG,"TASKRC: ${taskRc.absolutePath}")
             pb.environment().put("TASKRC", taskRc.absolutePath)
             val p = pb.start()
 
             val outThread = readStream(p.getInputStream(), out)
             val errThread = readStream(p.getErrorStream(), err)
             val exitCode = p.waitFor()
-            Logger.debug(TAG, "Exit code:  $exitCode, $args")
+            Log.d(TAG, "Exit code:  $exitCode, $args")
             //            debug("Execute result:", exitCode);
             if (null != outThread) outThread.join()
             if (null != errThread) errThread.join()
@@ -176,7 +173,7 @@ object TaskWarrior {
             }
             return exitCode
         } catch (e: Exception) {
-            Logger.error(TAG,"Failed to execute task", e)
+            Log.e(TAG,"Failed to execute task", e)
             err.eat(e.message)
             return 255
         }
@@ -193,7 +190,7 @@ object TaskWarrior {
         callTask( object: StreamConsumer {
             override fun eat(line: String?) {
                 line?.let {
-                    Logger.debug(TAG, line)
+                    Log.d(TAG, line)
                     val match = configLinePattern.matcher(line)
                     if (match.matches()) {
                         val configKey = match.group(1)
@@ -211,7 +208,7 @@ object TaskWarrior {
         try {
             reader = InputStreamReader(stream, "utf-8")
         } catch (e: UnsupportedEncodingException) {
-            Logger.error(TAG,"Error opening stream")
+            Log.e(TAG,"Error opening stream")
             return null
         }
 
@@ -232,14 +229,14 @@ object TaskWarrior {
             if (!config.containsKey("taskd.server")) {
                 // Not configured
                 showToastLong(TodoApplication.app, "Sync disabled: no taskd.server value")
-                Logger.debug(TAG, "taskd.server is empty: sync disabled")
+                Log.d(TAG, "taskd.server is empty: sync disabled")
                 return null
             }
             val runner: LocalSocketRunner
             try {
                 runner = LocalSocketRunner(name, config)
             } catch (e: Exception) {
-                Logger.error(TAG, "Sync disabled: certificate load failure",  e)
+                Log.e(TAG, "Sync disabled: certificate load failure",  e)
                 showToastLong(TodoApplication.app, "Sync disabled: certificate load failure")
                 return null
             }
@@ -250,7 +247,7 @@ object TaskWarrior {
                         try {
                             runner.accept()
                         } catch (e: IOException) {
-                            Logger.error(TAG, "Socket accept failed",  e)
+                            Log.e(TAG, "Socket accept failed",  e)
                             return
                         }
 
@@ -260,7 +257,7 @@ object TaskWarrior {
             acceptThread.start()
             return runner.socket // Close me later on stop
         } catch (e: Exception) {
-            Logger.error(TAG, "Failed to open local socket", e)
+            Log.e(TAG, "Failed to open local socket", e)
         }
 
         return null
@@ -289,7 +286,7 @@ constructor(name: String, config: Map<String, String>) {
                     FileInputStream(fileFromConfig(config["taskd.ca"])),
                     FileInputStream(fileFromConfig(config["taskd.certificate"])),
                     FileInputStream(fileFromConfig(config["taskd.key"])), trustType)
-            Logger.debug(TAG, "Credentials loaded")
+            Log.d(TAG, "Credentials loaded")
             this.socket = LocalServerSocket(name)
         } else {
             this.socket = null
@@ -311,7 +308,7 @@ constructor(name: String, config: Map<String, String>) {
     fun accept() {
         socket?.let {
             val conn = it.accept()
-            Logger.debug(TAG, "New incoming connection")
+            Log.d(TAG, "New incoming connection")
             LocalSocketThread(conn).start()
         }
     }
@@ -327,7 +324,7 @@ constructor(name: String, config: Map<String, String>) {
             val size = ByteBuffer.wrap(head, 0, 4).order(ByteOrder.BIG_ENDIAN).getInt()
             var bytes: Long = 4
             val buffer = ByteArray(1024)
-            Logger.debug(TAG, "Will transfer: " + size)
+            Log.d(TAG, "Will transfer: " + size)
             while (bytes < size) {
                 val recv = from.read(buffer)
                 //                logger.d("Actually get:", recv);
@@ -338,28 +335,28 @@ constructor(name: String, config: Map<String, String>) {
                 to.flush()
                 bytes += recv.toLong()
             }
-            Logger.debug(TAG, "Transfer done " + size)
+            Log.d(TAG, "Transfer done " + size)
             return bytes
         }
 
         override fun run() {
             var remoteSocket: SSLSocket? = null
-            Logger.debug(TAG, "Communication taskw<->android started")
+            Log.d(TAG, "Communication taskw<->android started")
             try {
                 remoteSocket = factory?.createSocket(host, port) as SSLSocket
                 val finalRemoteSocket = remoteSocket
                 Compat.levelAware(16, Runnable { finalRemoteSocket!!.setEnabledProtocols(arrayOf("TLSv1", "TLSv1.1", "TLSv1.2")) }, Runnable { finalRemoteSocket!!.setEnabledProtocols(arrayOf("TLSv1")) })
-                Logger.debug( TAG, "Ready to establish TLS connection to:"+  host + port)
+                Log.d( TAG, "Ready to establish TLS connection to:"+  host + port)
                 val localInput = socket.inputStream
                 val localOutput = socket.outputStream
                 val remoteInput = remoteSocket!!.getInputStream()
                 val remoteOutput = remoteSocket!!.getOutputStream()
-                Logger.debug(TAG, "Connected to taskd server" + remoteSocket!!.getSession().getCipherSuite())
+                Log.d(TAG, "Connected to taskd server" + remoteSocket!!.getSession().getCipherSuite())
                 val bread = recvSend(localInput, remoteOutput)
                 val bwrite = recvSend(remoteInput, localOutput)
 
             } catch (e: Exception) {
-                Logger.error(TAG, "Transfer failure",e )
+                Log.e(TAG, "Transfer failure",e )
             } finally {
                 if (null != remoteSocket) {
                     try {

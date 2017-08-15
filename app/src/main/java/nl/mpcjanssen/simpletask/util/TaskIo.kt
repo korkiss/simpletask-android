@@ -42,7 +42,7 @@ fun writeToFile(lines: List<String>, eol: String, file: File, append: Boolean) {
     try {
         createParentDirectory(file)
     } catch (e: IOException) {
-        nl.mpcjanssen.simpletask.Logger.warn("TaskIO", "Couldn't create directory of ${file.absolutePath}", e)
+        nl.mpcjanssen.simpletask.Log.warn("TaskIO", "Couldn't create directory of ${file.absolutePath}", e)
         throw e
     }
     val str = FileOutputStream(file, append)

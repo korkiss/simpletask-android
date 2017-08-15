@@ -25,7 +25,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "MyAppWidgetProvider" ;
 
     private static void putFilterExtras(Intent target, @NonNull SharedPreferences preferences, int widgetId) {
-        // log.debug(TAG, "putFilter extras  for appwidget " + widgetId);
+        // Log.d(TAG, "putFilter extras  for appwidget " + widgetId);
         ActiveFilter filter = new ActiveFilter(new FilterOptions("widget" + widgetId, false));
         filter.initFromPrefs(preferences);
         filter.saveInIntent(target);
@@ -106,9 +106,9 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager,
 			@NonNull int[] appWidgetIds) {
-        Logger log = Logger.INSTANCE;
+        Log log = Log.INSTANCE;
         for (int widgetId : appWidgetIds) {
-            log.debug(TAG, "onUpdate " + widgetId);
+            Log.d(TAG, "onUpdate " + widgetId);
 			RemoteViews views = updateView(widgetId, context);
 			appWidgetManager.updateAppWidget(widgetId, views);
 
@@ -120,9 +120,9 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onDeleted(@NonNull Context context, @NonNull int[] appWidgetIds) {
-        Logger log = Logger.INSTANCE;
+        Log log = Log.INSTANCE;
         for (int widgetId : appWidgetIds) {
-            log.debug(TAG, "cleaning up widget configuration id:" + widgetId);
+            Log.d(TAG, "cleaning up widget configuration id:" + widgetId);
             // At least clear contents of the other_preferences file
             SharedPreferences preferences = context.getSharedPreferences("" + widgetId, 0);
             preferences.edit().clear().apply();
@@ -138,8 +138,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 
     public static void updateAppWidget(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, int appWidgetId, String name) {
-        Logger log = Logger.INSTANCE;
-        log.debug(TAG, "updateAppWidget appWidgetId=" + appWidgetId + " title=" + name);
+        Log log = Log.INSTANCE;
+        Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId + " title=" + name);
 
         // Construct the RemoteViews object.  It takes the package name (in our case, it's our
         // package, but it needs this because on the other side it's the widget host inflating

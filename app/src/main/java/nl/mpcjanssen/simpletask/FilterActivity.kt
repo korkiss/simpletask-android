@@ -35,7 +35,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
     private var pager: ViewPager? = null
     private var m_menu: Menu? = null
-    private var log = Logger
+    private var log = Log
     private var pagerAdapter: ScreenSlidePagerAdapter? = null
     private var scriptFragment: FilterScriptFragment? = null
     private var m_page = 0

@@ -21,7 +21,7 @@ import java.util.*
 
 class HistoryScreen : ThemedActionBarActivity() {
 
-    private var log: Logger? = null
+    private var log: Log? = null
     private var m_cursor: Cursor? = null
     private var toolbar_menu: Menu? = null
     private var mScroll = 0
@@ -29,7 +29,7 @@ class HistoryScreen : ThemedActionBarActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        log = Logger
+        log = Log
         m_app = application as TodoApplication
 
         initCursor()

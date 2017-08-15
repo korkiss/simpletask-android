@@ -259,7 +259,7 @@ private class EvtMap private constructor() : HashMap<EvtKey, LinkedList<Evt>>() 
 }
 
 object CalendarSync {
-    private val log: Logger
+    private val log: Log
 
     private val ACCOUNT_NAME = "Simpletask Calendar"
     private val ACCOUNT_TYPE = CalendarContract.ACCOUNT_TYPE_LOCAL
@@ -294,7 +294,7 @@ object CalendarSync {
             try {
                 sync()
             } catch (e: Exception) {
-                log.error(TAG, "STPE exception", e)
+                Log.e(TAG, "STPE exception", e)
             }
 
         }
@@ -352,30 +352,30 @@ object CalendarSync {
 
     @SuppressLint("NewApi")
     private fun removeCalendar() {
-        log.debug(TAG, "Removing Simpletask calendar")
+        Log.d(TAG, "Removing Simpletask calendar")
         val selection = Calendars.NAME + " = ?"
         val args = arrayOf(CAL_NAME)
         try {
             val ret = m_cr.delete(CAL_URI, selection, args)
             if (ret == 0)
-                log.debug(TAG, "No calendar to remove")
+                Log.d(TAG, "No calendar to remove")
             else if (ret == 1)
-                log.debug(TAG, "Calendar removed")
+                Log.d(TAG, "Calendar removed")
             else
-                log.error(TAG, "Unexpected return value while removing calendar: " + ret)
+                Log.e(TAG, "Unexpected return value while removing calendar: " + ret)
         } catch (e: Exception) {
-            log.error(TAG, "Error while removing calendar", e)
+            Log.e(TAG, "Error while removing calendar", e)
         }
     }
 
     private fun sync() {
-        log.debug(TAG, "Checking whether calendar sync is needed")
+        Log.d(TAG, "Checking whether calendar sync is needed")
         try {
             var calID = findCalendar()
 
             if (!Config.isSyncThresholds && !Config.isSyncDues) {
                 if (calID >= 0) {
-                    log.debug(TAG, "Calendar sync not enabled")
+                    Log.d(TAG, "Calendar sync not enabled")
                     removeCalendar()
                 }
                 return
@@ -389,21 +389,21 @@ object CalendarSync {
                     // OR it allows to write calendar but disallows reading it (2).
                     // Either way, we cannot continue, but before bailing,
                     // try to remove Calendar in case we're here because of (2).
-                    log.debug(TAG, "No access to Simpletask calendar")
+                    Log.d(TAG, "No access to Simpletask calendar")
                     removeCalendar()
                     throw IllegalStateException("Calendar nor added")
                 }
             }
 
-            log.debug(TAG, "Syncing due/threshold calendar reminders...")
+            Log.d(TAG, "Syncing due/threshold calendar reminders...")
             val evtmap = EvtMap(m_cr, calID)
             val tasks = TodoList.todoItems
             evtmap.mergeTasks(tasks)
             val stats = evtmap.apply(m_cr, calID)
-            log.debug(TAG, "Sync finished: ${stats.inserts} inserted, ${stats.keeps} unchanged, ${stats.deletes} deleted")
+            Log.d(TAG, "Sync finished: ${stats.inserts} inserted, ${stats.keeps} unchanged, ${stats.deletes} deleted")
 
         } catch (e: Exception) {
-            log.error(TAG, "Calendar error", e)
+            Log.e(TAG, "Calendar error", e)
         }
     }
 
@@ -412,7 +412,7 @@ object CalendarSync {
     }
 
     init {
-        log = Logger
+        log = Log
         m_sync_runnable = SyncRunnable()
         m_cr = TodoApplication.app.contentResolver
         m_stpe = ScheduledThreadPoolExecutor(1)

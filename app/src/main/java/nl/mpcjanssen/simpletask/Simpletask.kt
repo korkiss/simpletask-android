@@ -44,7 +44,6 @@ import android.widget.*
 import android.widget.AdapterView.OnItemLongClickListener
 import hirondelle.date4j.DateTime
 import kotlinx.android.synthetic.main.list_header.view.*
-import kotlinx.android.synthetic.main.list_item.*
 import kotlinx.android.synthetic.main.list_item.view.*
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.update_items_dialog.view.*
@@ -84,7 +83,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     private var m_savedInstanceState: Bundle? = null
     internal var m_scrollPosition = 0
 
-    private var log = Logger
+    private var log = Log
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -282,9 +281,9 @@ class Simpletask : ThemedNoActionBarActivity() {
                 for (key in extras.keySet()) {
                     val value = extras.get(key)
                     if (value != null) {
-                        log.debug(TAG, "%s %s (%s)".format(key, value.toString(), value.javaClass.name))
+                        Log.d(TAG, "%s %s (%s)".format(key, value.toString(), value.javaClass.name))
                     } else {
-                        log.debug(TAG, "%s %s)".format(key, "<null>"))
+                        Log.d(TAG, "%s %s)".format(key, "<null>"))
                     }
 
                 }
@@ -399,7 +398,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             val position = manager.findFirstVisibleItemPosition()
             val firstItemView = manager.findViewByPosition(position)
             val offset = firstItemView?.top ?: 0
-            Logger.info(TAG, "Saving scroll offset $position, $offset")
+            Log.info(TAG, "Saving scroll offset $position, $offset")
             Config.lastScrollPosition = position
             Config.lastScrollOffset = offset
         }
@@ -869,7 +868,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
                 localBroadcastManager?.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
             } catch (e: IOException) {
-                log.error(TAG, "Import filters, cant read file ${importFile.canonicalPath}", e)
+                Log.e(TAG, "Import filters, cant read file ${importFile.canonicalPath}", e)
                 showToastLong(this, "Error reading file ${importFile.canonicalPath}")
             }
         }
@@ -887,7 +886,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             FileStore.writeFile(exportFile, jsonFilters.toString(2))
 	    showToastShort(this, R.string.saved_filters_exported)
 	} catch (e: Exception) {
-            log.error(TAG, "Export filters failed", e)
+            Log.e(TAG, "Export filters failed", e)
 	    showToastLong(this, "Error exporting filters")
         }
     }
@@ -1459,7 +1458,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                         val manager = listView?.layoutManager as LinearLayoutManager?
                         val position = Config.lastScrollPosition
                         val offset = Config.lastScrollOffset
-                        Logger.info(TAG, "Restoring scroll offset $position, $offset")
+                        Log.info(TAG, "Restoring scroll offset $position, $offset")
                         manager?.scrollToPositionWithOffset(position, offset )
                         Config.lastScrollPosition = -1
                     }

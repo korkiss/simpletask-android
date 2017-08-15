@@ -17,7 +17,7 @@ import org.luaj.vm2.LuaError
 
 class LuaConfigScreen : ThemedActionBarActivity() {
 
-    private val log = Logger
+    private val log = Log
     private lateinit var m_app : TodoApplication
     private lateinit var scriptEdit : EditText
     private var m_menu: Menu? = null
@@ -57,7 +57,7 @@ class LuaConfigScreen : ThemedActionBarActivity() {
                 try {
                     LuaInterpreter.evalScript(null, script())
                 } catch (e: LuaError) {
-                    log.debug(FilterScriptFragment.TAG, "Lua execution failed " + e.message)
+                    Log.d(FilterScriptFragment.TAG, "Lua execution failed " + e.message)
                     createAlertDialog(this, R.string.lua_error, e.message ?: "").show()
                 }
             }
@@ -85,7 +85,7 @@ class LuaConfigScreen : ThemedActionBarActivity() {
             FileStore.writeFile(exportFile, Config.luaConfig)
 	    showToastShort(this, "Lua config exported")
 	} catch (e: Exception) {
-            log.error(TAG, "Export lua config failed", e)
+            Log.e(TAG, "Export lua config failed", e)
 	    showToastLong(this, "Error exporting lua config")
         }
     }
@@ -97,7 +97,7 @@ class LuaConfigScreen : ThemedActionBarActivity() {
                 Config.luaConfig = contents
                 showToastShort(this, getString(R.string.toast_lua_config_imported))
             } catch (e: IOException) {
-                log.error(TAG, "Import lua config, cant read file ${importFile.canonicalPath}", e)
+                Log.e(TAG, "Import lua config, cant read file ${importFile.canonicalPath}", e)
                 showToastLong(this, "Error reading file ${importFile.canonicalPath}")
             }
         }

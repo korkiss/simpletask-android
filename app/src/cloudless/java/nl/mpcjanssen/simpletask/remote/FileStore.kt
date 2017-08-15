@@ -166,7 +166,7 @@ object FileStore : FileStoreInterface {
                 }
 
             } catch (e: IOException) {
-                log.error(TAG, "Saving $path failed", e)
+                xLog.e(TAG, "Saving $path failed", e)
                 e.printStackTrace()
             } finally {
                 obs?.delayedStartListen(1000)
@@ -342,7 +342,7 @@ class TodoObserver(val path: String) : FileObserver(File(path).parentFile.absolu
 
     override fun onEvent(event: Int, eventPath: String?) {
         if (eventPath != null && eventPath == fileName) {
-            log.debug(TAG, "Observer event: $path:$event")
+            Log.d(TAG, "Observer event: $path:$event")
             if (event == FileObserver.CLOSE_WRITE ||
                     event == FileObserver.MODIFY ||
                     event == FileObserver.MOVED_TO) {

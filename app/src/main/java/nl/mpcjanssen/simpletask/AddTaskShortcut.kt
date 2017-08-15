@@ -34,8 +34,8 @@ import android.os.Bundle
 class AddTaskShortcut : ThemedNoActionBarActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        val log = Logger
-        log.debug(TAG, "onCreate()")
+        val log = Log
+        Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
         setupShortcut()
         finish()

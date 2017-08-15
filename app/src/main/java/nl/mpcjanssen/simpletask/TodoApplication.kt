@@ -36,6 +36,7 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.*
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import nl.mpcjanssen.simpletask.dao.Daos
 import nl.mpcjanssen.simpletask.dao.gen.TodoFile
 import nl.mpcjanssen.simpletask.remote.BackupInterface
@@ -71,7 +72,7 @@ class TodoApplication : Application(),
 
         m_broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                Logger.info(TAG, "Received broadcast ${intent.action}")
+                Log.i(TAG, "Received broadcast ${intent.action}")
                 if (intent.action == Constants.BROADCAST_UPDATE_UI) {
                     TodoList.queue("Refresh UI") {
                         CalendarSync.syncLater()
@@ -79,11 +80,11 @@ class TodoApplication : Application(),
                         updateWidgets()
                     }
                 } else if (intent.action == Constants.BROADCAST_UPDATE_WIDGETS) {
-                    Logger.info(TAG, "Refresh widgets from broadcast")
+                    Log.i(TAG, "Refresh widgets from broadcast")
                     redrawWidgets()
                     updateWidgets()
                 } else if (intent.action == Constants.BROADCAST_FILE_CHANGED) {
-                    Logger.info(TAG, "File changed, reloading")
+                    Log.i(TAG, "File changed, reloading")
                     loadTodoList("from BROADCAST")
                 }
             }
@@ -91,9 +92,9 @@ class TodoApplication : Application(),
 
         localBroadCastManager.registerReceiver(m_broadcastReceiver, intentFilter)
 
-        Logger.info(TAG, "Created todolist " + TodoList)
-        Logger.info(TAG, "onCreate()")
-        Logger.info(TAG, "Started ${appVersion(this)}")
+        Log.i(TAG, "Created todolist " + TodoList)
+        Log.i(TAG, "onCreate()")
+        Log.i(TAG, "Started ${appVersion(this)}")
         scheduleOnNewDay()
         loadTodoList("Initial load")
     }
@@ -104,7 +105,7 @@ class TodoApplication : Application(),
         // Handle all uncaught exceptions for logging.
         // After that call the default uncaught exception handler
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Logger.error(TAG, "Uncaught exception", throwable)
+            Log.e(TAG, "Uncaught exception", throwable)
             androidUncaughtExceptionHandler.uncaughtException(thread, throwable)
         }
     }
@@ -122,7 +123,7 @@ class TodoApplication : Application(),
         calendar.set(Calendar.MINUTE, 2)
         calendar.set(Calendar.SECOND, 0)
 
-        Logger.info(TAG, "Scheduling daily UI updateCache alarm, first at ${calendar.time}")
+        Log.i(TAG, "Scheduling daily UI updateCache alarm, first at ${calendar.time}")
         val pi = PendingIntent.getBroadcast(this, 0,
                 Intent(this, AlarmReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
         val am = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -131,7 +132,7 @@ class TodoApplication : Application(),
     }
 
     override fun onTerminate() {
-        Logger.info(TAG, "De-registered receiver")
+        Log.i(TAG, "De-registered receiver")
         localBroadCastManager.unregisterReceiver(m_broadcastReceiver)
         super.onTerminate()
     }
@@ -157,14 +158,14 @@ class TodoApplication : Application(),
         val mgr = AppWidgetManager.getInstance(applicationContext)
         for (appWidgetId in mgr.getAppWidgetIds(ComponentName(applicationContext, MyAppWidgetProvider::class.java))) {
             mgr.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widgetlv)
-            Logger.info(TAG, "Updating widget: " + appWidgetId)
+            Log.i(TAG, "Updating widget: " + appWidgetId)
         }
     }
 
     fun redrawWidgets() {
         val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(this, MyAppWidgetProvider::class.java))
-        Logger.info(TAG, "Redrawing widgets ")
+        Log.i(TAG, "Redrawing widgets ")
         if (appWidgetIds.isNotEmpty()) {
             MyAppWidgetProvider().onUpdate(this, appWidgetManager, appWidgetIds)
         }

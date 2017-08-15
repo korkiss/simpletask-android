@@ -10,11 +10,9 @@ import android.text.style.StrikethroughSpan
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
-import nl.mpcjanssen.simpletask.sort.MultiComparator
 import nl.mpcjanssen.simpletask.task.*
 import nl.mpcjanssen.simpletask.util.*
 import org.json.JSONObject
-import java.util.*
 import kotlin.collections.ArrayList
 
 class AppWidgetService : RemoteViewsService() {
@@ -25,13 +23,13 @@ class AppWidgetService : RemoteViewsService() {
 }
 
 data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.RemoteViewsFactory {
-    private val log: Logger
+    private val log: Log
     val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
     var visibleTasks = ArrayList<Task>()
 
     init {
-        log = Logger
-        log.debug(TAG, "Creating view for widget: " + widgetId)
+        log = Log
+        Log.d(TAG, "Creating view for widget: " + widgetId)
     }
 
     fun moduleName () : String {
@@ -39,13 +37,13 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
     }
 
     fun getFilter () : ActiveFilter {
-	    log.debug (TAG, "Getting filter from preferences for widget $widgetId")
+	    Log.d (TAG, "Getting filter from preferences for widget $widgetId")
 	    val preferences = TodoApplication.app.getSharedPreferences("" + widgetId, 0)
         val filter = ActiveFilter(FilterOptions(luaModule = moduleName()))
         filter.initFromPrefs(preferences)
         val obj = JSONObject()
         filter.saveInJSON(obj)
-        log.debug (TAG, "Widget $widgetId filter $obj")
+        Log.d (TAG, "Widget $widgetId filter $obj")
 
         return filter
     }
@@ -58,10 +56,10 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
     }
 
     fun setFilteredTasks() {
-        log.debug(TAG, "Widget $widgetId: setFilteredTasks called")
+        Log.d(TAG, "Widget $widgetId: setFilteredTasks called")
 
         if (!TodoApplication.app.isAuthenticated) {
-            log.debug(TAG, "TodoApplication.app is not authenticated")
+            Log.d(TAG, "TodoApplication.app is not authenticated")
             return
         }
 
@@ -70,7 +68,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
 
         val newVisibleTasks = ArrayList<Task>()
         newVisibleTasks.addAll(TodoList.getSortedTasks(filter, sorts, Config.sortCaseSensitive))
-        log.debug(TAG, "Widget $widgetId: setFilteredTasks returned ${newVisibleTasks.size} tasks")
+        Log.d(TAG, "Widget $widgetId: setFilteredTasks returned ${newVisibleTasks.size} tasks")
         visibleTasks = newVisibleTasks
     }
 
@@ -211,7 +209,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
     }
 
     override fun onCreate() {
-        log.debug(TAG, "Widget: OnCreate called in ViewFactory")
+        Log.d(TAG, "Widget: OnCreate called in ViewFactory")
     }
 
     override fun onDataSetChanged() {

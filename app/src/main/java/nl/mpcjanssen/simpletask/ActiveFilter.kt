@@ -18,7 +18,7 @@ data class FilterOptions(val luaModule: String, val showSelected : Boolean = fal
  * Active filter, has methods for serialization in several formats
  */
 class ActiveFilter (val options : FilterOptions) {
-    private val log: Logger
+    private val log: Log
     var priorities = ArrayList<Priority>()
     var contexts = ArrayList<String>()
     var projects = ArrayList<String>()
@@ -48,7 +48,7 @@ class ActiveFilter (val options : FilterOptions) {
     var name: String? = null
 
     init {
-        log = Logger
+        log = Log
     }
 
     val prefill
@@ -264,7 +264,7 @@ class ActiveFilter (val options : FilterOptions) {
                 return@filter true
                 }
             } catch (e: LuaError) {
-                log.debug(TAG, "Lua execution failed " + e.message)
+                Log.d(TAG, "Lua execution failed " + e.message)
             }
         return emptySequence()
     }

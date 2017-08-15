@@ -48,7 +48,7 @@ def run_test(testqueue, outqueue, threadname):
             out, err = out.decode('utf-8'), err.decode('utf-8')
 
         output = ("# {0}\n".format(os.path.basename(test)), out, err)
-        log.debug("Collected output %s", output)
+        Log.d("Collected output %s", output)
         outqueue.put(output)
 
         testqueue.task_done()
@@ -71,13 +71,13 @@ class TestRunner(object):
             if os.access(test, os.X_OK):
                 # Executables only
                 if self._is_parallelizable(test):
-                    log.debug("Treating as parallel: %s", test)
+                    Log.d("Treating as parallel: %s", test)
                     self._parallelq.put(test)
                 else:
-                    log.debug("Treating as serial: %s", test)
+                    Log.d("Treating as serial: %s", test)
                     self._serialq.put(test)
             else:
-                log.debug("Ignored test %s as it is not executable", test)
+                Log.d("Ignored test %s as it is not executable", test)
 
         log.info("Parallel tests: %s", self._parallelq.qsize())
         log.info("Serial tests: %s", self._serialq.qsize())
@@ -97,7 +97,7 @@ class TestRunner(object):
     def _start_threads(self):
         for thread in self.threads:
             # Threads die when main thread dies
-            log.debug("Starting thread %s", thread)
+            Log.d("Starting thread %s", thread)
             thread.daemon = True
             thread.start()
 
@@ -108,7 +108,7 @@ class TestRunner(object):
             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(now)),
         )
 
-        log.debug("Adding timestamp %s to TAP file", timestamp)
+        Log.d("Adding timestamp %s to TAP file", timestamp)
         self.tap.write(timestamp)
 
     def _is_parallelizable(self, test):
@@ -153,7 +153,7 @@ class TestRunner(object):
             except Empty:
                 continue
 
-            log.debug("Outputting to TAP: %s", outputs)
+            Log.d("Outputting to TAP: %s", outputs)
 
             for output in outputs:
                 self.tap.write(output)
@@ -178,7 +178,7 @@ class TestRunner(object):
         sys.stdout.flush()
         sys.stderr.flush()
 
-        log.debug("Calling 'problems --summary' for report")
+        Log.d("Calling 'problems --summary' for report")
         return call([os.path.abspath("problems"), "--summary", cmd_args.tapfile])
 
 
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     )
     log = logging.getLogger(__name__)
 
-    log.debug("Parsed commandline arguments: %s", cmd_args)
+    Log.d("Parsed commandline arguments: %s", cmd_args)
 
     try:
         sys.exit(main())

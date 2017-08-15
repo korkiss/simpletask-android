@@ -9,7 +9,7 @@ import java.util.*
 
 object LuaInterpreter {
     val globals = JsePlatform.standardGlobals()!!
-    private val log = Logger
+    private val log = Log
     private val TAG = "LuaInterpreter"
 
     val ON_FILTER_NAME = "onFilter"
@@ -52,7 +52,7 @@ object LuaInterpreter {
                 val result = onFilter.call(args.arg1(), args.arg(2), args.arg(3))
                 return result.toboolean()
             } catch (e: LuaError) {
-                log.debug(TAG, "Lua execution failed " + e.message)
+                Log.d(TAG, "Lua execution failed " + e.message)
             }
         }
         return true
@@ -63,7 +63,7 @@ object LuaInterpreter {
             val module = globals.get(moduleName).checktable() ?: globals
             return !module.get(LuaInterpreter.ON_FILTER_NAME).isnil()
         } catch (e: LuaError) {
-            Logger.error(TAG, "Lua error: ${e.message} )")
+            Log.e(TAG, "Lua error: ${e.message} )")
             return false
         }
     }
@@ -80,7 +80,7 @@ object LuaInterpreter {
                 val result = callback.call(args.arg1(), args.arg(2), args.arg(3))
                 return result.tojstring()
             } catch (e: LuaError) {
-                log.debug(TAG, "Lua execution failed " + e.message)
+                Log.d(TAG, "Lua execution failed " + e.message)
             }
         }
         return null
@@ -97,7 +97,7 @@ object LuaInterpreter {
                 val result = onFilter.invoke(LuaString.valueOf(input), LuaString.valueOf(search), LuaBoolean.valueOf(caseSensitive)).arg1()
                 return result.toboolean()
             } catch (e: LuaError) {
-                log.debug(TAG, "Lua execution failed " + e.message)
+                Log.d(TAG, "Lua execution failed " + e.message)
             }
         }
         return null
@@ -177,7 +177,7 @@ object LuaInterpreter {
                 try {
                     return unpackResult(function.call())
                 } catch (e: LuaError) {
-                    log.debug(TAG, "Lua execution failed " + e.message)
+                    Log.d(TAG, "Lua execution failed " + e.message)
                 }
             }
             return null

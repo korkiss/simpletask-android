@@ -9,15 +9,14 @@ import android.os.*
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import nl.mpcjanssen.simpletask.Constants
-import nl.mpcjanssen.simpletask.Logger
 import nl.mpcjanssen.simpletask.TodoApplication
 import nl.mpcjanssen.simpletask.util.*
 import java.io.File
 import java.io.FilenameFilter
 import java.io.IOException
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 
 object FileStore : FileStoreInterface {
     private val mApp = TodoApplication.app
@@ -36,7 +35,6 @@ object FileStore : FileStoreInterface {
     override val isOnline = true
     private val TAG = javaClass.simpleName
     private val bm: LocalBroadcastManager
-    private val log: Logger
     private var observer: TodoObserver? = null
 
     override var isLoading: Boolean = false
@@ -44,9 +42,8 @@ object FileStore : FileStoreInterface {
     private var fileOperationsQueue: Handler? = null
 
     init {
-        log = Logger
-        log.info(TAG, "onCreate")
-        log.info(TAG, "Default path: ${getDefaultPath()}")
+        Log.i(TAG, "onCreate")
+        Log.i(TAG, "Default path: ${getDefaultPath()}")
         observer = null
         this.bm = LocalBroadcastManager.getInstance(TodoApplication.app)
 
@@ -67,7 +64,7 @@ object FileStore : FileStoreInterface {
     }
 
     fun queueRunnable(description: String, r: Runnable) {
-        log.info(TAG, "Handler: Queue " + description)
+        Log.i(TAG, "Handler: Queue " + description)
         while (fileOperationsQueue == null) {
             try {
                 Thread.sleep(100)
@@ -80,7 +77,7 @@ object FileStore : FileStoreInterface {
     }
 
     override fun loadTasksFromFile(path: String, backup: BackupInterface?, eol: String): List<String> {
-        log.info(TAG, "Loading tasks")
+        Log.i(TAG, "Loading tasks")
         return TaskWarrior.taskList()
     }
 
@@ -92,12 +89,12 @@ object FileStore : FileStoreInterface {
     }
 
     override fun writeFile(file: File, contents: String) {
-        log.info(TAG, "Writing file to  ${file.canonicalPath}")
+        Log.i(TAG, "Writing file to  ${file.canonicalPath}")
         file.writeText(contents)
     }
 
     override fun readFile(file: String, fileRead: FileStoreInterface.FileReadListener?): String {
-        log.info(TAG, "Reading file: {}" + file)
+        Log.i(TAG, "Reading file: {}" + file)
         isLoading = true
         val contents: String
         val lines = File(file).readLines()
@@ -121,18 +118,18 @@ object FileStore : FileStoreInterface {
     }
 
     private fun setWatching(path: String) {
-        Logger.info(TAG, "Observer: adding folder watcher on ${File(path).parentFile.absolutePath}")
+        Log.i(TAG, "Observer: adding folder watcher on ${File(path).parentFile.absolutePath}")
         val obs = observer
         if (obs != null && path == obs.path) {
-            Logger.warn(TAG, "Observer: already watching: $path")
+            Log.w(TAG, "Observer: already watching: $path")
             return
         } else if (obs != null) {
-            Logger.warn(TAG, "Observer: already watching different path: ${obs.path}")
+            Log.w(TAG, "Observer: already watching different path: ${obs.path}")
             obs.ignoreEvents(true)
             obs.stopWatching()
         }
         observer = TodoObserver(path)
-        Logger.info(TAG, "Observer: modifying done")
+        Log.i(TAG, "Observer: modifying done")
     }
 
     override fun browseForNewFile(act: Activity, path: String, listener: FileStoreInterface.FileSelectedListener, txtOnly: Boolean) {
@@ -142,8 +139,8 @@ object FileStore : FileStoreInterface {
     }
 
     @Synchronized override fun saveTasksToFile(path: String, lines: List<String>, backup: BackupInterface?, eol: String, updateVersion: Boolean) {
-        log.info(TAG, "Saving tasks to file: {}" + path)
-
+        Log.i(TAG, "Saving tasks to file: {}" + path)
+        return
         queueRunnable("Save ${lines.size} lines to file " + path, Runnable {
             backup?.backup(path, join(lines, "\n"))
             val obs = observer
@@ -155,7 +152,7 @@ object FileStore : FileStoreInterface {
                 }
 
             } catch (e: IOException) {
-                log.error(TAG, "Saving $path failed", e)
+                Log.e(TAG, "Saving $path failed", e)
                 e.printStackTrace()
             } finally {
                 obs?.delayedStartListen(1000)
@@ -166,7 +163,7 @@ object FileStore : FileStoreInterface {
 
     override fun appendTaskToFile(path: String, lines: List<String>, eol: String) {
         queueRunnable("Appending  ${lines.size} lines tasks to $path", Runnable {
-            log.info(TAG, "Appending ${lines.size} tasks to $path")
+            Log.i(TAG, "Appending ${lines.size} tasks to $path")
             try {
                 writeToFile(lines, eol, File(path), true)
             } catch (e: IOException) {
@@ -306,39 +303,38 @@ class TodoObserver(val path: String) : FileObserver(File(path).parentFile.absolu
     private val TAG = "FileWatchService"
     private val bm: LocalBroadcastManager = LocalBroadcastManager.getInstance(TodoApplication.app)
     private val fileName: String
-    private var log = Logger
     private var ignoreEvents: Boolean = false
     private val handler: Handler
 
     private val delayedEnable = Runnable {
-        log.info(TAG, "Observer: Delayed enabling events for: " + path)
+        Log.i(TAG, "Observer: Delayed enabling events for: " + path)
         ignoreEvents(false)
     }
 
     init {
         this.startWatching()
         this.fileName = File(path).name
-        log.info(TAG, "Observer: creating observer on: {}")
+        Log.i(TAG, "Observer: creating observer on: {}")
         this.ignoreEvents = false
         this.handler = Handler(Looper.getMainLooper())
 
     }
 
     fun ignoreEvents(ignore: Boolean) {
-        log.info(TAG, "Observer: observing events on " + this.path + "? ignoreEvents: " + ignore)
+        Log.i(TAG, "Observer: observing events on " + this.path + "? ignoreEvents: " + ignore)
         this.ignoreEvents = ignore
     }
 
     override fun onEvent(event: Int, eventPath: String?) {
         if (eventPath != null && eventPath == fileName) {
-            log.debug(TAG, "Observer event: $path:$event")
+            Log.d(TAG, "Observer event: $path:$event")
             if (event == FileObserver.CLOSE_WRITE ||
                     event == FileObserver.MODIFY ||
                     event == FileObserver.MOVED_TO) {
                 if (ignoreEvents) {
-                    log.info(TAG, "Observer: ignored event on: " + path)
+                    Log.i(TAG, "Observer: ignored event on: " + path)
                 } else {
-                    log.info(TAG, "File changed {}" + path)
+                    Log.i(TAG, "File changed {}" + path)
                     broadcastFileChanged(bm)
                 }
             }
@@ -350,7 +346,7 @@ class TodoObserver(val path: String) : FileObserver(File(path).parentFile.absolu
         // Cancel any running timers
         handler.removeCallbacks(delayedEnable)
         // Reschedule
-        Logger.info(TAG, "Observer: Adding delayed enabling to queue")
+        Log.i(TAG, "Observer: Adding delayed enabling to queue")
         handler.postDelayed(delayedEnable, ms.toLong())
     }
 

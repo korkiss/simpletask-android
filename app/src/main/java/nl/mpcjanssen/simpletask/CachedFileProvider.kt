@@ -14,7 +14,7 @@ class CachedFileProvider : ContentProvider() {
 
     // UriMatcher used to match against incoming requests
     private var uriMatcher: UriMatcher? = null
-    private val log = Logger
+    private val log = Log
 
     override fun onCreate(): Boolean {
 
@@ -30,7 +30,7 @@ class CachedFileProvider : ContentProvider() {
     @Throws(FileNotFoundException::class)
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
 
-        log.debug(TAG, "Called with uri: '" + uri + "'." + uri.lastPathSegment)
+        Log.d(TAG, "Called with uri: '" + uri + "'." + uri.lastPathSegment)
 
         // Check incoming Uri against the matcher
         when (uriMatcher!!.match(uri)) {
@@ -53,7 +53,7 @@ class CachedFileProvider : ContentProvider() {
 
         // Otherwise unrecognised Uri
             else -> {
-                log.debug(TAG, "Unsupported uri: '$uri'.")
+                Log.d(TAG, "Unsupported uri: '$uri'.")
                 throw FileNotFoundException("Unsupported uri: " + uri.toString())
             }
         }

@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.*;
 import android.widget.AdapterView;
-import nl.mpcjanssen.simpletask.Logger;
+import nl.mpcjanssen.simpletask.Log;
 
 
 /**
@@ -113,7 +113,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     public DragSortController(@NonNull DragSortListView dslv, int dragHandleId, int dragInitMode,
             int removeMode, int clickRemoveId, int flingHandleId) {
         super(dslv);
-        Logger log = Logger.INSTANCE;
+        Log log = Log.INSTANCE;
         mDslv = dslv;
         if (mFlingRemoveListener == null) {
             mFlingRemoveListener =
@@ -121,7 +121,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                         @Override
                         public final boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
                                                      float velocityY) {
-                            // log.debug(TAG, "on fling remove called");
+                            // Log.d(TAG, "on fling remove called");
                             if (mRemoveEnabled && mIsRemoving) {
                                 int w = mDslv.getWidth();
                                 int minPos = w / 5;
@@ -358,7 +358,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         final int numFooters = mDslv.getFooterViewsCount();
         final int count = mDslv.getCount();
 
-        // log.debug(TAG, "touch down on position " + itemnum);
+        // Log.d(TAG, "touch down on position " + itemnum);
         // We're only interested if the touch was on an
         // item that's not a header or footer.
         if (touchPos != AdapterView.INVALID_POSITION && touchPos >= numHeaders
@@ -442,7 +442,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 
     @Override
     public void onLongPress(MotionEvent e) {
-        // log.debug(TAG, "lift listener long pressed");
+        // Log.d(TAG, "lift listener long pressed");
         if (mHitPos != MISS && mDragInitMode == ON_LONG_PRESS) {
             mDslv.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             startDrag(mHitPos, mCurrX - mItemX, mCurrY - mItemY);

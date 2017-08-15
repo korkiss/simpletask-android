@@ -19,7 +19,7 @@ class HelpScreen : ThemedActionBarActivity() {
     private val history = Stack<String>()
 
     private var wvHelp: WebView? = null
-    private var log: Logger? = null
+    private var log: Log? = null
 
     private fun loadDesktop(wv: WebView, url: String) {
         wv.settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19"
@@ -38,7 +38,7 @@ class HelpScreen : ThemedActionBarActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        log = Logger
+        log = Log
         var page = "index." + getText(R.string.help_locale).toString() + ".md"
         val i = intent
         if (i.hasExtra(Constants.EXTRA_HELP_PAGE)) {

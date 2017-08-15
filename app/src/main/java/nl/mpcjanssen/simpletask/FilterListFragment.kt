@@ -17,11 +17,11 @@ class FilterListFragment : Fragment() {
     internal var actionbar: ActionBar? = null
     private var mSelectedItems: ArrayList<String>? = null
     private var not: Boolean = false
-    private var log: Logger? = null
+    private var log: Log? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        log = Logger
+        log = Log
         log!!.debug(TAG, "onCreate() this:" + this)
     }
 

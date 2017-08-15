@@ -1,7 +1,7 @@
 package nl.mpcjanssen.simpletask.sort
 
 import nl.mpcjanssen.simpletask.ActiveFilter
-import nl.mpcjanssen.simpletask.Logger
+import nl.mpcjanssen.simpletask.Log
 import nl.mpcjanssen.simpletask.task.Task
 import java.util.*
 import kotlin.comparisons.then
@@ -12,7 +12,7 @@ class MultiComparator(sorts: ArrayList<String>, today: String, caseSensitve: Boo
     var fileOrder = true
 
     init {
-        val log = Logger
+        val log = Log
 
         label@ for (sort in sorts) {
             val parts = sort.split(ActiveFilter.SORT_SEPARATOR.toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()

@@ -42,6 +42,7 @@ import android.support.v7.app.AlertDialog
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.Window
 import android.widget.ListView
 import android.widget.ProgressBar
@@ -58,7 +59,6 @@ import java.util.*
 import java.util.regex.Pattern
 
 val TAG = "Util"
-val log = Logger
 val todayAsString: String
     get() = DateTime.today(TimeZone.getDefault()).format(Constants.DATE_FORMAT)
 
@@ -131,7 +131,6 @@ interface InputDialogListener {
 
 @Throws(TodoException::class)
 fun createParentDirectory(dest: File?) {
-    val log = Logger
     if (dest == null) {
         throw TodoException("createParentDirectory: dest is null")
     }
@@ -140,7 +139,7 @@ fun createParentDirectory(dest: File?) {
         createParentDirectory(dir)
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                log.error(TAG, "Could not create dirs: " + dir.absolutePath)
+                Log.e(TAG, "Could not create dirs: " + dir.absolutePath)
                 throw TodoException("Could not create dirs: " + dir.absolutePath)
             }
         }
@@ -347,7 +346,7 @@ fun createCachedFile(context: Context, fileName: String,
 fun copyFile(sourceFile: File, destFile: File) {
 
     if (destFile.createNewFile()) {
-        log.debug(TAG, "Destination file created {}" + destFile.absolutePath)
+        Log.d(TAG, "Destination file created {}" + destFile.absolutePath)
     }
 
     var source: FileChannel? = null
@@ -418,7 +417,7 @@ fun shareText(act: Activity, subject: String, text: String) {
             val fileUri = Uri.parse("content://" + CachedFileProvider.AUTHORITY + "/" + Constants.SHARE_FILE_NAME)
             shareIntent.putExtra(android.content.Intent.EXTRA_STREAM, fileUri)
         } catch (e: Exception) {
-            log.warn(TAG, "Failed to create file for sharing")
+            Log.w(TAG, "Failed to create file for sharing")
         }
 
     }
@@ -463,7 +462,7 @@ fun markdownAssetAsHtml(ctxt: Context, name: String): String {
         markdown = readAsset(ctxt.assets, name)
     } catch (e: IOException) {
         val fallbackAsset = name.replace("\\.[a-z]{2}\\.md$".toRegex(), ".en.md")
-        log.warn(TAG, "Failed to load markdown asset: $name falling back to $fallbackAsset")
+        Log.w(TAG, "Failed to load markdown asset: $name falling back to $fallbackAsset")
         try {
             markdown = readAsset(ctxt.assets, fallbackAsset)
         } catch (e: IOException) {
@@ -604,7 +603,7 @@ fun ArrayList<HashSet<String>>.intersection(): Set<String> {
 }
 
 fun broadcastFileChanged(broadcastManager: LocalBroadcastManager) {
-    log.info(TAG, "Sending file changed broadcast")
+    Log.i(TAG, "Sending file changed broadcast")
     broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_FILE_CHANGED))
 }
 
@@ -617,6 +616,6 @@ fun broadcastRefreshSelection(broadcastManager: LocalBroadcastManager) {
 }
 
 fun broadcastRefreshWidgets(broadcastManager: LocalBroadcastManager) {
-    log.info(TAG, "Sending widget refresh broadcast")
+    Log.i(TAG, "Sending widget refresh broadcast")
     broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_WIDGETS))
 }

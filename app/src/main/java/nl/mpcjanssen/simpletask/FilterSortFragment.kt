@@ -36,7 +36,7 @@ class FilterSortFragment : Fragment() {
     }
 
     private val onRemove = DragSortListView.RemoveListener { which -> adapter.remove(adapter.getItem(which)) }
-    private var log: Logger? = null
+    private var log: Log? = null
 
     private // this DSLV xml declaration does not call for the use
             // of the default DragSortController; therefore,
@@ -46,7 +46,7 @@ class FilterSortFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        log = Logger
+        log = Log
 
         val arguments = arguments
         if (originalItems == null) {

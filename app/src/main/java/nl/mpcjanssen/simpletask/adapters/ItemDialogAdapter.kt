@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.buildware.widget.indeterm.IndeterminateCheckBox
-import nl.mpcjanssen.simpletask.Logger
+import nl.mpcjanssen.simpletask.Log
 import nl.mpcjanssen.simpletask.R
 import java.util.*
 
@@ -58,7 +58,7 @@ class ItemDialogAdapter// Provide a suitable constructor (depends on the kind of
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        Logger.info("ItemAdapter", "onBindViewHolder $position : ${mItems[position]}, ${currentState[position]}, ${initialState[position]}")
+        Log.info("ItemAdapter", "onBindViewHolder $position : ${mItems[position]}, ${currentState[position]}, ${initialState[position]}")
 
         val adapterPosition = holder.adapterPosition
         val viewItem = mItems[position]
@@ -67,7 +67,7 @@ class ItemDialogAdapter// Provide a suitable constructor (depends on the kind of
         holder.mCheckBox.setIndeterminateUsed(initialState[adapterPosition]==null)
         holder.mCheckBox.state = currentState[adapterPosition]
         holder.mCheckBox.setOnStateChangedListener { indeterminateCheckBox, b ->
-            Logger.info("ItemAdapter", "state chaged $position:$viewItem, new state: $b")
+            Log.info("ItemAdapter", "state chaged $position:$viewItem, new state: $b")
             currentState[adapterPosition] = b
         }
     }

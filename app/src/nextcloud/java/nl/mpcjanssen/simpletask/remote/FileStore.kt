@@ -132,7 +132,7 @@ object FileStore : FileStoreInterface {
 
     override fun changesPending(): Boolean {
         if (mPrefs == null) {
-            log.error(TAG, "Couldn't read pending changes state, mPrefs == null")
+            Log.e(TAG, "Couldn't read pending changes state, mPrefs == null")
             return false
         }
         return mPrefs.getBoolean(LOCAL_CHANGES_PENDING, false)
@@ -151,7 +151,7 @@ object FileStore : FileStoreInterface {
 
     private fun setChangesPending(pending: Boolean) {
         if (mPrefs == null) {
-            log.error(TAG, "Couldn't save pending changes, mPrefs == null")
+            Log.e(TAG, "Couldn't save pending changes, mPrefs == null")
             return
         }
         if (pending) {
@@ -346,7 +346,7 @@ object FileStore : FileStoreInterface {
 
     override fun writeFile(file: File, contents: String) {
         if (!isAuthenticated) {
-            log.error(TAG, "Not authenticated, file ${file.canonicalPath} not written.")
+            Log.e(TAG, "Not authenticated, file ${file.canonicalPath} not written.")
             return
         }
         val r = Runnable {

@@ -22,7 +22,7 @@ object ActionQueue : Thread() {
     fun add(description: String, r: Runnable, silent: Boolean = false) {
         while (mHandler == null) {
             if (!silent) {
-                log.debug(TAG, "Queue handler is null, waiting")
+                Log.d(TAG, "Queue handler is null, waiting")
             }
             try {
                 Thread.sleep(100)

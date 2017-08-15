@@ -52,7 +52,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @author Mark Janssen
  */
 object TodoList {
-    private val log: Logger = Logger
+    private val log: Log = Log
 
     private var mLists: ArrayList<String>? = null
     private var mTags: ArrayList<String>? = null
@@ -262,7 +262,7 @@ object TodoList {
                     e.printStackTrace()
 
                 } catch (e: IOException) {
-                    log.error(TAG, "TodoList load failed: {}" + filename, e)
+                    Log.e(TAG, "TodoList load failed: {}" + filename, e)
                     showToastShort(TodoApplication.app, "Loading of todo file failed")
                 }
                 log.info(TAG, "TodoList loaded from storage")

@@ -40,12 +40,12 @@ import java.io.IOException
 import java.util.*
 
 class AddTaskBackground : Activity() {
-    private var log = Logger
+    private var log = Log
     val TAG = "AddTaskBackground"
 
     public override fun onCreate(instance: Bundle?) {
-        log = Logger
-        log.debug(TAG, "onCreate()")
+        log = Log
+        Log.d(TAG, "onCreate()")
         super.onCreate(instance)
 
         val intent = intent
@@ -54,7 +54,7 @@ class AddTaskBackground : Activity() {
         val append_text = Config.shareAppendText
         if (intent.type.startsWith("text/")) {
             if (Intent.ACTION_SEND == action) {
-                log.debug(TAG, "Share")
+                Log.d(TAG, "Share")
                 var share_text = ""
                 if (TodoApplication.atLeastAPI(21) && intent.hasExtra(Intent.EXTRA_STREAM)) {
                     val uri = intent.extras.get(Intent.EXTRA_STREAM) as Uri?
@@ -78,7 +78,7 @@ class AddTaskBackground : Activity() {
                 noteToSelf(intent, append_text)
 
             } else if (Constants.INTENT_BACKGROUND_TASK == action) {
-                log.debug(TAG, "Adding background task")
+                Log.d(TAG, "Adding background task")
                 if (intent.hasExtra(Constants.EXTRA_BACKGROUND_TASK)) {
                     addBackgroundTask(intent.getStringExtra(Constants.EXTRA_BACKGROUND_TASK), append_text)
                 } else {
@@ -98,14 +98,14 @@ class AddTaskBackground : Activity() {
     private fun noteToSelf(intent: Intent, append_text: String) {
         val task = intent.getStringExtra(Intent.EXTRA_TEXT)
         if (intent.hasExtra(Intent.EXTRA_STREAM)) {
-            log.debug(TAG, "Voice note added.")
+            Log.d(TAG, "Voice note added.")
         }
         addBackgroundTask(task, append_text)
     }
 
     private fun addBackgroundTask(sharedText: String, appendText: String) {
         val todoList = TodoList
-        log.debug(TAG, "Adding background tasks to todolist {} " + todoList)
+        Log.d(TAG, "Adding background tasks to todolist {} " + todoList)
 
         val items = ArrayList<Task>()
         for (taskText in sharedText.split("\r\n|\r|\n".toRegex()).dropLastWhile(String::isEmpty).toTypedArray()) {

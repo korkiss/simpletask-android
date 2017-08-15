@@ -9,7 +9,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val log = Logger
-        log.debug(TAG, "Connectivity changed {}" + intent)
+        Log.d(TAG, "Connectivity changed {}" + intent)
         FileStore.changedConnectionState()
     }
 
