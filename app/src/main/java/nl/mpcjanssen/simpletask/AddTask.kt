@@ -16,6 +16,7 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
 import android.text.InputType
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.AbsListView
@@ -38,7 +39,6 @@ class AddTask : ThemedActionBarActivity() {
     private lateinit var textInputField: EditText
     private var m_broadcastReceiver: BroadcastReceiver? = null
     private var localBroadcastManager: LocalBroadcastManager? = null
-    private val log = Log
 
     /*
         Deprecated functions still work fine.
