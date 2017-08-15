@@ -7,8 +7,12 @@ import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
 import org.json.JSONObject
 import android.text.TextUtils
+import nl.mpcjanssen.simpletask.TodoException
+import nl.mpcjanssen.simpletask.util.Config
+import org.luaj.vm2.ast.Str
 import java.io.*
 import java.util.Collections.addAll
+import java.util.regex.Pattern
 
 
 interface StreamConsumer {
@@ -37,10 +41,12 @@ object TaskWarrior {
     private enum class Arch {
         Arm7, X86
     };
+    val executable = eabiExecutable()
+    var config = clientConfig()
 
-    val executable : String? by lazy {
-        eabiExecutable()
-    }
+    var configLinePattern = Pattern.compile("^([A-Za-z0-9\\._]+)\\s+(\\S.*)$")
+
+
 
     private fun eabiExecutable(): String? {
         var arch = Arch.Arm7
@@ -100,54 +106,84 @@ object TaskWarrior {
             return "$desc $UUID:$uuid"
     }
 
-    fun callTask(out: StreamConsumer, err: StreamConsumer, vararg arguments: String): Boolean {
-        val result = callTask(out, err, true, *arguments)
-        return result == 0
+    fun callTask(vararg arguments: String) {
+        callTask(outConsumer, errConsumer, *arguments)
     }
 
-    private val tasksFolder = File("/sdcard/TW")
-
-    private fun callTask(out: StreamConsumer, err: StreamConsumer, api: Boolean, vararg arguments: String): Int {
+    private fun callTask(out: StreamConsumer, err: StreamConsumer, vararg arguments: String): Int {
+        if (arguments.isEmpty()) {
+            Logger.debug(TAG, "Error in binary call: no arguments provided")
+            return 255
+        }
         try {
             val exec = executable
             if (null == exec) {
                 Logger.debug(TAG, "Error in binary call: executable not found")
-                throw RuntimeException("Invalid executable")
+                throw TodoException("Invalid executable")
             }
-            if (null == tasksFolder) {
-                Logger.debug(TAG, "Error in binary call: invalid profile folder")
-                throw RuntimeException("Invalid folder")
+            val taskRc = Config.todoFile
+            val taskRcFolder = taskRc.parentFile
+
+            if (!taskRcFolder.exists()) {
+                Logger.debug(TAG, "Error in binary call: invalid .taskrc folder: ${taskRcFolder.absolutePath}" )
+                throw TodoException("Invalid folder")
             }
             val args = ArrayList<String>()
             args.add(exec)
             args.add("rc.color=off")
-            if (api) {
-                args.add("rc.confirmation=off")
-                args.add("rc.verbose=nothing")
-            } else {
-                args.add("rc.verbose=none")
+            args.add("rc.confirmation=off")
+            args.add("rc.verbose=nothing")
+            if (arguments[0]=="sync") {
+                reloadConfig()
+                // Should setup TLS socket here
             }
+
             args.addAll(arguments)
+
             val pb = ProcessBuilder(args)
-            pb.directory(tasksFolder)
-            pb.environment().put("TASKRC", File(tasksFolder, ".taskrc").getAbsolutePath())
-            pb.environment().put("TASKDATA", File(tasksFolder, "data").getAbsolutePath())
+            pb.directory(taskRcFolder)
+            Logger.debug(TAG,"Calling now: ${taskRcFolder}  ${args}")
+            Logger.debug(TAG,"TASKRC: ${taskRc.absolutePath}")
+            pb.environment().put("TASKRC", taskRc.absolutePath)
             val p = pb.start()
-            Logger.debug(TAG,"Calling now: ${tasksFolder}  ${args}")
-            //            debug("Execute:", args);
+
             val outThread = readStream(p.getInputStream(), out)
             val errThread = readStream(p.getErrorStream(), err)
             val exitCode = p.waitFor()
             Logger.debug(TAG, "Exit code:  $exitCode, $args")
             //            debug("Execute result:", exitCode);
-            if (null != outThread) outThread!!.join()
-            if (null != errThread) errThread!!.join()
+            if (null != outThread) outThread.join()
+            if (null != errThread) errThread.join()
             return exitCode
         } catch (e: Exception) {
             Logger.error(TAG,"Failed to execute task", e)
             err.eat(e.message)
             return 255
         }
+    }
+
+    private fun reloadConfig() {
+        // Reload config
+        val newConfig = clientConfig()
+        config = clientConfig()
+    }
+
+    fun clientConfig() : Map<String,String> {
+        var result = HashMap<String,String>()
+        callTask( object: StreamConsumer {
+            override fun eat(line: String?) {
+                line?.let {
+                    Logger.debug(TAG, line)
+                    val match = configLinePattern.matcher(line)
+                    if (match.matches()) {
+                        val configKey = match.group(1)
+                        val value = match.group(2)
+                        result[configKey] = value
+                    }
+                }
+            }
+        }, errConsumer, "show")
+        return result
     }
 
     private fun readStream(stream: InputStream,  consumer: StreamConsumer): Thread? {

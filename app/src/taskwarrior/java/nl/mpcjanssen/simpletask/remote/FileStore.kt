@@ -62,6 +62,10 @@ object FileStore : FileStoreInterface {
     override val isAuthenticated: Boolean
         get() = true
 
+    fun queue (description: String, body : () -> Unit) {
+        queueRunnable(description, Runnable(body))
+    }
+
     fun queueRunnable(description: String, r: Runnable) {
         log.info(TAG, "Handler: Queue " + description)
         while (fileOperationsQueue == null) {
@@ -81,7 +85,10 @@ object FileStore : FileStoreInterface {
     }
 
     override fun sync() {
-        broadcastFileChanged(mApp.localBroadCastManager)
+        queue("Taskwarrior sync") {
+            TaskWarrior.callTask("sync")
+            broadcastFileChanged(mApp.localBroadCastManager)
+        }
     }
 
     override fun writeFile(file: File, contents: String) {
