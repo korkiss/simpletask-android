@@ -292,7 +292,7 @@ Shows the oldest tasks matching the filter.
 Shows all incomplete tasks matching the filter that are beyond their due date.
 
 .TP
-.B task <filter> projects
+.B task <filter> tags
 Lists all project names that are currently used by pending tasks, and the
 number of tasks for each.
 
@@ -560,9 +560,9 @@ by third-party applications.
 .TP
 .B task <filter> _unique <attribute>
 Reports a unique set of attribute values. For example, to see all the active
-projects:
+tags:
 
-  task +PENDING _unique projects
+  task +PENDING _unique tags
 
 .TP
 .B task <filter> _uuids
@@ -789,7 +789,7 @@ task due.before:eom priority.not:L list
 The
 .I before
 modifier is used to compare values, preserving semantics, so project.before:B
-list all projects that begin with 'A'.  Priority 'L' is before 'M', and
+list all tags that begin with 'A'.  Priority 'L' is before 'M', and
 due:2011-01-01 is before due:2011-01-02.  The synonyms 'under' and 'below' are
 included to allow filters that read more naturally.
 
@@ -846,7 +846,7 @@ modifier matches against the left, or beginning of an attribute, such that:
     task project:H            list
 
 are equivalent and will match any project starting with 'H'.  Matching all
-projects not starting with 'H' is done with:
+tags not starting with 'H' is done with:
 
     task project.not:H         list
 

@@ -15,14 +15,14 @@ class ThresholdDateComparator(val createAsBackup: Boolean) : Comparator<Task> {
         }
         val result: Int
 
-        var dateA = a.thresholdDate
-        var dateB = b.thresholdDate
+        var dateA = a.waitDate
+        var dateB = b.waitDate
 
         // Use create date as threshold date
         // if configured in the settings.
         if (createAsBackup) {
-            dateA = dateA ?: a.createDate
-            dateB = dateB ?: b.createDate
+            dateA = dateA ?: a.entryDate
+            dateB = dateB ?: b.entryDate
         }
         if (dateA == null && dateB == null) {
             result = 0

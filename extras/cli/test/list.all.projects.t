@@ -46,13 +46,13 @@ class TestListAllProjects(TestCase):
 
     def test_only_pending(self):
         """Verify that only pending tasks are shown by default"""
-        code, out, err = self.t("projects")
+        code, out, err = self.t("tags")
         self.assertNotIn("p1", out)
         self.assertIn("p2", out)
 
     def test_not_only_pending(self):
         """Verify that all tasks are shown with rc.list.all.project:yes"""
-        code, out, err = self.t("rc.list.all.projects:yes projects")
+        code, out, err = self.t("rc.list.all.tags:yes tags")
         self.assertIn("p1", out)
         self.assertIn("p2", out)
 

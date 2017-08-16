@@ -39,12 +39,7 @@
         android:summary="@string/show_todo_path_summary"
         android:title="@string/show_todo_path_title"
         />
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/prepend_date_pref_key"
-        android:summary="@string/prepend_date_pref_summary"
-        android:title="@string/prepend_date_pref_title"
-        />
+
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="@string/append_tasks_at_end"

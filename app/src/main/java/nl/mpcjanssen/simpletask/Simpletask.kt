@@ -16,10 +16,8 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.*
-import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.res.Configuration
 import android.content.res.TypedArray
-import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
@@ -40,7 +38,6 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.webkit.MimeTypeMap
 import android.widget.*
 import android.widget.AdapterView.OnItemLongClickListener
 import hirondelle.date4j.DateTime
@@ -52,14 +49,15 @@ import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.task.Priority
-import nl.mpcjanssen.simpletask.task.TToken
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TodoList
+import nl.mpcjanssen.simpletask.task.asJSON
 import nl.mpcjanssen.simpletask.util.*
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.util.*
+import kotlin.collections.ArrayList
 import android.R.id as androidId
 
 class Simpletask : ThemedNoActionBarActivity() {
@@ -162,10 +160,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    private fun openLuaConfig() {
-        val i = Intent(this, LuaConfigScreen::class.java)
-        startActivity(i)
-    }
     private fun showHelp() {
         val i = Intent(this, HelpScreen::class.java)
         startActivity(i)
@@ -191,10 +185,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun selectedTasksAsString(): String {
         val result = ArrayList<String>()
-        TodoList.selectedTasks.forEach {
-            result.add(it.inFileFormat())
-        }
-        return join(result, "\n")
+        return TodoList.selectedTasks.asJSON
     }
 
     private fun selectAllTasks() {
@@ -447,9 +438,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     return@setOnMenuItemClickListener true
                 }
 
-                selection_fab.visibility = View.VISIBLE
-                selection_fab.setOnClickListener {
-                    createCalendarAppointment(selectedTasks) }
+                selection_fab.visibility = View.INVISIBLE
             }
 
             Mode.MAIN -> {
@@ -565,7 +554,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val text = StringBuilder()
         m_adapter!!.visibleLines
                 .filterNot { it.header }
-                .forEach { text.append(it.task?.showParts(format)).append("\n") }
+                .forEach { text.append(it.task?.description).append("\n") }
         shareText(this, "Simpletask list", text.toString())
     }
 
@@ -682,7 +671,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             R.id.context_delete -> deleteTasks(checkedTasks)
             R.id.context_select_all -> selectAllTasks()
             R.id.share -> {
-                val shareText = TodoList.todoItems.map(Task::inFileFormat).joinToString(separator = "\n")
+                val shareText = TodoList.todoItems.map(Task::description).joinToString(separator = "\n")
                 shareText(this@Simpletask, "Simpletask list", shareText)
             }
             R.id.context_share -> {
@@ -690,8 +679,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 shareText(this@Simpletask, "Simpletask tasks", shareText)
             }
             R.id.help -> showHelp()
-            R.id.open_lua -> openLuaConfig()
-            R.id.sync -> TaskWarrior.sync()
+            R.id.sync -> TodoList.sync()
             R.id.open_file -> m_app.browseForNewFile(this)
             R.id.btn_filter_add -> onAddFilterClick()
             R.id.clear_filter -> clearFilter()
@@ -708,41 +696,10 @@ class Simpletask : ThemedNoActionBarActivity() {
         return true
     }
 
-    private fun createCalendarAppointment(checkedTasks: List<Task>) {
-        var calendarTitle = getString(R.string.calendar_title)
-        var calendarDescription = ""
-        if (checkedTasks.size == 1) {
-            // Set the task as title
-            calendarTitle = checkedTasks[0].text
-        } else {
-            // Set the tasks as description
-            calendarDescription = selectedTasksAsString()
-
-        }
-        intent = Intent(Intent.ACTION_EDIT).setType(Constants.ANDROID_EVENT).putExtra(Events.TITLE, calendarTitle).putExtra(Events.DESCRIPTION, calendarDescription)
-        // Explicitly set start and end date/time.
-        // Some calendar providers need this.
-        val dueDate = checkedTasks[0].dueDate
-        val calDate = if (checkedTasks.size == 1 && dueDate != null ) {
-            val year = dueDate.substring(0, 4).toInt()
-            val month = dueDate.substring(5, 7).toInt() - 1
-            val day = dueDate.substring(8, 10).toInt()
-            GregorianCalendar(year, month, day)
-        } else {
-            GregorianCalendar()
-        }
-
-        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,
-                calDate.timeInMillis)
-        intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,
-                calDate.timeInMillis + 60 * 60 * 1000)
-        startActivity(intent)
-    }
-
     private fun startAddTaskActivity() {
         Log.i(TAG, "Starting addTask activity")
-
-        TodoList.editTasks(this, TodoList.selectedTasks, " ${MainFilter.prefill}")
+        val intent = Intent(this, AddTask::class.java)
+        startActivity(intent)
     }
 
     private fun startPreferencesActivity() {
@@ -1044,8 +1001,8 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun updateFilterDrawer() {
-        val decoratedContexts = alfaSortList(TodoList.contexts, Config.sortCaseSensitive, prefix="-").map { "@" + it }
-        val decoratedProjects = alfaSortList(TodoList.projects, Config.sortCaseSensitive, prefix="-").map { "+" + it }
+        val decoratedContexts = alfaSortList(TodoList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
+        val decoratedProjects = alfaSortList(TodoList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
                 Config.listTerm,
                 decoratedContexts,
@@ -1149,50 +1106,10 @@ class Simpletask : ThemedNoActionBarActivity() {
                 view.checkBox.visibility = View.GONE
             }
 
-            if (!Config.hasExtendedTaskView) {
-                view.datebar.visibility = View.GONE
-            }
-            var tokensToShow = TToken.ALL
-            // Always hide the UUID
-            tokensToShow = tokensToShow and TToken.TUUID.inv()
-
-            // Hide dates if we have a date bar
-            if (Config.hasExtendedTaskView) {
-                tokensToShow = tokensToShow and TToken.COMPLETED_DATE.inv()
-                tokensToShow = tokensToShow and TToken.THRESHOLD_DATE.inv()
-                tokensToShow = tokensToShow and TToken.DUE_DATE.inv()
-            }
-            tokensToShow = tokensToShow and TToken.CREATION_DATE.inv()
-            tokensToShow = tokensToShow and TToken.COMPLETED.inv()
-
-            if (MainFilter.hideLists) {
-                tokensToShow = tokensToShow and TToken.LIST.inv()
-            }
-            if (MainFilter.hideTags) {
-                tokensToShow = tokensToShow and TToken.TTAG.inv()
-            }
-            val txt = task.showParts(tokensToShow)
+            val txt = task.displayText
 
             val ss = SpannableString(txt)
 
-            val contexts = task.lists
-            val colorizeStrings = contexts.mapTo(ArrayList<String>()) { "@" + it }
-            setColor(ss, Color.GRAY, colorizeStrings)
-            colorizeStrings.clear()
-            val projects = task.tags
-            projects.mapTo(colorizeStrings) { "+" + it }
-            setColor(ss, Color.GRAY, colorizeStrings)
-
-            val priorityColor: Int
-            val priority = task.priority
-            when (priority) {
-                Priority.A -> priorityColor = ContextCompat.getColor(m_app, R.color.simple_red_dark)
-                Priority.B -> priorityColor = ContextCompat.getColor(m_app, R.color.simple_orange_dark)
-                Priority.C -> priorityColor = ContextCompat.getColor(m_app, R.color.simple_green_dark)
-                Priority.D -> priorityColor = ContextCompat.getColor(m_app, R.color.simple_blue_dark)
-                else -> priorityColor = ContextCompat.getColor(m_app, R.color.gray67)
-            }
-            setColor(ss, priorityColor, priority.inFileFormat())
             val completed = task.isCompleted()
 
             taskAge.textSize = textSize * Config.dateBarRelativeSize
@@ -1228,7 +1145,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
             val relAge = getRelativeAge(task, m_app)
             val relDue = getRelativeDueDate(task, m_app)
-            val relativeThresholdDate = getRelativeThresholdDate(task, m_app)
+            val relativeThresholdDate = getRelativeWaitDate(task, m_app)
             if (!isEmptyOrNull(relAge) && !MainFilter.hideCreateDate) {
                 taskAge.text = relAge
                 taskAge.visibility = View.VISIBLE
@@ -1271,19 +1188,9 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val links = ArrayList<String>()
                 val actions = ArrayList<String>()
                 val t = item
-                for (link in t.links) {
-                    actions.add(ACTION_LINK)
+                for (link in t.annotations) {
+                    actions.add(ANNOTATION_LINE)
                     links.add(link)
-                }
-                for (number in t.phoneNumbers) {
-                    actions.add(ACTION_PHONE)
-                    links.add(number)
-                    actions.add(ACTION_SMS)
-                    links.add(number)
-                }
-                for (mail in t.mailAddresses) {
-                    actions.add(ACTION_MAIL)
-                    links.add(mail)
                 }
                 if (actions.size != 0) {
 
@@ -1497,25 +1404,11 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun updateLists(checkedTasks: List<Task>) {
-        updateItemsDialog(
-                Config.listTerm,
-                checkedTasks,
-                TodoList.contexts,
-                Task::lists,
-                Task::addList,
-                Task::removeList
-        )
+            // TODO: Implement
     }
 
     private fun updateTags(checkedTasks: List<Task>) {
-        updateItemsDialog(
-                Config.tagTerm,
-                checkedTasks,
-                TodoList.projects,
-                Task::tags,
-                Task::addTag,
-                Task::removeTag
-        )
+        // TODO: Implement
     }
 
     private inner class DrawerItemClickListener : AdapterView.OnItemClickListener {
@@ -1564,6 +1457,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         private val REQUEST_PREFERENCES = 2
         private val REQUEST_PERMISSION = 3
 
+        private val ANNOTATION_LINE = "annotation"
         private val ACTION_LINK = "link"
         private val ACTION_SMS = "sms"
         private val ACTION_PHONE = "phone"
@@ -1574,3 +1468,5 @@ class Simpletask : ThemedNoActionBarActivity() {
         private val TAG = "Simpletask"
     }
 }
+
+

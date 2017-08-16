@@ -36,15 +36,9 @@
         android:key="@string/ui_complete_checkbox"
         android:summary="@string/show_complete_checkbox_summary"
         android:title="@string/show_complete_checkbox_title" />
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/taskview_extended_pref_key"
-        android:summary="@string/taskview_extended_pref_summary"
-        android:title="@string/taskview_extended_pref_title"
-        />
+
     <com.robobunny.SeekBarPreference
         xmlns:robobunny="http://robobunny.com"
-        android:dependency="@string/taskview_extended_pref_key"
         android:defaultValue="80"
         android:key="@string/datebar_relative_size"
         android:max="100"
@@ -54,13 +48,7 @@
         robobunny:unitsLeft=""
         robobunny:unitsRight="%"
         />
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/color_due_date_key"
-        android:summary="@string/color_due_pref_summary"
-        android:title="@string/color_due_pref_title"
-        android:dependency="@string/taskview_extended_pref_key"
-        />
+
     <ListPreference
         android:defaultValue="no_ellipsize"
         android:entries="@array/task_text_ellipsizing"

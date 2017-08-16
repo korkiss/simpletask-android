@@ -1302,7 +1302,7 @@ endif()
 # variables controlling optional build flags
 if( ANDROID_NDK_RELEASE_NUM LESS 7000 ) # before r7
  # libGLESv2.so in NDK's prior to r7 refers to missing external symbols.
- # So this flag option is required for all projects using OpenGL from native.
+ # So this flag option is required for all tags using OpenGL from native.
  __INIT_VARIABLE( ANDROID_SO_UNDEFINED                      VALUES ON )
 else()
  __INIT_VARIABLE( ANDROID_SO_UNDEFINED                      VALUES OFF )

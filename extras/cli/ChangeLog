@@ -509,7 +509,7 @@
 - TW-55 Bulk edit recurring tasks without answering yes/no for each? (thanks to
         Max Muller).
 - TW-63 indicators for UDAs (thanks to David Patrick).
-- TW-71 task ls/list/long/etc. should match contents of projects too (thanks to
+- TW-71 task ls/list/long/etc. should match contents of tags too (thanks to
         Cory Donnelly).
 - TW-72 extend info report with urgency column.
 - TW-90 configurable wait until day/week/month/year (thanks to Aikido Guy).
@@ -526,7 +526,7 @@
 - TW-161 UDA indicator (thanks to Jim B).
 - TW-168 modification of due date relative to current due date (thanks to Dirk
          Sarpe).
-- TW-174 Provide an easy way to match non-leaf-node projects only (thanks to Ben
+- TW-174 Provide an easy way to match non-leaf-node tags only (thanks to Ben
          Armstrong).
 - TW-186 Increase for numerical UDAs (thanks to Steffen Uhlig).
 - TW-193 Support listing breaks.
@@ -709,7 +709,7 @@
 - Removed version 1.x column name support.
 - Removed version 1.x sort column support.
 - Old-style color names including underscores are no longer supported.
-- Removed priority counts from the 'projects' report.
+- Removed priority counts from the 'tags' report.
 - New theme: dark-gray-blue-256.theme
 - Added certificate verification to GnuTLS versions < 2.9.10 (thanks to Alexander
   Sulfrian).
@@ -877,7 +877,7 @@ Features
   to Jake Bell).
 - Added feature #1147, applying patch to display duration of each activity
   session (thanks to Justin Forest).
-- The 'projects' command now outputs abstract parents and reduces
+- The 'tags' command now outputs abstract parents and reduces
   repetition by not printing parent names in front of children names.
 - Added framework for testing bash autocompletion.
 - New helper command '_aliases' for autocompletion purposes.
@@ -909,7 +909,7 @@ Bugs
 - Fixed bug #1042, where the 'diagnostics' command failed to detect missing
   external utilities on Solaris and NetBSD.
 - Fixed bug #1043, where aliases were not recognized by bash autocompletion.
-- Fixed bug #1044, where 'task projects' considers newly deleted tasks and
+- Fixed bug #1044, where 'task tags' considers newly deleted tasks and
   provides an incorrect summary.
 - Fixed bug #1047, which caused extra commas in exported JSON when UDA orphans
   were present (thanks to Thomas Sullivan).
@@ -1025,7 +1025,7 @@ Features
 - Applied patch for feature #1005, which prevents the update-holidays.pl script
   from creating duplicate holidays (thanks to Jörg Plate).
 - Added the new 'indented' format for the 'project' attribute.
-- The 'projects' report now uses 'project.indented' format.
+- The 'tags' report now uses 'project.indented' format.
 - The 'summary' report now uses 'project.indented' format.
 - Applied patch to allow ID ranges and UUIDs when editing dependencies (thanks
   to Louis-Claude Canon).
@@ -1060,7 +1060,7 @@ Bugs
   the delete command (thanks to Bryce Harrington).
 - Fixed bug #959, which forces use of dateformat for annotations when using the
   'edit' command (thanks to Louis-Claude Canon).
-- Fixed bug #964, where the 'projects' command showed the wrong priority labels
+- Fixed bug #964, where the 'tags' command showed the wrong priority labels
   (thanks to Ali Mousavi).
 - Fixed bug #967, which did not properly determine character widths for UTF8
   characters (thanks to Victor Roetman, Jörg Plate, Markus Kuhn).
@@ -1127,7 +1127,7 @@ Bugs
 - Fixed bug #1030, which defines a portable implementation of timegm and removes
   the use of tm_gmtoff for non GNU/BSD platforms.
 - Fixed bug #1032, which prevented negative urgency coefficients from working
-  for projects and tags.
+  for tags and tags.
 
 2.0.0 (2012-03-17) 03799eba9f230e48c4fa6d6ebddabe91bef7998f
 
@@ -1303,7 +1303,7 @@ Bugs
   unicode characters (thanks to Tomas Cech).
 - Fixed bug #744, which omitted new ID feedback for all but the first
   duplicated task (thanks to Uli Martens).
-- Fixed bug #745, which allows projects names with spaces, provided the values
+- Fixed bug #745, which allows tags names with spaces, provided the values
   are quoted (thanks to Duane Waddle).
 - Applied patch for Bug #746, which added missing documentation for the 'entry'
   report column (thanks to Duane Waddle).
@@ -1353,7 +1353,7 @@ Bugs
 - Fixed bug #824, which caused probles when completing recurring tasks (thanks
   to Matt Kraai).
 - Fixed bug #831, which prevented some date fields from being properly parsed.
-- Fixed bug #835, which prevented hierarchical projects from being recognized.
+- Fixed bug #835, which prevented hierarchical tags from being recognized.
 - Fixed bug #836, which preserves numeric arguments as-is (thanks to Matt Kraai
   for the patch).
 - Fixed bug #837, which caused incorrect urgency calculations for tasks that
@@ -1524,10 +1524,10 @@ Bugs
   the edit command, consequently not changing task status (thanks to Eric
   Fluger).
 - Fixed bug #597, which caused a missing project to be counted as a project
-  in the projects command (thanks to Steve Rader).
+  in the tags command (thanks to Steve Rader).
 - Fixed bug #603, which caused no feedback when task IDs were not specified
   (thanks to Steve Rader).
-- Applied patch to fix bug #613, so that the summary report and the projects
+- Applied patch to fix bug #613, so that the summary report and the tags
   command now consistently show a missing project as "(none)" (thanks to
   Steve Rader).
 - Applied patch to fix bug #618, so that the configuration setting
@@ -1579,7 +1579,7 @@ Bugs
   for 'due', 'wait' and 'until' (thanks to T. Charles Yun).
   Added as well synonyms soww/eoww plus new socw/eocw for calendar weeks.
 - Fixed bug #467, where recurring tasks were not honoring wait values.
-- Added feature #471, which makes greater use of projects by reporting
+- Added feature #471, which makes greater use of tags by reporting
   changes to the completion percentage when it changes.
 - Added feature #478, which uses the colorization rules in the 'info'
   report.
@@ -1663,9 +1663,9 @@ Bugs
   'task config' is now only used to set new configuration values.
 - Added feature #298, supporting a configurable number of future recurring
   tasks that are generated.
-- Added feature #412, which allows the 'projects' and 'tags' commands to be
-  list all used projects/tags, not just the ones used in current pending tasks.
-  Controlled by the 'list.all.projects' and 'list.all.tags' configuration
+- Added feature #412, which allows the 'tags' and 'tags' commands to be
+  list all used tags/tags, not just the ones used in current pending tasks.
+  Controlled by the 'list.all.tags' and 'list.all.tags' configuration
   variables (thanks to Dirk Deimeke).
 - Added feature #415, which supports displaying just a single page of tasks,
   by specifying either 'limit:page' to a command, or 'report.xxx.limit:page'
@@ -1685,7 +1685,7 @@ Bugs
 - Fixed bug #406 so that task now includes command aliases in the _commands
   helper command used by shell completion scripts.
 - Fixed bug #211 - it was unclear which commands modify a task description.
-- Fixed bug #411, clarifying that the 'projects' command only lists projects
+- Fixed bug #411, clarifying that the 'tags' command only lists tags
   for which there are pending tasks (thanks to Dirk Deimeke).
 - Fixed bug #414, that caused filtering on the presence or absence of tags
   containing Unicode characters to fail (thanks to Michal Josífko).
@@ -1769,7 +1769,7 @@ Bugs
   display 'High' rather than the abbreviated 'H'.
 - Task now supports .taskrc command line overrides using rc.name:value and
   the new rc.name=value to accommodate a frequent mistake.
-- The color rules for projects (color.project.foo) now matches on partial
+- The color rules for tags (color.project.foo) now matches on partial
   project names, the same way as filters.
 - The color command now takes a color as an argument, and displays that color
   with sample text.
@@ -1815,7 +1815,7 @@ Bugs
   was run, and there are no tasks with due dates.
 - Fixed bug #360 which prevented certain modifications to recurring tasks
   (thanks to John Florian).
-- Fixed bug #299 which prevented excluding multiple projects from a report,
+- Fixed bug #299 which prevented excluding multiple tags from a report,
   by using "task list project.isnt:foo project.isnt:bar" (thanks to John
   Florian).
 - Fixed bug #368 which caused recurring tasks 'until' dates to be rendered as
@@ -1884,14 +1884,14 @@ Bugs
 - Fixed bug #289 which imported task from todo.sh without valid uuids
   (thanks to Ben Jackson).
 - Fixed bug #291 which generated a false warning about an unrecognized
-  variable when enabling default.projects in .taskrc (thanks to Thomas@BIC).
+  variable when enabling default.tags in .taskrc (thanks to Thomas@BIC).
 - Fixed bug #288 which failed to propagate rc file overrides on the command
   line to the default command (thanks to Zach Frazier).
 
 1.8.1 (8/20/2009) 35792e7874d2bb664abb1a0a67960b7fe7e0fccf
 - Fixed bug #231 that broke the build on OpenBSD 32-bit due to a time_t
   and int collision (thanks to Pietro Cerutti).
-- Fixed bug #241 that prevented bash's tab-completion of projects in Fedora
+- Fixed bug #241 that prevented bash's tab-completion of tags in Fedora
   11 and likely anything using bash-4 (thanks to John Florian).
 - Fixed bug #242 that sometimes causes the ID echoed after a task is added
   to be incorrect (thanks to John Florian).
@@ -1961,7 +1961,7 @@ Bugs
   then task can act as a replacement for the Unix "cal" command.
 - Supports arguments to the cal command like "month year", "year", etc.
 - The "tags" report now shows the tag usage count.
-- The "projects" report now shows totals by project and priority.
+- The "tags" report now shows totals by project and priority.
 - Now supports attribute modifiers that allow much finer control over report
   filtering, for example "task list due.before:friday", or "task list
   pri.not:H" and many more.
@@ -2213,7 +2213,7 @@ Bugs
   not parse them.
 - "task list x" now performs a caseless comparison between "x" and the
   description.
-- Task sub projects supported.
+- Task sub tags supported.
 - "showage" confguration determines whether "Age" column appears on the
   "list" and "next" reports.
 - Improved TUTORIAL.
@@ -2236,7 +2236,7 @@ Bugs
 - Bug: configure.ac does not properly determine ncurses availability.
 - Bug: Cannot seem to use the percent character in a task description.
 - Bug: New installation "task stats" reports newest task 12/31/1969.
-- Bug: New installation task projects displays header but no data - should
+- Bug: New installation task tags displays header but no data - should
        short-circuit.
 - Bug: incorrect color specification in sample .taskrc file.
 - Bug: when run without arguments, task dumps core on Solaris 10.
@@ -2366,7 +2366,7 @@ regular usage to determine which features were needed or unnecessary.]
 
 0.2.0 Neutral commands (12/2/2006)
 - "task find" complete.
-- "task projects" complete.
+- "task tags" complete.
 - "task tags" complete.
 
 0.1.0 Constructive commands (12/1/2006)

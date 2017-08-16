@@ -13,8 +13,8 @@ class CompletionDateComparator : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val aDate = a.completionDate
-        val bDate = b.completionDate
+        val aDate = a.endDate
+        val bDate = b.endDate
         if ( aDate == null && bDate == null) {
             return 0
         } else if (aDate == null) {

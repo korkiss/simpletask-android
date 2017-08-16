@@ -16,7 +16,7 @@
         android:gravity="top"
         >
         <EditText
-            android:id="@+id/taskText"
+            android:id="@+id/textInputField"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top"
@@ -35,7 +35,7 @@
             android:layout_margin="10dp"
             android:clickable="true"
             android:src="@drawable/ic_save_white_24dp"
-            app:layout_anchor="@id/taskText"
+            app:layout_anchor="@id/textInputField"
             app:layout_anchorGravity="right|end|bottom"
             />
     </FrameLayout>

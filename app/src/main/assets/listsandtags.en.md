@@ -4,7 +4,7 @@ Why does Simpletask use Lists and Tags?
 
 ## Contexts vs Lists
 
-Instead of the contexts and projects in todo.txt, simpletask calls `@something`
+Instead of the contexts and tags in todo.txt, simpletask calls `@something`
 a list and `+something` a tag. Why was this chosen, isn't GTD all about
 contexts?
 
@@ -24,4 +24,4 @@ be anything from a project to a person's name. This allows using tasks like:
 
 `@Call +DavidAllen regarding +GTD`
 
-In this case neither of the tags are projects.
+In this case neither of the tags are tags.

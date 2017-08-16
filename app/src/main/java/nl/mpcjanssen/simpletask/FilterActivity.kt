@@ -37,7 +37,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
     private var pager: ViewPager? = null
     private var m_menu: Menu? = null
     private var pagerAdapter: ScreenSlidePagerAdapter? = null
-    private var scriptFragment: FilterScriptFragment? = null
     private var m_page = 0
 
     override fun onBackPressed() {
@@ -90,7 +89,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
         // Fill arguments for fragment
         arguments.putStringArrayList(FILTER_ITEMS,
-                alfaSortList(TodoList.contexts, Config.sortCaseSensitive, "-"))
+                alfaSortList(TodoList.projects, Config.sortCaseSensitive, "-"))
         arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, mFilter.contexts)
         arguments.putBoolean(INITIAL_NOT, mFilter.contextsNot)
         arguments.putString(TAB_TYPE, CONTEXT_TAB)
@@ -101,7 +100,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
         // Fill arguments for fragment
         arguments = Bundle()
         arguments.putStringArrayList(FILTER_ITEMS,
-                alfaSortList(TodoList.projects, Config.sortCaseSensitive, "-"))
+                alfaSortList(TodoList.tags, Config.sortCaseSensitive, "-"))
         arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, mFilter.projects)
         arguments.putBoolean(INITIAL_NOT, mFilter.projectsNot)
         arguments.putString(TAB_TYPE, PROJECT_TAB)
@@ -141,17 +140,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         sortTab.arguments = arguments
         pagerAdapter!!.add(sortTab)
 
-        arguments = Bundle()
-        arguments.putString(ActiveFilter.INTENT_LUA_MODULE, environment)
-
-        arguments.putBoolean(ActiveFilter.INTENT_USE_SCRIPT_FILTER, mFilter.useScript)
-        arguments.putString(ActiveFilter.INTENT_SCRIPT_FILTER, mFilter.script)
-        arguments.putString(ActiveFilter.INTENT_SCRIPT_TEST_TASK_FILTER, mFilter.scriptTestTask)
-        arguments.putString(TAB_TYPE, SCRIPT_TAB)
-        val scriptTab = FilterScriptFragment()
-        scriptFragment = scriptTab
-        scriptTab.arguments = arguments
-        pagerAdapter!!.add(scriptTab)
 
         pager = findViewById(R.id.pager) as ViewPager
         pager!!.adapter = pagerAdapter
@@ -202,23 +190,8 @@ class FilterActivity : ThemedNoActionBarActivity() {
                 } else {
                     applyFilter()
                 }
-            R.id.menu_filter_load_script -> openScript(object : FileSelectedListener {
-                override fun fileSelected(file: String) {
-                    val contents = File(file).readText()
-                    runOnMainThread(
-                            Runnable { setScript(contents) })
-                }
-            })
         }
         return true
-    }
-
-    private fun openScript(file_read: FileSelectedListener) {
-        runOnMainThread(Runnable {
-            val dialog = FileDialog(this@FilterActivity, File(Config.rcFileName).parent)
-            dialog.addFileListener(file_read)
-            dialog.createFileDialog()
-        })
     }
 
     private fun createFilterIntent(): Intent {
@@ -266,24 +239,11 @@ class FilterActivity : ThemedNoActionBarActivity() {
                     val sf = f as FilterSortFragment
                     mFilter.setSort(sf.selectedItem)
                 }
-                SCRIPT_TAB -> {
-                    val scrf = f as FilterScriptFragment
-                    mFilter.useScript = scrf.useScript
-                    mFilter.script = scrf.script
-                    mFilter.scriptTestTask = scrf.testTask
-                }
+
             }
         }
     }
 
-    private fun setScript(script: String?) {
-        if (scriptFragment == null) {
-            // fragment was never intialized
-            showToastShort(this, "Script tab not visible??")
-        } else {
-            script?.let { scriptFragment!!.script = script }
-        }
-    }
 
     private fun updateWidget() {
         updateFilterFromFragments()
@@ -403,7 +363,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         val PRIO_TAB = getString(R.string.filter_tab_header_prio)
         val OTHER_TAB = getString(R.string.filter_tab_header_other)
         val SORT_TAB = getString(R.string.filter_tab_header_sort)
-        val SCRIPT_TAB = getString(R.string.filter_tab_header_script)
 
         // Constants for saving state
         val FILTER_ITEMS = "items"

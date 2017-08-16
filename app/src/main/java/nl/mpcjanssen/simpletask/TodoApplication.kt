@@ -67,7 +67,6 @@ class TodoApplication : Application(), FileSelectedListener {
                 Log.i(TAG, "Received broadcast ${intent.action}")
                 if (intent.action == Constants.BROADCAST_UPDATE_UI) {
                     TodoList.queue("Refresh UI") {
-                        CalendarSync.syncLater()
                         redrawWidgets()
                         updateWidgets()
                     }

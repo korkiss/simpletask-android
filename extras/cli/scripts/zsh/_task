@@ -78,11 +78,11 @@ _regex_words values 'task priorities' \
   'L:Low'
 task_priorities=("$reply[@]")
 
-# projects
+# tags
 local -a task_projects
 task_projects=(
   /"$word"/
-  ":values:task projects:compadd -a _task_projects"
+  ":values:task tags:compadd -a _task_projects"
 )
 
 local -a _task_dates

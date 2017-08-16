@@ -43,14 +43,14 @@ class TestProjects(TestCase):
                        "Project '{0}' is {1} complete \({2} remaining\)\.")
 
     def test_project_summary_count(self):
-        """'task projects' shouldn't consider deleted tasks in summary.
+        """'task tags' shouldn't consider deleted tasks in summary.
         Reported in bug 1044
         """
         self.t("add project:A 1")
         self.t("add project:B 2")
         self.t("add project:B 3")
         self.t("3 delete", input="y\n")
-        code, out, err = self.t("project:B projects")
+        code, out, err = self.t("project:B tags")
 
         expected = "1 project \(1 task\)"
         self.assertRegexpMatches(out, expected)
@@ -89,7 +89,7 @@ class TestProjects(TestCase):
                                                          "1 task"))
 
     def test_project_spaces(self):
-        """projects with spaces are handled correctly"""
+        """tags with spaces are handled correctly"""
 
         self.t("add hello pro:bob")
         code, out, err = self.t('1 mod pro:"foo bar"')
@@ -129,7 +129,7 @@ class TestProjects(TestCase):
             )
 
     def test_project_indentation(self):
-        """check project/subproject indentation in 'task projects'
+        """check project/subproject indentation in 'task tags'
 
         Reported in bug 1056
 
@@ -137,7 +137,7 @@ class TestProjects(TestCase):
         """
         self.add_tasks()
 
-        code, out, err = self.t("projects")
+        code, out, err = self.t("tags")
 
         self.validate_indentation(out)
 
@@ -153,7 +153,7 @@ class TestProjects(TestCase):
         self.validate_indentation(out)
 
     def test_project_helper(self):
-        """Verify _projects helper list projects"""
+        """Verify _projects helper list tags"""
         self.t("add project:A one")
         self.t("add project:B two")
         self.t("2 delete", input="y\n")
@@ -165,7 +165,7 @@ class TestProjects(TestCase):
         self.assertNotIn("B", out)
         self.assertNotIn("C", out)
 
-        code, out, err = self.t("_projects rc.list.all.projects:1")
+        code, out, err = self.t("_projects rc.list.all.tags:1")
         self.assertIn("A", out)
         self.assertIn("B", out)
         self.assertIn("C", out)

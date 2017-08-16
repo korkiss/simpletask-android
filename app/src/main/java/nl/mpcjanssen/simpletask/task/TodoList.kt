@@ -31,7 +31,6 @@ package nl.mpcjanssen.simpletask.task
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import nl.mpcjanssen.simpletask.*
 
@@ -50,13 +49,16 @@ import kotlin.collections.ArrayList
 
  * @author Mark Janssen
  */
+
+
+
+
 object TodoList {
 
     private var mLists: ArrayList<String>? = null
     private var mTags: ArrayList<String>? = null
     val todoItems = CopyOnWriteArrayList<Task>()
     val selectedItems = CopyOnWriteArraySet<Task>()
-    val pendingEdits = LinkedHashSet<Task>()
     internal val TAG = TodoList::class.java.simpleName
 
     fun hasPendingAction(): Boolean {
@@ -92,9 +94,9 @@ object TodoList {
 
     fun removeAll(tasks: List<Task>) {
         queue("Remove") {
-            todoItems.removeAll(tasks)
+            TaskWarrior.callTaskForSelection(tasks, "delete")
             selectedItems.removeAll(tasks)
-            pendingEdits.removeAll(tasks)
+            reload()
         }
     }
 
@@ -113,15 +115,15 @@ object TodoList {
             return ret
         }
 
-    val contexts: ArrayList<String>
+    val projects: ArrayList<String>
         get() {
             val lists = mLists
             if (lists != null) {
                 return lists
             }
             val res = HashSet<String>()
-            todoItems.toMutableList().forEach {
-                res.addAll(it.lists)
+            todoItems.forEach {
+                it.project?.let { res.add(it)}
             }
             val newLists = ArrayList<String>()
             newLists.addAll(res)
@@ -129,7 +131,7 @@ object TodoList {
             return newLists
         }
 
-    val projects: ArrayList<String>
+    val tags: ArrayList<String>
         get() {
             val tags = mTags
             if (tags != null) {
@@ -145,34 +147,36 @@ object TodoList {
             return newTags
         }
 
-    fun uncomplete(items: List<Task>) {
+    fun uncomplete(tasks: List<Task>) {
         queue("Uncomplete") {
-            val uuids = items.map {it.uuid}.filterNotNull()
-            Log.d(TAG,"Uncompleting tasks $uuids")
-            TaskWarrior.callTaskForUUIDs(uuids, "modify", "status:pending")
+            Log.d(TAG,"Uncompleting tasks")
+            TaskWarrior.callTaskForSelection(tasks, "modify", "status:pending")
+            reload()
         }
     }
 
     fun complete(tasks: List<Task>) {
-
-    }
-
-    fun prioritize(tasks: List<Task>, prio: Priority) {
         queue("Complete") {
-            tasks.map { it.priority = prio }
+            TaskWarrior.callTaskForSelection(tasks, "done")
             reload()
         }
 
     }
 
+    fun prioritize(tasks: List<Task>, prio: Priority) {
+
+
+    }
+
     fun defer(deferString: String, tasks: List<Task>, dateType: DateType) {
         queue("Defer") {
-            tasks.forEach {
-                when (dateType) {
-                    DateType.DUE -> it.deferDueDate(deferString, todayAsString)
-                    DateType.THRESHOLD -> it.deferThresholdDate(deferString, todayAsString)
-                }
-            }
+            // TODO: implement
+//            tasks.forEach {
+//                when (dateType) {
+//                    DateType.DUE -> it.deferDueDate(deferString, todayAsString)
+//                    DateType.THRESHOLD -> it.deferThresholdDate(deferString, todayAsString)
+//                }
+//            }
         }
     }
 
@@ -209,6 +213,13 @@ object TodoList {
         return filteredTasks
     }
 
+    fun sync() {
+        queue("Sync") {
+            TodoApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
+            TaskWarrior.callTask("sync")
+            reload()
+        }
+    }
     fun reload(reason: String = "") {
         val logText = "Reload: " + reason
         queue(logText) {
@@ -217,6 +228,8 @@ object TodoList {
             if (!Config.hasKeepSelection) {
                 TodoList.clearSelection()
             }
+            todoItems.clear()
+            todoItems.addAll(TaskWarrior.taskList())
             mLists = null
             mTags = null
             broadcastRefreshUI(TodoApplication.app.localBroadCastManager)
@@ -265,19 +278,15 @@ object TodoList {
 
     fun getTaskCount(): Long {
         val items = todoItems
-        return items.filter { it.inFileFormat().isNotBlank() }.size.toLong()
+        return items.size.toLong()
     }
 
-    fun editTasks(from: Activity, tasks: List<Task>, prefill: String) {
-        queue("Edit tasks") {
-            pendingEdits.addAll(tasks)
-            startAddTaskActivity(from, prefill)
-        }
-    }
-
-    fun clearPendingEdits() {
-        queue("Clear selection") {
-            pendingEdits.clear()
+    fun add(tasks: List<String>) {
+        queue( "Adding ${tasks.size} tasks" ) {
+            tasks.forEach {
+                TaskWarrior.callTask("add", it)
+            }
+            reload()
         }
     }
 }

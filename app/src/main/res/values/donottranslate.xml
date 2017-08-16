@@ -119,7 +119,6 @@ You should have received a copy of the GNU General Public License along with Tod
     <!-- Preference keys -->
     <string name="sort_complete_last_pref_key"    translatable="false">todotxtsortcompletelast</string>
     <string name="default_sort_pref_key"          translatable="false">default_sort</string>
-    <string name="prepend_date_pref_key"          translatable="false">todotxtprependdate</string>
     <string name="line_breaks_pref_key"           translatable="false">linebreakspref</string>
     <string name="manual_sync_pref_key"           translatable="false">workofflinepref</string>
     <string name="resume_sync_pref_key"           translatable="false">resumesyncpref</string>
@@ -129,7 +128,6 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="widget_theme_pref_key"          translatable="false">widget_theme</string>
     <string name="task_text_ellipsizing_pref_key" translatable="false">task_text_ellipsizing</string>
     <string name="widget_extended_pref_key"       translatable="false">widget_extended</string>
-    <string name="taskview_extended_pref_key"     translatable="false">taskview_extended</string>
     <string name="dropbox_cat_key"                translatable="false">dropbox_category</string>
     <string name="behavior_cat_key"               translatable="false">behavior_category</string>
     <string name="experimental_cat_key"           translatable="false">experimental</string>
@@ -158,7 +156,6 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="keep_selection"                 translatable="false">keep_selection</string>
     <string name="back_clears_filter"             translatable="false">back_clears_filter</string>
     <string name="dropbox_full_access"            translatable="false">dropbox_full_access</string>
-    <string name="share_task_show_edit"           translatable="false">share_task_show_edit</string>
     <string name="append_tasks_at_end"            translatable="false">append_tasks_at_end</string>
     <string name="file_current_version_id"        translatable="false">file_current_version_id</string>
     <string name="dropbox_latest_cursor"          translatable="false">dropbox_latest_cursor</string>

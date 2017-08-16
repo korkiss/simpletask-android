@@ -10,15 +10,14 @@ import nl.mpcjanssen.simpletask.util.isEmptyOrNull
 import nl.mpcjanssen.simpletask.util.join
 import nl.mpcjanssen.simpletask.util.todayAsString
 import org.json.JSONObject
-import org.luaj.vm2.LuaError
 import java.util.*
 
-data class FilterOptions(val luaModule: String, val showSelected : Boolean = false)
+data class FilterOptions(val luaModule: String, val showSelected: Boolean = false)
 
 /**
  * Active filter, has methods for serialization in several formats
  */
-class ActiveFilter (val options : FilterOptions) {
+class ActiveFilter(val options: FilterOptions) {
     var priorities = ArrayList<Priority>()
     var contexts = ArrayList<String>()
     var projects = ArrayList<String>()
@@ -48,7 +47,7 @@ class ActiveFilter (val options : FilterOptions) {
     var name: String? = null
 
     val prefill
-        get() : String  {
+        get() : String {
             val prefillLists = if (contexts.size == 1 && contexts[0] != "-") "@${contexts[0]}" else ""
             val prefillTags = if (projects.size == 1 && projects[0] != "-") "+${projects[0]}" else ""
             return " $prefillLists $prefillTags".trimEnd()
@@ -129,7 +128,7 @@ class ActiveFilter (val options : FilterOptions) {
 
     fun hasFilter(): Boolean {
         return contexts.size + projects.size + priorities.size > 0
-                || !isEmptyOrNull(search) || LuaInterpreter.hasFilterCallback(options.luaModule)
+                || !isEmptyOrNull(search)
     }
 
     fun getTitle(visible: Int, total: Long, prio: CharSequence, tag: CharSequence, list: CharSequence, search: CharSequence, script: CharSequence, filterApplied: CharSequence, noFilter: CharSequence): String {
@@ -206,7 +205,7 @@ class ActiveFilter (val options : FilterOptions) {
             val json = JSONObject()
             this.saveInJSON(json)
             editor.putString(INTENT_JSON, json.toString(2))
-            editor.commit()
+            editor.apply()
         }
     }
 
@@ -222,46 +221,39 @@ class ActiveFilter (val options : FilterOptions) {
     }
 
     fun apply(items: Sequence<Task>?): Sequence<Task> {
-        if (useScript) {
-            Log.i(TAG, "Filtering with Lua $script")
-        }
+
         val filter = AndFilter()
         if (items == null) {
             return emptySequence()
         }
-        val code = if (useScript) { script } else { null }
+
         val today = todayAsString
-        try {
-            Log.i(TAG, "Resetting onFilter callback in module ${options.luaModule}")
-            LuaInterpreter.clearOnFilter(options.luaModule)
-            LuaInterpreter.evalScript(options.luaModule, code)
-            return items.filter {
-                    if (options.showSelected && TodoList.isSelected(it)) {
-                        return@filter true
-                    }
-                    if (this.hideCompleted && it.isCompleted()) {
-                        return@filter false
-                    }
-                    if (this.hideFuture && it.inFuture(today)) {
-                        return@filter false
-                    }
-                    if (this.hideHidden && it.isHidden()) {
-                        return@filter false
-                    }
-                    if ("" == it.inFileFormat().trim { it <= ' ' }) {
-                        return@filter false
-                    }
-                    if (!filter.apply(it)) {
-                        return@filter false
-                    }
-                    if (useScript && !LuaInterpreter.onFilterCallback(options.luaModule, it)) {
-                        return@filter false
-                    }
+
+        Log.i(TAG, "Resetting onFilter callback in module ${options.luaModule}")
+
+        return items.filter {
+            if (options.showSelected && TodoList.isSelected(it)) {
                 return@filter true
-                }
-            } catch (e: LuaError) {
-                Log.d(TAG, "Lua execution failed " + e.message)
             }
+            if (this.hideHidden && it.isDeleted()) {
+                return@filter false
+            }
+            if (this.hideCompleted && it.isCompleted()) {
+                return@filter false
+            }
+            if (this.hideFuture && it.inFuture(today)) {
+                return@filter false
+            }
+            if ("" == it.description.trim { it <= ' ' }) {
+                return@filter false
+            }
+            if (!filter.apply(it)) {
+                return@filter false
+            }
+
+            return@filter true
+        }
+
         return emptySequence()
     }
 

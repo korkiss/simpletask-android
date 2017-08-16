@@ -20,7 +20,7 @@ while (my $line = <DATA>)
 {
   if ($. % 20 != 19)
   {
-    # Names are both projects and tags.
+    # Names are both tags and tags.
     $line =~ s/([A-Z]{2,})/$1 project:$1 +$1/g;
   }
 
@@ -2024,7 +2024,7 @@ AUFIDIUS  Sir, I cannot tell We must proceed as we do find the people.
 CONSPIRATOR3  The people will remain uncertain whilst Twixt you theres difference, but the fall of either Makes the survivor heir of all.
 AUFIDIUS  I know it, And my pretext to strike at him admits A good construction. I raisd him, and I pawnd Mine honour for his truth who being so heightend, He waterd his new plants with dews of flattery, Seducing so my friends, and, to this end, He bowd his nature, never known before But to be rough, unswayable, and free.
 CONSPIRATOR3  Sir, his stoutness When he did stand for consul, which he lost By lack of stooping,—
-AUFIDIUS  That I would have spoke of Being banishd fort, he came unto my hearth, Presented to my knife his throat I took him, Made him joint-servant with me, gave him way In all his own desires, nay, let him choose Out of my files, his projects to accomplish, My best and freshest men, servd his designments In mine own person, holp to reap the fame Which he did end all his, and took some pride To do myself this wrong till, at the last, I seemd his follower, not partner, and He wagd me with his countenance, as if I had been mercenary.
+AUFIDIUS  That I would have spoke of Being banishd fort, he came unto my hearth, Presented to my knife his throat I took him, Made him joint-servant with me, gave him way In all his own desires, nay, let him choose Out of my files, his tags to accomplish, My best and freshest men, servd his designments In mine own person, holp to reap the fame Which he did end all his, and took some pride To do myself this wrong till, at the last, I seemd his follower, not partner, and He wagd me with his countenance, as if I had been mercenary.
 CONSPIRATOR1  So he did, my lord The army marvelld at it, and, in the last, When we had carried Rome, and that we lookd For no less spoil than glory,—
 AUFIDIUS  There was it, For which my sinews shall be stretchd upon him. At a few drops of womens rheum, which are As cheap as lies, he sold the blood and labour Of our great action therefore shall he die, And Ill renew me in his fall. But, hark
 CONSPIRATOR1  Your native town you enterd like a post, And had no welcomes home, but he returns, Splitting the air with noise.

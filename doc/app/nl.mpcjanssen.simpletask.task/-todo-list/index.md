@@ -18,10 +18,10 @@ Mark Janssen
 | [completedTasks](completed-tasks.md) | `var completedTasks: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`Task`](../-task/index.md)`>` |
 | [contexts](contexts.md) | `val contexts: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
 | [decoratedContexts](decorated-contexts.md) | `val decoratedContexts: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
-| [decoratedProjects](decorated-projects.md) | `val decoratedProjects: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
+| [decoratedProjects](decorated-tags.md) | `val decoratedProjects: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
 | [pendingEdits](pending-edits.md) | `val pendingEdits: `[`LinkedHashSet`](http://docs.oracle.com/javase/6/docs/api/java/util/LinkedHashSet.html)`<`[`Task`](../-task/index.md)`>` |
 | [priorities](priorities.md) | `val priorities: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`Priority`](../-priority/index.md)`>` |
-| [projects](projects.md) | `val projects: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
+| [tags](tags.md) | `val tags: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>` |
 | [selectedItems](selected-items.md) | `val selectedItems: `[`CopyOnWriteArraySet`](http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/CopyOnWriteArraySet.html)`<`[`Task`](../-task/index.md)`>` |
 | [selectedTasks](selected-tasks.md) | `var selectedTasks: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`Task`](../-task/index.md)`>` |
 | [todoItems](todo-items.md) | `val todoItems: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`Task`](../-task/index.md)`>` |

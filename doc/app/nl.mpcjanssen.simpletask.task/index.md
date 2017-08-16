@@ -8,7 +8,7 @@
 |---|---|
 | [ByContextFilter](-by-context-filter/index.md) | `class ByContextFilter : `[`TaskFilter`](-task-filter/index.md)<br>A filter that matches Tasks containing the specified contexts |
 | [ByPriorityFilter](-by-priority-filter/index.md) | `class ByPriorityFilter : `[`TaskFilter`](-task-filter/index.md)<br>A filter that matches Tasks containing the specified priorities |
-| [ByProjectFilter](-by-project-filter/index.md) | `class ByProjectFilter : `[`TaskFilter`](-task-filter/index.md)<br>A filter that matches Tasks containing the specified projects |
+| [ByProjectFilter](-by-project-filter/index.md) | `class ByProjectFilter : `[`TaskFilter`](-task-filter/index.md)<br>A filter that matches Tasks containing the specified tags |
 | [ByTextFilter](-by-text-filter/index.md) | `class ByTextFilter : `[`TaskFilter`](-task-filter/index.md)<br>A filter that matches Tasks containing the specified text |
 | [CompletedDateToken](-completed-date-token/index.md) | `data class CompletedDateToken : `[`StringValueToken`](-string-value-token/index.md) |
 | [CompletedToken](-completed-token/index.md) | `data class CompletedToken : `[`TToken`](-t-token/index.md) |

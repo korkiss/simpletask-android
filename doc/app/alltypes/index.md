@@ -24,7 +24,7 @@
 | [nl.mpcjanssen.simpletask.BuildConfig](../nl.mpcjanssen.simpletask/-build-config/index.md) |  |
 | [nl.mpcjanssen.simpletask.task.ByContextFilter](../nl.mpcjanssen.simpletask.task/-by-context-filter/index.md) | A filter that matches Tasks containing the specified contexts |
 | [nl.mpcjanssen.simpletask.task.ByPriorityFilter](../nl.mpcjanssen.simpletask.task/-by-priority-filter/index.md) | A filter that matches Tasks containing the specified priorities |
-| [nl.mpcjanssen.simpletask.task.ByProjectFilter](../nl.mpcjanssen.simpletask.task/-by-project-filter/index.md) | A filter that matches Tasks containing the specified projects |
+| [nl.mpcjanssen.simpletask.task.ByProjectFilter](../nl.mpcjanssen.simpletask.task/-by-project-filter/index.md) | A filter that matches Tasks containing the specified tags |
 | [nl.mpcjanssen.simpletask.task.ByTextFilter](../nl.mpcjanssen.simpletask.task/-by-text-filter/index.md) | A filter that matches Tasks containing the specified text |
 | [nl.mpcjanssen.simpletask.CachedFileProvider](../nl.mpcjanssen.simpletask/-cached-file-provider/index.md) |  |
 | [nl.mpcjanssen.simpletask.CalendarSync](../nl.mpcjanssen.simpletask/-calendar-sync/index.md) |  |

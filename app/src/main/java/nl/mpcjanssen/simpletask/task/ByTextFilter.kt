@@ -24,7 +24,6 @@
  */
 package nl.mpcjanssen.simpletask.task
 
-import nl.mpcjanssen.simpletask.LuaInterpreter
 import java.util.*
 
 /**
@@ -43,15 +42,11 @@ class ByTextFilter(val moduleName : String, searchText: String?, internal val is
     }
 
     override fun apply(task: Task): Boolean {
-        val luaResult = LuaInterpreter.onTextSearchCallback(moduleName, task.text, text, isCaseSensitive)
-        if (luaResult != null) {
-            return luaResult
-        }
 
         val taskText = if (isCaseSensitive)
-            task.text
+            task.description
         else
-            task.text.toUpperCase(Locale.getDefault())
+            task.description.toUpperCase(Locale.getDefault())
 
         for (part in parts) {
             if (part.length > 0 && !taskText.contains(part))

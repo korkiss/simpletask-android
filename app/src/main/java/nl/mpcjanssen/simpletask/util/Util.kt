@@ -162,11 +162,7 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
     var headerLine: HeaderLine? = null
     for (item in visibleTasks) {
         val t = item
-        val newHeader = if (moduleName != null ) {
-            LuaInterpreter.onGroupCallback(moduleName, t)
-        } else {
-            null
-        } ?: t.getHeader(firstSort, no_header, createIsThreshold)
+        val newHeader = t.getHeader(firstSort, no_header, createIsThreshold)
         if (header != newHeader) {
             if (headerLine != null) {
                 headerLine.title += " ($count)"
@@ -490,8 +486,8 @@ fun readAsset(assets: AssetManager, name: String): String {
     return buf.toString()
 }
 
-fun getRelativeThresholdDate(task: Task, app: TodoApplication): String? {
-    val date = task.thresholdDate ?: return null
+fun getRelativeWaitDate(task: Task, app: TodoApplication): String? {
+    val date = task.waitDate ?: return null
     return getRelativeDate(app, "T: ", date).toString()
 }
 
@@ -558,19 +554,10 @@ private fun getRelativeDate(app: TodoApplication, prefix: String, dateString: St
 }
 
 fun getRelativeAge(task: Task, app: TodoApplication): String? {
-    val date = task.createDate ?: return null
+    val date = task.entryDate ?: return null
     return getRelativeDate(app, "", date).toString()
 }
 
-fun initTaskWithFilter(task: Task, mFilter: ActiveFilter) {
-    if (!mFilter.contextsNot && mFilter.contexts.size == 1) {
-        task.addList(mFilter.contexts[0])
-    }
-
-    if (!mFilter.projectsNot && mFilter.projects.size == 1) {
-        task.addTag(mFilter.projects[0])
-    }
-}
 
 fun String.toDateTime(): DateTime? {
     val date: DateTime?

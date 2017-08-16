@@ -13,15 +13,8 @@ class CreationDateComparator : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val aDate = a.createDate
-        val bDate = b.createDate
-        if ( aDate == null && bDate == null) {
-            return 0
-        } else if (aDate == null) {
-            return 1
-        } else if (bDate == null) {
-            return -1
-        }
+        val aDate = a.entryDate
+        val bDate = b.entryDate
         return aDate.compareTo(bDate)
     }
 }

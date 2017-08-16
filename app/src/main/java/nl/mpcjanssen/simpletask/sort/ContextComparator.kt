@@ -19,19 +19,6 @@ class ContextComparator(caseSensitive: Boolean) : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val contextsA = a.lists.toMutableList()
-        val contextsB = b.lists.toMutableList()
-
-        if (contextsA.isEmpty() && contextsB.isEmpty()) {
-            return 0
-        } else if (contextsA.isEmpty()) {
-            return -1
-        } else if (contextsB.isEmpty()) {
-            return 1
-        } else {
-            contextsA.sort()
-            contextsB.sort()
-            return mStringComparator.compare(contextsA[0], contextsB[0])
-        }
+        return mStringComparator.compare(a.project, b.project)
     }
 }

@@ -85,12 +85,12 @@ class TestAlias(TestCase):
         # Setup alias with simple filter string
         self.t.config("alias.foofilter", "project:Home _projects")
 
-        # Setup tasks for projects Home and Work
+        # Setup tasks for tags Home and Work
         self.t("add project:Home Home task")
         self.t("add project:Work Work task")
 
         # Sanity check that _projects command outputs
-        # both the "Home" and "Work" projects
+        # both the "Home" and "Work" tags
         code, out, err = self.t("_projects")
         self.assertIn("Home", out,
                       msg="task _projects -> Home")
@@ -110,7 +110,7 @@ class TestAlias(TestCase):
         # Setup alias with simple filter string
         self.t.config("alias.hometoday", "project:Home and due:today minimal")
 
-        # Setup tasks for projects Home and Work
+        # Setup tasks for tags Home and Work
         self.t("add project:Home due:today Home urgent task")
         self.t("add project:Home Home task")
         self.t("add project:Work due:today Work task")

@@ -1,5 +1,5 @@
-[app](../../index.md) / [nl.mpcjanssen.simpletask.task](../index.md) / [TodoList](index.md) / [projects](.)
+[app](../../index.md) / [nl.mpcjanssen.simpletask.task](../index.md) / [TodoList](index.md) / [tags](.)
 
-# projects
+# tags
 
-`val projects: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>`
+`val tags: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>`

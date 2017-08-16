@@ -2,8 +2,6 @@ package nl.mpcjanssen.simpletask.util
 
 import android.content.SharedPreferences
 import me.smichel.android.KPreferences.Preferences
-import nl.mpcjanssen.simpletask.CalendarSync
-import nl.mpcjanssen.simpletask.LuaInterpreter
 import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
@@ -127,9 +125,8 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
     val isDarkWidgetTheme: Boolean
         get() = _widgetTheme == "dark"
 
-    private val _activeTheme by StringPreference(R.string.theme_pref_key, "light_darkactionbar")
-    private val activeThemeString: String
-        get() = LuaInterpreter.configTheme() ?: _activeTheme
+    val activeThemeString by StringPreference(R.string.theme_pref_key, "light_darkactionbar")
+
 
     // Only used in Dropbox build
     @Suppress("unused")
@@ -145,10 +142,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     val tasklistTextSize: Float?
         get() {
-            val luaValue = LuaInterpreter.tasklistTextSize()
-            if (luaValue != null) {
-                return luaValue
-            }
             val customSize by BooleanPreference(R.string.custom_font_size, false)
             if (!customSize) {
                 return 14.0f
@@ -156,10 +149,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
             val font_size by IntPreference(R.string.font_size, 14)
             return font_size.toFloat()
         }
-
-    val hasShareTaskShowsEdit by BooleanPreference(R.string.share_task_show_edit, false)
-
-    val hasExtendedTaskView by BooleanPreference(R.string.taskview_extended_pref_key, true)
 
     val showCompleteCheckbox by BooleanPreference(R.string.ui_complete_checkbox, true)
 
@@ -172,12 +161,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
             getString(R.string.widget_background_transparency),
             getString(R.string.widget_header_transparency) -> {
                 TodoApplication.app.redrawWidgets()
-            }
-            getString(R.string.calendar_sync_dues),
-            getString(R.string.calendar_sync_thresholds),
-            getString(R.string.calendar_reminder_days),
-            getString(R.string.calendar_reminder_time) -> {
-                CalendarSync.updatedSyncTypes()
             }
         }
     }
@@ -210,8 +193,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
         prefs.edit().remove(getString(R.string.file_current_version_id)).apply()
     }
 
-    val hasPrependDate by BooleanPreference(R.string.prepend_date_pref_key, true)
-
     val hasKeepSelection by BooleanPreference(R.string.keep_selection, false)
 
     val shareAppendText by StringPreference(R.string.share_task_append_text, " +background")
@@ -220,5 +201,4 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     val hasColorDueDates by BooleanPreference(R.string.color_due_date_key, true)
 
-    val  useUUIDs by BooleanPreference(R.string.use_uuids, false)
 }

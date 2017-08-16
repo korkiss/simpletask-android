@@ -51,7 +51,7 @@ class TestUnique(TestCase):
         """Executed before each test in the class"""
 
     def test_unique_projects(self):
-        """Verify that unique projects are correctly counted"""
+        """Verify that unique tags are correctly counted"""
 
         code, out, err = self.t("_unique project")
         self.assertIn("A", out)

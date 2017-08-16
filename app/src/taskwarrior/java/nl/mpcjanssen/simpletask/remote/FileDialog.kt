@@ -18,6 +18,7 @@ class FileDialog
 (private val activity: Activity, pathName: String) {
     private var fileList: Array<String>? = null
     private var currentPath: File? = null
+    private val PARENT_DIR = ".."
 
     private val fileListenerList = ListenerList<FileSelectedListener>()
 
@@ -72,7 +73,7 @@ class FileDialog
         })
     }
 
-    private val PARENT_DIR = ".."
+
 
     private fun loadFileList(path: File) {
         this.currentPath = path

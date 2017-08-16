@@ -19,12 +19,7 @@
         android:summary="@string/back_clears_filter_summary"
         android:title="@string/back_clears_filter_title"
         />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="@string/share_task_show_edit"
-        android:summary="@string/share_task_show_edit_summary"
-        android:title="@string/share_task_show_edit_pref_title"
-        />
+
     <EditTextPreference
         android:defaultValue=" +background"
         android:key="@string/share_task_append_text"

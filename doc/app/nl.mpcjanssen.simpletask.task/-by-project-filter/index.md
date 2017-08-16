@@ -4,7 +4,7 @@
 
 `class ByProjectFilter : `[`TaskFilter`](../-task-filter/index.md)
 
-A filter that matches Tasks containing the specified projects
+A filter that matches Tasks containing the specified tags
 
 **Author**
 Tim Barlotta
@@ -13,7 +13,7 @@ Tim Barlotta
 
 | Name | Summary |
 |---|---|
-| [&lt;init&gt;](-init-.md) | `ByProjectFilter(projects: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>?, not: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)`)`<br>A filter that matches Tasks containing the specified projects |
+| [&lt;init&gt;](-init-.md) | `ByProjectFilter(tags: `[`List`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)`<`[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`>?, not: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)`)`<br>A filter that matches Tasks containing the specified tags |
 
 ### Functions
 

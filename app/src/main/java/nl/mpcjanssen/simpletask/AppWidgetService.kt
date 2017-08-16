@@ -2,7 +2,6 @@ package nl.mpcjanssen.simpletask
 
 import android.appwidget.AppWidgetManager
 import android.content.Intent
-import android.graphics.Color
 import android.support.v4.content.ContextCompat
 import android.text.SpannableString
 import android.text.Spanned
@@ -84,48 +83,16 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
         val extended_widget = Config.prefs.getBoolean("widget_extended", true)
         val task = item
 
-        var tokensToShow = TToken.ALL
-        tokensToShow = tokensToShow and TToken.CREATION_DATE.inv()
-        tokensToShow = tokensToShow and TToken.COMPLETED.inv()
-        tokensToShow = tokensToShow and TToken.COMPLETED_DATE.inv()
-        tokensToShow = tokensToShow and TToken.THRESHOLD_DATE.inv()
-        tokensToShow = tokensToShow and TToken.DUE_DATE.inv()
-        if (filter.hideLists) {
-            tokensToShow = tokensToShow and TToken.LIST.inv()
-        }
-        if (filter.hideTags) {
-            tokensToShow = tokensToShow and TToken.TTAG.inv()
-        }
+
         val ss = SpannableString(
-                task.showParts(tokensToShow).trim { it <= ' ' })
+                task.displayText.trim { it <= ' ' })
 
         if (Config.isDarkWidgetTheme) {
             itemForDarkTheme(rv)
         } else {
             itemForLightTheme(rv)
         }
-        val colorizeStrings = ArrayList<String>()
-        for (context in task.lists) {
-            colorizeStrings.add("@" + context)
-        }
-        setColor(ss, Color.GRAY, colorizeStrings)
-        colorizeStrings.clear()
-        for (project in task.tags) {
-            colorizeStrings.add("+" + project)
-        }
-        setColor(ss, Color.GRAY, colorizeStrings)
 
-        val prioColor: Int
-        when (task.priority) {
-            Priority.A -> prioColor = ContextCompat.getColor(TodoApplication.app, R.color.simple_red_dark)
-            Priority.B -> prioColor = ContextCompat.getColor(TodoApplication.app, R.color.simple_orange_dark)
-            Priority.C -> prioColor = ContextCompat.getColor(TodoApplication.app, R.color.simple_green_dark)
-            Priority.D -> prioColor = ContextCompat.getColor(TodoApplication.app, R.color.simple_blue_dark)
-            else -> prioColor = ContextCompat.getColor(TodoApplication.app, R.color.gray67)
-        }
-        if (prioColor != 0) {
-            setColor(ss, prioColor, task.priority.inFileFormat())
-        }
         if (task.isCompleted()) {
             ss.setSpan(StrikethroughSpan(), 0, ss.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
@@ -133,7 +100,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
 
         val relAge = getRelativeAge(task, TodoApplication.app)
         val relDue = getRelativeDueDate(task, TodoApplication.app)
-        val relThres = getRelativeThresholdDate(task, TodoApplication.app)
+        val relThres = getRelativeWaitDate(task, TodoApplication.app)
         var anyDateShown = false
         if (!isEmptyOrNull(relAge) && !filter.hideCreateDate) {
             rv.setTextViewText(R.id.taskage, relAge)

@@ -27,7 +27,7 @@ package nl.mpcjanssen.simpletask.task
 import java.util.ArrayList
 
 /**
- * A filter that matches Tasks containing the specified projects
+ * A filter that matches Tasks containing the specified tags
 
  * @author Tim Barlotta
  */

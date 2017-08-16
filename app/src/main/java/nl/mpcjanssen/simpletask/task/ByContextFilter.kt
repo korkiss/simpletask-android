@@ -54,14 +54,15 @@ class ByContextFilter(contexts: List<String>?, private val not: Boolean) : TaskF
             return true
         }
 
-        for (c in input.lists) {
-            if (contexts.contains(c)) {
-                return true
-            }
-        } /*
+
+
+        if (contexts.contains(input.project)) {
+            return true
+        }
+        /*
          * Match tasks without context if filter contains "-"
 		 */
-        return input.lists.size == 0 && contexts.contains("-")
+        return contexts.contains("-")
 
     }
 }

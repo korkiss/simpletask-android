@@ -2,6 +2,7 @@ package nl.mpcjanssen.simpletask.remote
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.LocalServerSocket
 import android.os.Build
@@ -21,12 +22,16 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.taskwc2.controller.sync.SSLHelper
+import nl.mpcjanssen.simpletask.Constants
+import nl.mpcjanssen.simpletask.task.Priority
+import nl.mpcjanssen.simpletask.task.Task
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*
 import javax.net.ssl.SSLSocket
 
 import javax.net.ssl.SSLSocketFactory
+import kotlin.collections.ArrayList
 
 
 interface StreamConsumer {
@@ -61,11 +66,15 @@ object TaskWarrior {
     var configLinePattern = Pattern.compile("^([A-Za-z0-9\\._]+)\\s+(\\S.*)$")
 
 
-    fun callTaskForUUIDs(uuids: List<String>, vararg arguments: String) {
+    fun callTaskForSelection(selection: List<Task>, vararg arguments: String) {
         val args = ArrayList<String>()
-        args.addAll(uuids)
+        if (selection.isEmpty()) {
+            Log.e(TAG, "Trying to callTask for all tasks while selection was expected. Aborting..")
+            return
+        }
+        args.addAll(selection.map { it.uuid })
         args.addAll(arguments)
-        callTask(*arguments)
+        callTask(*args.toTypedArray())
     }
 
     fun getDefaultPath(): String {
@@ -100,7 +109,7 @@ object TaskWarrior {
         return null
     }
 
-    fun taskList(): List<String> {
+    fun taskList(): List<Task> {
         val result = ArrayList<String>()
         val params = ArrayList<String>()
         params.add("rc.json.array=off")
@@ -114,48 +123,53 @@ object TaskWarrior {
                 line?.let{result.add(it)}
             }}, *params.toTypedArray())
         Log.d(TAG, "List for size  ${result.size}")
-        return result.map(this::jsonToTodotxt)
+        return result.map { jsonToTask(it) }
     }
 
 
-    fun jsonToTodotxt (jsonStr: String) : String {
+    fun jsonToTask (jsonStr: String) : Task {
         val json = JSONObject(jsonStr)
         val uuid = json.getString("uuid")
         val desc = json.getString("description")
-        var result = ""
-        json.optString("end", null)?.let {
+        val endDate = json.optString("end", null)?.let {
             val year = it.slice(0..3)
             val month = it.slice(4..5)
             val day = it.slice(6..7)
-            result+= "x $year-$month-$day "
+            "$year-$month-$day "
         }
-        json.optString("entry", null)?.let {
+        val entryDate = json.getString("entry").let {
             val year = it.slice(0..3)
             val month = it.slice(4..5)
             val day = it.slice(6..7)
-            result+= "$year-$month-$day "
+            "$year-$month-$day "
         }
-        result += "$desc"
+        val tags = ArrayList<String>()
         json.optJSONArray("tags")?.let {
             for (i in 0..it.length() - 1) {
-                result += " +${it.getString(i)}"
+                tags.add(it.getString(i))
             }
         }
-        json.optString("project", null)?.let {
-            result += " @$it"
+        val annotations = ArrayList<String>()
+        json.optJSONArray("annotations")?.let {
+            for (i in 0..it.length() - 1) {
+                annotations.add(it.getString(i))
+            }
         }
-        json.optString("wait", null)?.let {
+        val project = json.optString("project", null)
+
+        val status =  json.getString("status")
+
+        val waitDate = json.optString("wait", null)?.let {
             val year = it.slice(0..3)
             val month = it.slice(4..5)
             val day = it.slice(6..7)
-            result+= " t:$year-$month-$day"
+            "$year-$month-$day"
         }
-        result += " uuid:$uuid"
-        return result
+
+        return Task(json, uuid, desc, annotations, project, tags, Priority.NONE, status, null, waitDate, endDate, entryDate )
     }
 
     fun callTask(vararg arguments: String) {
-        Log.d(TAG, "Calltask: ${arguments.joinToString(", ")}")
         callTask(outConsumer, errConsumer, *arguments)
     }
 
@@ -183,6 +197,7 @@ object TaskWarrior {
             args.add(exec)
             args.add("rc.color=off")
             args.add("rc.confirmation=off")
+            args.add("rc.bulk=0")
             args.add("rc.verbose=nothing")
             if (arguments[0]=="sync") {
                 reloadConfig()
@@ -204,7 +219,7 @@ object TaskWarrior {
             val outThread = readStream(p.getInputStream(), out)
             val errThread = readStream(p.getErrorStream(), err)
             val exitCode = p.waitFor()
-            Log.d(TAG, "Exit code:  $exitCode, $args")
+            Log.d(TAG, "Exit code:  $exitCode")
             //            debug("Execute result:", exitCode);
             if (null != outThread) outThread.join()
             if (null != errThread) errThread.join()
@@ -245,7 +260,7 @@ object TaskWarrior {
                 }
             }
         }, errConsumer, "show")
-        Log.d(TAG, "Loading config done" + config.toString())
+        Log.d(TAG, "Loading config done")
     }
 
     private fun readStream(stream: InputStream,  consumer: StreamConsumer): Thread? {
@@ -301,9 +316,7 @@ object TaskWarrior {
         return null
     }
 
-    fun sync() {
-        callTask("sync")
-    }
+
 }
 
 private class LocalSocketRunner @Throws(Exception::class)

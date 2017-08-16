@@ -60,7 +60,7 @@ class TestSummaryPercentage(TestCase):
     def test_summary_no_tasks(self):
         """Verify no tasks yields no report"""
         code, out, err = self.t.runError("summary")
-        self.assertIn("No projects.", out)
+        self.assertIn("No tags.", out)
 
 
 if __name__ == "__main__":

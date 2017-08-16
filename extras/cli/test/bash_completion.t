@@ -116,7 +116,7 @@ class TestProject(TestBashCompletionBase):
         self.assertIn("Created task 1", out)
 
         # Ensure project was created
-        code, out, err = self.t("projects")
+        code, out, err = self.t("tags")
         self.assertIn("todd", out)
 
     def test_project_non_matching(self):
