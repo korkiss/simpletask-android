@@ -77,8 +77,8 @@ object TaskWarrior {
         callTask(*args.toTypedArray())
     }
 
-    fun getDefaultPath(): String {
-        return "${Environment.getExternalStorageDirectory()}/data/nl.mpcjanssen.simpletask/taskrc.android"
+    fun getDefaultPath(): File {
+        return File(TodoApplication.app.filesDir , "taskrc.android")
     }
 
     private fun eabiExecutable(): String? {

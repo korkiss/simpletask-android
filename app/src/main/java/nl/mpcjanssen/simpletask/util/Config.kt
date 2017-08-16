@@ -1,6 +1,7 @@
 package nl.mpcjanssen.simpletask.util
 
 import android.content.SharedPreferences
+import com.owncloud.android.lib.resources.files.FileUtils
 import me.smichel.android.KPreferences.Preferences
 import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
@@ -172,18 +173,28 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
     val rcFileName: String
         get() {
             var name = _rcFileName
-            if (name == null) {
-                name = TaskWarrior.getDefaultPath()
-                setRcFile(name)
+            if (name == null || !File(name).exists()) {
+                return defaultRcFile
             }
             val todoFile = File(name)
             try {
                 return todoFile.canonicalPath
             } catch (e: IOException) {
-                return TaskWarrior.getDefaultPath()
+                return defaultRcFile
             }
 
         }
+
+    private val defaultRcFile : String
+        get () {
+           val name = TaskWarrior.getDefaultPath()
+            val dataDir = File(name.parent, "data")
+            dataDir.mkdirs()
+            if (!name.exists()) {
+                name.writeText("data.location=${dataDir.canonicalPath}\n")
+            }
+            return name.canonicalPath
+    }
 
     val rcFile: File
         get() = File(rcFileName)
