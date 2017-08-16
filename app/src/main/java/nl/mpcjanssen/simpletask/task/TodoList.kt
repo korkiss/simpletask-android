@@ -284,7 +284,7 @@ object TodoList {
     fun add(tasks: List<String>) {
         queue( "Adding ${tasks.size} tasks" ) {
             tasks.forEach {
-                TaskWarrior.callTask("add", it)
+                TaskWarrior.callTask("add", *it.split(" ").toTypedArray())
             }
             reload()
         }
