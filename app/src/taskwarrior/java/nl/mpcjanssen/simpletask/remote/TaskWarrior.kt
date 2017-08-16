@@ -1,5 +1,8 @@
 package nl.mpcjanssen.simpletask.remote
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.net.LocalServerSocket
 import android.os.Build
 import nl.mpcjanssen.simpletask.R
@@ -13,6 +16,9 @@ import java.io.*
 import java.util.regex.Pattern
 
 import android.net.LocalSocket
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.taskwc2.controller.sync.SSLHelper
 import java.nio.ByteBuffer;
@@ -55,6 +61,16 @@ object TaskWarrior {
     var configLinePattern = Pattern.compile("^([A-Za-z0-9\\._]+)\\s+(\\S.*)$")
 
 
+    fun callTaskForUUIDs(uuids: List<String>, vararg arguments: String) {
+        val args = ArrayList<String>()
+        args.addAll(uuids)
+        args.addAll(arguments)
+        callTask(*arguments)
+    }
+
+    fun getDefaultPath(): String {
+        return "${Environment.getExternalStorageDirectory()}/data/nl.mpcjanssen.simpletask/taskrc.android"
+    }
 
     private fun eabiExecutable(): String? {
         var arch = Arch.Arm7
@@ -107,6 +123,12 @@ object TaskWarrior {
         val uuid = json.getString("uuid")
         val desc = json.getString("description")
         var result = ""
+        json.optString("end", null)?.let {
+            val year = it.slice(0..3)
+            val month = it.slice(4..5)
+            val day = it.slice(6..7)
+            result+= "x $year-$month-$day "
+        }
         json.optString("entry", null)?.let {
             val year = it.slice(0..3)
             val month = it.slice(4..5)
@@ -149,7 +171,7 @@ object TaskWarrior {
                 Log.d(TAG, "Error in binary call: executable not found")
                 throw TodoException("Invalid executable")
             }
-            val taskRc = Config.todoFile
+            val taskRc = Config.rcFile
             val taskRcFolder = taskRc.parentFile
 
             if (!taskRcFolder.exists()) {
@@ -197,6 +219,17 @@ object TaskWarrior {
         }
     }
 
+    fun getWritePermission(act: Activity, activityResult: Int): Boolean {
+
+        val permissionCheck = ContextCompat.checkSelfPermission(act,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(act,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), activityResult)
+        }
+        return permissionCheck == PackageManager.PERMISSION_GRANTED
+    }
 
     fun reloadConfig()  {
         Log.d(TAG, "Loading config")
@@ -267,6 +300,10 @@ object TaskWarrior {
 
         return null
     }
+
+    fun sync() {
+        callTask("sync")
+    }
 }
 
 private class LocalSocketRunner @Throws(Exception::class)
@@ -306,7 +343,7 @@ constructor(name: String, config: Map<String, String>) {
             return File(path)
         }
         // Relative
-        return File(Config.todoFile.parent, path)
+        return File(Config.rcFile.parent, path)
     }
 
     @Throws(IOException::class)

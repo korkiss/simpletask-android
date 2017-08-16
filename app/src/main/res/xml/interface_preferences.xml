@@ -8,11 +8,6 @@
         android:title="@string/show_confirmation_dialogs_title"
         />
     <CheckBoxPreference
-        android:key="@string/auto_archive_pref_key"
-        android:summary="@string/auto_archive_pref_summary"
-        android:title="@string/auto_archive_pref_title"
-        />
-    <CheckBoxPreference
             android:defaultValue="false"
             android:key="@string/keep_selection"
             android:title="@string/keep_selection_title"

@@ -54,7 +54,7 @@
 | [tagTerm](tag-term.md) | `val tagTerm: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
 | [tasklistTextSize](tasklist-text-size.md) | `val tasklistTextSize: `[`Float`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html)`?` |
 | [todoFile](todo-file.md) | `val todoFile: `[`File`](http://docs.oracle.com/javase/6/docs/api/java/io/File.html) |
-| [todoFileName](todo-file-name.md) | `val todoFileName: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
+| [rcFileName](todo-file-name.md) | `val rcFileName: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
 | [todoList](todo-list.md) | `var todoList: `[`ArrayList`](http://docs.oracle.com/javase/6/docs/api/java/util/ArrayList.html)`<`[`Task`](../../nl.mpcjanssen.simpletask.task/-task/index.md)`>?` |
 | [useTodoTxtTerms](use-todo-txt-terms.md) | `val useTodoTxtTerms: `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 
@@ -65,4 +65,4 @@
 | [clearCache](clear-cache.md) | `fun clearCache(): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
 | [hasDonated](has-donated.md) | `fun hasDonated(): `[`Boolean`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
 | [onSharedPreferenceChanged](on-shared-preference-changed.md) | `fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, s: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
-| [setTodoFile](set-todo-file.md) | `fun setTodoFile(todo: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |
+| [setRcFile](set-todo-file.md) | `fun setRcFile(todo: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`): `[`Unit`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html) |

@@ -35,15 +35,13 @@ import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import nl.mpcjanssen.simpletask.*
 
-import nl.mpcjanssen.simpletask.remote.BackupInterface
-import nl.mpcjanssen.simpletask.remote.FileStore
-import nl.mpcjanssen.simpletask.remote.FileStoreInterface
+import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.sort.MultiComparator
 import nl.mpcjanssen.simpletask.util.*
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.collections.ArrayList
 
 /**
  * Implementation of the in memory representation of the Todo list
@@ -149,33 +147,20 @@ object TodoList {
 
     fun uncomplete(items: List<Task>) {
         queue("Uncomplete") {
-            items.forEach {
-                it.markIncomplete()
-            }
+            val uuids = items.map {it.uuid}.filterNotNull()
+            Log.d(TAG,"Uncompleting tasks $uuids")
+            TaskWarrior.callTaskForUUIDs(uuids, "modify", "status:pending")
         }
     }
 
-    fun complete(tasks: List<Task>, keepPrio: Boolean, extraAtEnd: Boolean) {
-        queue("Complete") {
-            for (task in tasks) {
-                val extra = task.markComplete(todayAsString)
-                if (extra != null) {
-                    if (extraAtEnd) {
-                        todoItems.add(extra)
-                    } else {
-                        todoItems.add(0, extra)
-                    }
-                }
-                if (!keepPrio) {
-                    task.priority = Priority.NONE
-                }
-            }
-        }
+    fun complete(tasks: List<Task>) {
+
     }
 
     fun prioritize(tasks: List<Task>, prio: Priority) {
         queue("Complete") {
             tasks.map { it.priority = prio }
+            reload()
         }
 
     }
@@ -201,21 +186,6 @@ object TodoList {
             return todoItems.filter { it.isCompleted() }
         }
 
-    fun notifyChanged(todoName: String, eol: String, backup: BackupInterface?, save: Boolean) {
-        Log.i(TAG, "Handler: Queue notifychanged")
-        queue("Notified changed") {
-            if (save) {
-                save(FileStore, todoName, backup, eol)
-            }
-            if (!Config.hasKeepSelection) {
-                TodoList.clearSelection()
-            }
-            mLists = null
-            mTags = null
-            broadcastRefreshUI(TodoApplication.app.localBroadCastManager)
-        }
-    }
-
     fun startAddTaskActivity(act: Activity, prefill: String) {
         queue("Start add/edit task activity") {
             Log.i(TAG, "Starting addTask activity")
@@ -239,59 +209,17 @@ object TodoList {
         return filteredTasks
     }
 
-    fun reload(backup: BackupInterface, lbm: LocalBroadcastManager, eol: String, reason: String = "") {
+    fun reload(reason: String = "") {
         val logText = "Reload: " + reason
         queue(logText) {
-            if (!FileStore.isAuthenticated) return@queue
-            lbm.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
-            val filename = Config.todoFileName
-            try {
-                todoItems.clear()
-                val items = ArrayList<Task>(
-                        FileStore.loadTasksFromFile(filename, backup, eol).map { text ->
-                            Task(text)
-                        })
-                todoItems.addAll(items)
-                clearSelection()
-                Config.currentVersionId = FileStore.getVersion(filename)
 
-            } catch (e: Exception) {
-                e.printStackTrace()
-
-            } catch (e: IOException) {
-                Log.e(TAG, "TodoList load failed: {}" + filename, e)
-                showToastShort(TodoApplication.app, "Loading of todo file failed")
+            TodoApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
+            if (!Config.hasKeepSelection) {
+                TodoList.clearSelection()
             }
-            Log.i(TAG, "TodoList loaded from storage")
-
-            notifyChanged(filename, eol, backup, false)
-        }
-    }
-
-    private fun save(fileStore: FileStoreInterface, todoFileName: String, backup: BackupInterface?, eol: String) {
-        try {
-            val lines = todoItems.map {
-                it.inFileFormat()
-            }
-
-            Log.i(TAG, "Saving todo list, size ${lines.size}")
-            fileStore.saveTasksToFile(todoFileName, lines, backup, eol = eol, updateVersion = true)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    fun archive(todoFilename: String, doneFileName: String, tasks: List<Task>?, eol: String) {
-        queue("Archive") {
-            try {
-                val tasksToDelete = tasks ?: completedTasks
-                FileStore.appendTaskToFile(doneFileName, tasksToDelete.map { it.text }, eol)
-                removeAll(tasksToDelete)
-                notifyChanged(todoFilename, eol, null, true)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                showToastShort(TodoApplication.app, "Task archiving failed")
-            }
+            mLists = null
+            mTags = null
+            broadcastRefreshUI(TodoApplication.app.localBroadCastManager)
         }
     }
 
@@ -326,6 +254,7 @@ object TodoList {
             broadcastRefreshSelection(TodoApplication.app.localBroadCastManager)
         }
     }
+
 
     fun clearSelection() {
         queue("Clear selection") {

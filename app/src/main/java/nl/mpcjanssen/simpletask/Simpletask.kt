@@ -50,7 +50,7 @@ import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.update_items_dialog.view.*
 import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
-import nl.mpcjanssen.simpletask.remote.FileStore
+import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.task.Priority
 import nl.mpcjanssen.simpletask.task.TToken
 import nl.mpcjanssen.simpletask.task.Task
@@ -91,14 +91,12 @@ class Simpletask : ThemedNoActionBarActivity() {
         m_app = application as TodoApplication
         m_savedInstanceState = savedInstanceState
         val intentFilter = IntentFilter()
-        intentFilter.addAction(Constants.BROADCAST_ACTION_ARCHIVE)
-        intentFilter.addAction(Constants.BROADCAST_ACTION_LOGOUT)
+
         intentFilter.addAction(Constants.BROADCAST_UPDATE_UI)
         intentFilter.addAction(Constants.BROADCAST_SYNC_START)
         intentFilter.addAction(Constants.BROADCAST_THEME_CHANGED)
         intentFilter.addAction(Constants.BROADCAST_DATEBAR_SIZE_CHANGED)
         intentFilter.addAction(Constants.BROADCAST_SYNC_DONE)
-        intentFilter.addAction(Constants.BROADCAST_UPDATE_PENDING_CHANGES)
         intentFilter.addAction(Constants.BROADCAST_HIGHLIGHT_SELECTION)
 
         textSize = Config.tasklistTextSize ?: textSize
@@ -109,36 +107,26 @@ class Simpletask : ThemedNoActionBarActivity() {
 
         m_broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, receivedIntent: Intent) {
-                if (receivedIntent.action == Constants.BROADCAST_ACTION_ARCHIVE) {
-                    archiveTasks()
-                } else {
-                    if (receivedIntent.action == Constants.BROADCAST_ACTION_LOGOUT) {
-                        Log.i(TAG, "Logging out from Dropbox")
-                        FileStore.logout()
-                        finish()
-                        FileStore.startLogin(this@Simpletask)
-                    } else if (receivedIntent.action == Constants.BROADCAST_UPDATE_UI) {
-                        Log.i(TAG, "Updating UI because of broadcast")
-                        textSize = Config.tasklistTextSize ?: textSize
-                        if (m_adapter == null) {
-                            return
-                        }
-                        m_adapter!!.setFilteredTasks()
-                        invalidateOptionsMenu()
-                        updateDrawers()
-                    } else if (receivedIntent.action == Constants.BROADCAST_HIGHLIGHT_SELECTION) {
-                        m_adapter?.notifyDataSetChanged()
-                        invalidateOptionsMenu()
-                    } else if (receivedIntent.action == Constants.BROADCAST_SYNC_START) {
-                        showListViewProgress(true)
-                    } else if (receivedIntent.action == Constants.BROADCAST_SYNC_DONE) {
-                        showListViewProgress(false)
-                    } else if (receivedIntent.action == Constants.BROADCAST_UPDATE_PENDING_CHANGES) {
-                        updateConnectivityIndicator()
-                    } else if ( receivedIntent.action == Constants.BROADCAST_THEME_CHANGED ||
-                            receivedIntent.action == Constants.BROADCAST_DATEBAR_SIZE_CHANGED) {
-                        recreate()
+
+                if (receivedIntent.action == Constants.BROADCAST_UPDATE_UI) {
+                    Log.i(TAG, "Updating UI because of broadcast")
+                    textSize = Config.tasklistTextSize ?: textSize
+                    if (m_adapter == null) {
+                        return
                     }
+                    m_adapter!!.setFilteredTasks()
+                    invalidateOptionsMenu()
+                    updateDrawers()
+                } else if (receivedIntent.action == Constants.BROADCAST_HIGHLIGHT_SELECTION) {
+                    m_adapter?.notifyDataSetChanged()
+                    invalidateOptionsMenu()
+                } else if (receivedIntent.action == Constants.BROADCAST_SYNC_START) {
+                    showListViewProgress(true)
+                } else if (receivedIntent.action == Constants.BROADCAST_SYNC_DONE) {
+                    showListViewProgress(false)
+                } else if (receivedIntent.action == Constants.BROADCAST_THEME_CHANGED ||
+                        receivedIntent.action == Constants.BROADCAST_DATEBAR_SIZE_CHANGED) {
+                    recreate()
                 }
             }
         }
@@ -151,7 +139,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             actionbar_clear?.setImageResource(R.drawable.ic_close_white_24dp)
         }
         val versionCode = BuildConfig.VERSION_CODE
-        if (m_app.isAuthenticated && Config.latestChangelogShown < versionCode) {
+        if (Config.latestChangelogShown < versionCode) {
             showChangelogOverlay(this)
             Config.latestChangelogShown = versionCode
         }
@@ -170,7 +158,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            REQUEST_PERMISSION -> m_app.switchTodoFile(Config.todoFileName)
+            REQUEST_PERMISSION -> m_app.switchTodoFile(Config.rcFileName)
         }
     }
 
@@ -224,14 +212,9 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun handleIntent() {
-        if (!m_app.isAuthenticated) {
-            Log.i(TAG, "handleIntent: not authenticated")
-            startLogin()
-            return
-        }
 
         // Check if we have SDCard permission for cloudless
-        if (!FileStore.getWritePermission(this, REQUEST_PERMISSION)) {
+        if (!TaskWarrior.getWritePermission(this, REQUEST_PERMISSION)) {
             return
         }
 
@@ -333,22 +316,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         })
     }
 
-    private fun updateConnectivityIndicator() {
-        // Show connectivity status indicator
-        // Red -> changes pending
-        // Yellow -> offline
-        if (FileStore.changesPending()) {
-            pendingchanges.visibility = View.VISIBLE
-            offline.visibility = View.GONE
-        } else if (!FileStore.isOnline) {
-            pendingchanges.visibility = View.GONE
-            offline.visibility = View.VISIBLE
-        } else {
-            pendingchanges.visibility = View.GONE
-            offline.visibility = View.GONE
-        }
-    }
-
     private fun updateFilterBar() {
 
         if (MainFilter.hasFilter()) {
@@ -374,11 +341,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    private fun startLogin() {
-        m_app.startLogin(this)
-        finish()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         localBroadcastManager!!.unregisterReceiver(m_broadcastReceiver)
@@ -387,12 +349,10 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onResume() {
         super.onResume()
         Log.i(TAG, "onResume")
-        FileStore.pause(false)
         handleIntent()
     }
 
     override fun onPause() {
-        FileStore.pause(true)
         val manager = listView?.layoutManager as LinearLayoutManager?
         if (manager != null) {
             val position = manager.findFirstVisibleItemPosition()
@@ -506,13 +466,9 @@ class Simpletask : ThemedNoActionBarActivity() {
 
                 inflater.inflate(R.menu.main, menu)
 
-                if (!FileStore.supportsSync()) {
-                    val mItem = menu.findItem(R.id.sync)
-                    mItem.isVisible = false
-                }
                 populateSearch(menu)
                 if (Config.showTodoPath) {
-                    title = Config.todoFileName.replace("([^/])[^/]*/".toRegex(), "$1/")
+                    title = Config.rcFileName.replace("([^/])[^/]*/".toRegex(), "$1/")
                 } else {
                     setTitle(R.string.app_label)
                 }
@@ -627,7 +583,6 @@ class Simpletask : ThemedNoActionBarActivity() {
             dialog.dismiss()
             val priority = Priority.toPriority(priorityArr[which])
             TodoList.prioritize(tasks, priority)
-            TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
         })
         builder.show()
 
@@ -639,23 +594,17 @@ class Simpletask : ThemedNoActionBarActivity() {
         completeTasks(tasks)
     }
 
-    private fun completeTasks(tasks: List<Task>) {
-        TodoList.complete(tasks, Config.hasKeepPrio, Config.hasAppendAtEnd)
-        if (Config.isAutoArchive) {
-            archiveTasks()
-        }
-        TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
-    }
-
     private fun uncompleteTasks(task: Task) {
         val tasks = ArrayList<Task>()
         tasks.add(task)
         uncompleteTasks(tasks)
     }
+    private fun completeTasks(tasks: List<Task>) {
+        TodoList.complete(tasks)
+    }
 
     private fun uncompleteTasks(tasks: List<Task>) {
         TodoList.uncomplete(tasks)
-        TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
     }
 
     private fun deferTasks(tasks: List<Task>, dateType: DateType) {
@@ -675,7 +624,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                         startMonth++
                         val date = DateTime.forDateOnly(year, startMonth, day)
                         TodoList.defer(date.format(Constants.DATE_FORMAT), tasks, dateType)
-                        TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
                     },
                             today.year!!,
                             today.month!! - 1,
@@ -686,10 +634,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     dialog.datePicker.spinnersShown = !showCalendar
                     dialog.show()
                 } else {
-
                     TodoList.defer(input, tasks, dateType)
-                    TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
-
                 }
 
             }
@@ -703,33 +648,10 @@ class Simpletask : ThemedNoActionBarActivity() {
                     .replaceFirst(Regex("%s"), numTasks.toString())
         val delete = DialogInterface.OnClickListener { _, _ ->
             TodoList.removeAll(tasks)
-            TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
             invalidateOptionsMenu()
         }
 
         showConfirmationDialog(this, R.string.delete_task_message, delete, title)
-    }
-
-    private fun archiveTasks() { archiveTasks(null, false) }
-    private fun archiveTasks(tasks: List<Task>?, showDialog: Boolean = true) {
-        val archiveAction = {
-            if (Config.todoFileName == m_app.doneFileName) {
-                showToastShort(this, "You have the done.txt file opened.")
-            }
-            TodoList.archive(Config.todoFileName, m_app.doneFileName, tasks, Config.eol)
-            invalidateOptionsMenu()
-        }
-
-        if (showDialog) {
-            val numTasks = (tasks ?: TodoList.completedTasks).size.toString()
-            val title = getString(R.string.archive_task_title)
-                         .replaceFirst(Regex("%s"), numTasks)
-            val archive = DialogInterface.OnClickListener { _, _ -> archiveAction() }
-            showConfirmationDialog(this, R.string.delete_task_message, archive, title)
-        } else {
-            archiveAction()
-        }
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -767,15 +689,10 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val shareText = selectedTasksAsString()
                 shareText(this@Simpletask, "Simpletask tasks", shareText)
             }
-            R.id.context_archive -> archiveTasks(checkedTasks)
             R.id.help -> showHelp()
             R.id.open_lua -> openLuaConfig()
-            R.id.sync -> {
-                FileStore.sync()
-            }
-            R.id.archive -> archiveTasks()
+            R.id.sync -> TaskWarrior.sync()
             R.id.open_file -> m_app.browseForNewFile(this)
-            R.id.history -> startActivity(Intent(this, HistoryScreen::class.java))
             R.id.btn_filter_add -> onAddFilterClick()
             R.id.clear_filter -> clearFilter()
             R.id.update -> startAddTaskActivity()
@@ -784,8 +701,8 @@ class Simpletask : ThemedNoActionBarActivity() {
             R.id.priority -> prioritizeTasks(checkedTasks)
             R.id.update_lists -> updateLists(checkedTasks)
             R.id.update_tags -> updateTags(checkedTasks)
-            R.id.menu_export_filter_export -> exportFilters(File(Config.todoFile.parent, "saved_filters.txt"))
-            R.id.menu_export_filter_import -> importFilters(File(Config.todoFile.parent, "saved_filters.txt"))
+            R.id.menu_export_filter_export -> exportFilters(File(Config.rcFile.parent, "saved_filters.txt"))
+            R.id.menu_export_filter_import -> importFilters(File(Config.rcFile.parent, "saved_filters.txt"))
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -858,7 +775,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     fun importFilters (importFile: File) {
         val r = Runnable {
             try {
-                val contents = FileStore.readFile(importFile.canonicalPath, null)
+                val contents = importFile.readText()
                 val jsonFilters = JSONObject(contents)
                 jsonFilters.keys().forEach {
                     val filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
@@ -882,7 +799,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             jsonFilters.put(it.name, jsonItem)
         }
 	try {
-            FileStore.writeFile(exportFile, jsonFilters.toString(2))
+        exportFile.writeText(jsonFilters.toString(2))
 	    showToastShort(this, R.string.saved_filters_exported)
 	} catch (e: Exception) {
             Log.e(TAG, "Export filters failed", e)
@@ -1295,7 +1212,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                     uncompleteTasks(item)
                     // Update the tri state checkbox
                     if (activeMode() == Mode.SELECTION) invalidateOptionsMenu()
-                    TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
                 })
             } else {
                 taskText.paintFlags = taskText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
@@ -1305,7 +1221,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                     completeTasks(item)
                     // Update the tri state checkbox
                     if (activeMode() == Mode.SELECTION) invalidateOptionsMenu()
-                    TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
                 }
 
             }
@@ -1388,20 +1303,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                         val url = links[which]
                         Log.i(TAG, "" + actions[which] + ": " + url)
                         when (actions[which]) {
-                            ACTION_LINK -> if (url.startsWith("todo://")) {
-                                val todoFolder = Config.todoFile.parentFile
-                                val newName = File(todoFolder, url.substring(7))
-                                m_app.switchTodoFile(newName.absolutePath)
-                            } else if (url.startsWith("root://")) {
-                                val rootFolder = Config.localFileRoot
-                                val file = File(rootFolder, url.substring(7))
-                                actionIntent = Intent(Intent.ACTION_VIEW)
-                                val contentUri = Uri.fromFile(file)
-                                val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
-                                actionIntent.setDataAndType(contentUri, mime)
-                                actionIntent.addFlags(FLAG_GRANT_READ_URI_PERMISSION)
-                                startActivity(actionIntent)
-                            } else {
+                            ACTION_LINK ->
                                 try {
                                     actionIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                     startActivity(actionIntent)
@@ -1409,7 +1311,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                                     Log.i(TAG, "No handler for task action $url")
                                     showToastLong(TodoApplication.app, "No handler for $url" )
                                 }
-                            }
                             ACTION_PHONE -> {
                                 actionIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(url)))
                                 startActivity(actionIntent)
@@ -1450,7 +1351,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                     // Replace the array in the main thread to prevent OutOfIndex exceptions
                     visibleLines = newVisibleLines
                     notifyDataSetChanged()
-                    updateConnectivityIndicator()
                     updateFilterBar()
                     showListViewProgress(false)
                     if (Config.lastScrollPosition != -1) {
@@ -1587,7 +1487,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                     addToTask(it, newText)
                 }
             }
-            TodoList.notifyChanged(Config.todoFileName, Config.eol, m_app, true)
         }
         builder.setNegativeButton(R.string.cancel) { _, _ -> }
         // Create the AlertDialog

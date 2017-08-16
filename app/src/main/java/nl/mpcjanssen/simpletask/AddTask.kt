@@ -294,8 +294,6 @@ class AddTask : ThemedActionBarActivity() {
         // Remove remaining tasks that where selected for updateCache
         todoList.removeAll(m_backup)
 
-        // Save
-        todoList.notifyChanged(Config.todoFileName, Config.eol, TodoApplication.app, true)
         finishEdit()
     }
 

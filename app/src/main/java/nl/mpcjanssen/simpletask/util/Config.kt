@@ -6,12 +6,9 @@ import nl.mpcjanssen.simpletask.CalendarSync
 import nl.mpcjanssen.simpletask.LuaInterpreter
 import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
-import nl.mpcjanssen.simpletask.remote.FileStore
-import nl.mpcjanssen.simpletask.task.Task
+import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import java.io.File
 import java.io.IOException
-import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 
 object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -22,8 +19,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
     }
 
     val useTodoTxtTerms by BooleanPreference(R.string.ui_todotxt_terms, false)
-
-    val showTxtOnly by BooleanPreference(R.string.show_txt_only, false)
 
     val _syncDues by BooleanPreference(R.string.calendar_sync_dues, false)
     val isSyncDues: Boolean
@@ -190,44 +185,38 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
     val defaultSorts: Array<String>
         get() = TodoApplication.app.resources.getStringArray(R.array.sortKeys)
 
-    private var _todoFileName by StringOrNullPreference(R.string.todo_file_key)
-    val todoFileName: String
+    private var _rcFileName by StringOrNullPreference(R.string.todo_file_key)
+    val rcFileName: String
         get() {
-            var name = _todoFileName
+            var name = _rcFileName
             if (name == null) {
-                name = FileStore.getDefaultPath()
-                setTodoFile(name)
+                name = TaskWarrior.getDefaultPath()
+                setRcFile(name)
             }
             val todoFile = File(name)
             try {
                 return todoFile.canonicalPath
             } catch (e: IOException) {
-                return FileStore.getDefaultPath()
+                return TaskWarrior.getDefaultPath()
             }
 
         }
 
-    val todoFile: File
-        get() = File(todoFileName)
+    val rcFile: File
+        get() = File(rcFileName)
 
-    fun setTodoFile(todo: String) {
-        _todoFileName = todo
+    fun setRcFile(todo: String) {
+        _rcFileName = todo
         prefs.edit().remove(getString(R.string.file_current_version_id)).apply()
     }
-
-    val isAutoArchive by BooleanPreference(R.string.auto_archive_pref_key, false)
 
     val hasPrependDate by BooleanPreference(R.string.prepend_date_pref_key, true)
 
     val hasKeepSelection by BooleanPreference(R.string.keep_selection, false)
 
-    val hasKeepPrio by BooleanPreference(R.string.keep_prio, true)
-
     val shareAppendText by StringPreference(R.string.share_task_append_text, " +background")
 
     var latestChangelogShown by IntPreference(R.string.latest_changelog_shown, 0)
-
-    val localFileRoot by StringPreference(R.string.local_file_root, "/sdcard/")
 
     val hasColorDueDates by BooleanPreference(R.string.color_due_date_key, true)
 

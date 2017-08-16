@@ -196,6 +196,7 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
     class WidgetPrefFragment : PrefFragment(R.xml.widget_preferences)
     class CalendarPrefFragment : PrefFragment(R.xml.calendar_preferences)
     class ConfigurationPrefFragment : PrefFragment(R.xml.configuration_preferences)
+    class OtherPrefFragment : PrefFragment(R.xml.other_preferences)
 
     class DonatePrefFragment : PrefFragment(R.xml.donate_preferences) {
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -209,20 +210,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
                 toHide = screen.findPreference("donated")
             }
             screen.removePreference(toHide)
-        }
-    }
-
-    class OtherPrefFragment : PrefFragment(R.xml.other_preferences) {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-
-            val rootPref = findPreference(getString(R.string.local_file_root)) as EditTextPreference
-            rootPref.valueInSummary()
-            rootPref.setOnPreferenceChangeListener { preference, any ->
-                preference.summary = getString(R.string.local_file_root_summary)
-                preference.valueInSummary(any)
-                true
-            }
         }
     }
 

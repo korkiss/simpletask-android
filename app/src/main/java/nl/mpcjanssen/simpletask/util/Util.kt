@@ -602,11 +602,6 @@ fun ArrayList<HashSet<String>>.intersection(): Set<String> {
     return intersection
 }
 
-fun broadcastFileChanged(broadcastManager: LocalBroadcastManager) {
-    Log.i(TAG, "Sending file changed broadcast")
-    broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_FILE_CHANGED))
-}
-
 fun broadcastRefreshUI(broadcastManager: LocalBroadcastManager) {
     broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
 }

@@ -52,22 +52,10 @@
         android:title="@string/append_tasks_at_end_title"
         />
     <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="@string/keep_prio"
-        android:summary="@string/keep_prio_summary"
-        android:title="@string/keep_prio_header"
-        />
-    <CheckBoxPreference
         android:defaultValue="false"
         android:key="@string/ui_todotxt_terms"
         android:summary="@string/todotxt_terms_summary"
         android:title="@string/todotxt_terms_title"
-        />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="@string/show_txt_only"
-        android:summary="@string/show_txt_only_summary"
-        android:title="@string/show_txt_only_pref_title"
         />
     <CheckBoxPreference
         android:defaultValue="true"
@@ -78,12 +66,6 @@
         android:defaultValue="true"
         android:key="@string/ui_sort_case_sensitive"
         android:title="@string/sort_case_sensitive_title"
-        />
-    <EditTextPreference
-        android:defaultValue="/sdcard/"
-        android:key="@string/local_file_root"
-        android:summary="@string/local_file_root_summary"
-        android:title="@string/local_file_root_title"
         />
     <Preference
         android:key="debug_info"

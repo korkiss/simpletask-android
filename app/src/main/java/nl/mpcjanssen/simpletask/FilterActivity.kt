@@ -16,13 +16,13 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import nl.mpcjanssen.simpletask.remote.FileStore
-import nl.mpcjanssen.simpletask.remote.FileStoreInterface
+import nl.mpcjanssen.simpletask.remote.FileDialog
+import nl.mpcjanssen.simpletask.remote.FileSelectedListener
 import nl.mpcjanssen.simpletask.task.Priority
 import nl.mpcjanssen.simpletask.task.TodoList
 import nl.mpcjanssen.simpletask.util.*
 import java.io.File
-import java.io.IOException
+
 import java.util.*
 
 class FilterActivity : ThemedNoActionBarActivity() {
@@ -59,10 +59,10 @@ class FilterActivity : ThemedNoActionBarActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp)
 
-        var arguments: Bundle
+        var arguments = Bundle()
 
         val intent = intent
-        var environment: String = "mainui"
+        var environment = "mainui"
         if (intent.action != null) {
             asWidgetConfigure = getIntent().action == AppWidgetManager.ACTION_APPWIDGET_CONFIGURE
             environment = "widget" + getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 0).toString()
@@ -89,7 +89,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         pagerAdapter = ScreenSlidePagerAdapter(supportFragmentManager)
 
         // Fill arguments for fragment
-        arguments = Bundle()
         arguments.putStringArrayList(FILTER_ITEMS,
                 alfaSortList(TodoList.contexts, Config.sortCaseSensitive, "-"))
         arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, mFilter.contexts)
@@ -203,8 +202,9 @@ class FilterActivity : ThemedNoActionBarActivity() {
                 } else {
                     applyFilter()
                 }
-            R.id.menu_filter_load_script -> openScript(object : FileStoreInterface.FileReadListener {
-                override fun fileRead(contents: String?) {
+            R.id.menu_filter_load_script -> openScript(object : FileSelectedListener {
+                override fun fileSelected(file: String) {
+                    val contents = File(file).readText()
                     runOnMainThread(
                             Runnable { setScript(contents) })
                 }
@@ -213,23 +213,11 @@ class FilterActivity : ThemedNoActionBarActivity() {
         return true
     }
 
-    private fun openScript(file_read: FileStoreInterface.FileReadListener) {
+    private fun openScript(file_read: FileSelectedListener) {
         runOnMainThread(Runnable {
-            val dialog = FileStore.FileDialog(this@FilterActivity, File(Config.todoFileName).parent, false)
-            dialog.addFileListener(object : FileStoreInterface.FileSelectedListener {
-                override fun fileSelected(file: String) {
-                    Thread(Runnable {
-                        try {
-
-                            FileStore.readFile(file, file_read)
-                        } catch (e: IOException) {
-                            showToastShort(this@FilterActivity, "Failed to load script.")
-                            e.printStackTrace()
-                        }
-                    }).start()
-                }
-            })
-            dialog.createFileDialog(this@FilterActivity, FileStore)
+            val dialog = FileDialog(this@FilterActivity, File(Config.rcFileName).parent)
+            dialog.addFileListener(file_read)
+            dialog.createFileDialog()
         })
     }
 
@@ -342,20 +330,19 @@ class FilterActivity : ThemedNoActionBarActivity() {
     }
 
     private fun askWidgetName() {
-        val name: String
+        val name: String = mFilter.proposedName
         val alert = AlertDialog.Builder(this)
 
         alert.setTitle("Create widget")
         alert.setMessage("Widget title")
         updateFilterFromFragments()
-        name = mFilter.proposedName
 
         // Set an EditText view to get user input
         val input = EditText(this)
         alert.setView(input)
         input.setText(name)
 
-        alert.setPositiveButton("Ok") { dialog, whichButton ->
+        alert.setPositiveButton("Ok") { _, whichButton ->
             val value = input.text.toString()
             if (value == "") {
                 showToastShort(applicationContext, R.string.widget_name_empty)
@@ -364,7 +351,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
             }
         }
 
-        alert.setNegativeButton("Cancel") { dialog, whichButton -> }
+        alert.setNegativeButton("Cancel") { _, _ -> }
 
         alert.show()
 
@@ -372,7 +359,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        prefs.edit().putInt(getString(R.string.last_open_filter_tab), m_page).commit()
+        prefs.edit().putInt(getString(R.string.last_open_filter_tab), m_page).apply()
         pager?.clearOnPageChangeListeners()
     }
 
@@ -381,11 +368,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
      * sequence.
      */
     private inner class ScreenSlidePagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
-        val fragments: ArrayList<Fragment>
-
-        init {
-            fragments = ArrayList<Fragment>()
-        }
+        val fragments: ArrayList<Fragment> = ArrayList<Fragment>()
 
         fun add(frag: Fragment) {
             fragments.add(frag)
