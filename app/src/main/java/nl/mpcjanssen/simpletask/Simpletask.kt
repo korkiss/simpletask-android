@@ -1152,6 +1152,15 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
             cb.isChecked = completed
 
+            if (task.project!=null || task.tags.isNotEmpty()) {
+                view.detailsbar.visibility = View.VISIBLE
+                view.detailsbar.taskproject.text = task.project?: ""
+                view.detailsbar.tasktags.text = task.tags.joinToString(", ")
+            } else {
+                view.detailsbar.visibility = View.GONE
+            }
+
+
             val relAge = getRelativeAge(task, m_app)
             val relDue = getRelativeDueDate(task, m_app)
             val relativeThresholdDate = getRelativeWaitDate(task, m_app)
