@@ -23,7 +23,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.CalendarContract
-import android.provider.CalendarContract.Events
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
@@ -687,7 +686,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             R.id.defer_due -> deferTasks(checkedTasks, DateType.DUE)
             R.id.defer_threshold -> deferTasks(checkedTasks, DateType.THRESHOLD)
             R.id.priority -> prioritizeTasks(checkedTasks)
-            R.id.update_lists -> updateLists(checkedTasks)
+            R.id.update_project -> updateProject(checkedTasks)
             R.id.update_tags -> updateTags(checkedTasks)
             R.id.menu_export_filter_export -> exportFilters(File(Config.rcFile.parent, "saved_filters.txt"))
             R.id.menu_export_filter_import -> importFilters(File(Config.rcFile.parent, "saved_filters.txt"))
@@ -1403,13 +1402,70 @@ class Simpletask : ThemedNoActionBarActivity() {
         dialog.show()
     }
 
-    private fun updateLists(checkedTasks: List<Task>) {
+    private fun updateProject(checkedTasks: List<Task>) {
             // TODO: Implement
     }
 
     private fun updateTags(checkedTasks: List<Task>) {
-        // TODO: Implement
+        val checkedTaskItems = ArrayList<HashSet<String>>()
+        val allItems = TodoList.tags
+        checkedTasks.forEach {
+            val items = HashSet<String>()
+            items.addAll(it.tags)
+            checkedTaskItems.add(items)
+        }
+
+        // Determine items on all tasks (intersection of the sets)
+        val onAllTasks = checkedTaskItems.intersection()
+
+        // Determine items on some tasks (union of the sets)
+        var onSomeTasks = checkedTaskItems.union()
+        onSomeTasks -= onAllTasks
+
+        allItems.removeAll(onAllTasks)
+        allItems.removeAll(onSomeTasks)
+
+        val sortedAllItems = ArrayList<String>()
+        sortedAllItems += alfaSortList(onAllTasks, Config.sortCaseSensitive)
+        sortedAllItems += alfaSortList(onSomeTasks, Config.sortCaseSensitive)
+        sortedAllItems += alfaSortList(allItems.toSet(), Config.sortCaseSensitive)
+
+        val view = layoutInflater.inflate(R.layout.update_items_dialog, null, false)
+        val builder = AlertDialog.Builder(this)
+        builder.setView(view)
+
+        val itemAdapter = ItemDialogAdapter(sortedAllItems, onAllTasks.toHashSet(), onSomeTasks.toHashSet())
+        val rcv = view.current_items_list
+        rcv.setHasFixedSize(true)
+        val layoutManager = LinearLayoutManager(this)
+        rcv.layoutManager = layoutManager
+        rcv.adapter = itemAdapter
+        val ed = view.new_item_text
+        builder.setPositiveButton(R.string.ok) { _, _ ->
+            val updatedValues = itemAdapter.currentState
+            val tagsToAdd = ArrayList<String>()
+            val tagsToRemove = ArrayList<String>()
+            for (i in 0..updatedValues.lastIndex) {
+                when (updatedValues[i] ) {
+                    false -> tagsToRemove.add(sortedAllItems[i])
+                    true -> tagsToAdd.add(sortedAllItems[i])
+                    }
+                }
+
+            val newText = ed.text.toString()
+            if (newText.isNotEmpty()) {
+                    tagsToAdd.add(newText)
+            }
+            TodoList.updateTags(checkedTasks, tagsToAdd, tagsToRemove)
+        }
+        builder.setNegativeButton(R.string.cancel) { _, _ -> }
+        // Create the AlertDialog
+        val dialog = builder.create()
+
+        dialog.setTitle(Config.tagTerm)
+        dialog.show()
     }
+
 
     private inner class DrawerItemClickListener : AdapterView.OnItemClickListener {
 

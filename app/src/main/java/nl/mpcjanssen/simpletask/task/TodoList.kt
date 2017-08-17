@@ -289,5 +289,22 @@ object TodoList {
             reload()
         }
     }
+
+    fun updateTags(tasks: List<Task>, tagsToAdd: ArrayList<String>, tagsToRemove: ArrayList<String>) {
+        queue("Update tags") {
+            val args = ArrayList<String>()
+            args.add("modify")
+            tagsToAdd.forEach {
+                args.add("+$it")
+            }
+            tagsToRemove.forEach {
+                args.add("-$it")
+            }
+            TaskWarrior.callTaskForSelection(tasks, *args.toTypedArray())
+            reload()
+
+
+        }
+    }
 }
 
