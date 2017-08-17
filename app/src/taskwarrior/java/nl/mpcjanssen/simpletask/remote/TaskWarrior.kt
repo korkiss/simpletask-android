@@ -113,6 +113,7 @@ object TaskWarrior {
         val result = ArrayList<String>()
         val params = ArrayList<String>()
         params.add("rc.json.array=off")
+        params.add("rc.verbose=nothing")
         params.add("export")
         callTask(object : StreamConsumer {
             override fun eat(line: String?) {
@@ -174,6 +175,7 @@ object TaskWarrior {
     }
 
     private fun callTask(out: StreamConsumer, err: StreamConsumer, vararg arguments: String): Int {
+        val stderrOutput = ArrayList<String>()
         if (arguments.isEmpty()) {
             Log.d(TAG, "Error in binary call: no arguments provided")
             return 255
@@ -198,7 +200,6 @@ object TaskWarrior {
             args.add("rc.color=off")
             args.add("rc.confirmation=off")
             args.add("rc.bulk=0")
-            args.add("rc.verbose=nothing")
             if (arguments[0]=="sync") {
                 reloadConfig()
                 // Should setup TLS socket here
@@ -216,8 +217,8 @@ object TaskWarrior {
             pb.environment().put("TASKRC", taskRc.absolutePath)
             val p = pb.start()
 
-            val outThread = readStream(p.getInputStream(), out)
-            val errThread = readStream(p.getErrorStream(), err)
+            val outThread = readStream(p.getInputStream(), out, null )
+            val errThread = readStream(p.getErrorStream(), err, stderrOutput)
             val exitCode = p.waitFor()
             Log.d(TAG, "Exit code:  $exitCode")
             //            debug("Execute result:", exitCode);
@@ -225,6 +226,9 @@ object TaskWarrior {
             if (null != errThread) errThread.join()
             if (syncSocket!=null) {
                 syncSocket.close()
+            }
+            if (arguments[0]=="sync") {
+                showToastLong(TodoApplication.app, stderrOutput.last())
             }
             return exitCode
         } catch (e: Exception) {
@@ -263,12 +267,13 @@ object TaskWarrior {
         Log.d(TAG, "Loading config done")
     }
 
-    private fun readStream(stream: InputStream,  consumer: StreamConsumer): Thread? {
+    private fun readStream(stream: InputStream,  consumer: StreamConsumer, output: MutableList<String>?): Thread? {
 
         val thread = object : Thread() {
             override fun run() {
                 stream.bufferedReader().forEachLine {
                     consumer.eat(it)
+                    output?.add(it)
                 }
             }
         }
