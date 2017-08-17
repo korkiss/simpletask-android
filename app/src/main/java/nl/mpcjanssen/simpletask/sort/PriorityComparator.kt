@@ -13,17 +13,9 @@ class PriorityComparator : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val prioA = a.priority
-        val prioB = b.priority
-
-        if (prioA.code == prioB.code) {
-            return 0
-        } else if (prioA.inFileFormat() == "") {
-            return 1
-        } else if (prioB.inFileFormat() == "") {
-            return -1
-        } else {
-            return prioA.compareTo(prioB)
-        }
+        val prioA = a.urgency
+        val prioB = b.urgency
+        //  smaller urgency is higher priority
+        return prioB.compareTo(prioA)
     }
 }

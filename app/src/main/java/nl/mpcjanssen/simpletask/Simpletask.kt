@@ -556,21 +556,6 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun prioritizeTasks(tasks: List<Task>) {
-        val strings = Priority.rangeInCode(Priority.NONE, Priority.Z)
-        val priorityArr = strings.toTypedArray()
-
-        var priorityIdx = 0
-        if (tasks.size == 1) {
-            priorityIdx = strings.indexOf(tasks[0].priority.code)
-        }
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(R.string.select_priority)
-        builder.setSingleChoiceItems(priorityArr, priorityIdx, { dialog, which ->
-            dialog.dismiss()
-            val priority = Priority.toPriority(priorityArr[which])
-            TodoList.prioritize(tasks, priority)
-        })
-        builder.show()
 
     }
 

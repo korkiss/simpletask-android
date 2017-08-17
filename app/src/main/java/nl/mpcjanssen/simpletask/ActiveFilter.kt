@@ -266,9 +266,6 @@ class ActiveFilter(val options: FilterOptions) {
 
         init {
             filters.clear()
-            if (priorities.size > 0) {
-                addFilter(ByPriorityFilter(priorities, prioritiesNot))
-            }
             if (contexts.size > 0) {
                 addFilter(ByContextFilter(contexts, contextsNot))
             }

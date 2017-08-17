@@ -167,7 +167,9 @@ object TaskWarrior {
             "$year-$month-$day"
         }
 
-        return Task(json, uuid, desc, annotations, project, tags, Priority.NONE, status, null, waitDate, endDate, entryDate )
+        val urgency = json.getDouble("urgency")
+
+        return Task(json, uuid, desc, annotations, project, tags, urgency, status, null, waitDate, endDate, entryDate )
     }
 
     fun callTask(vararg arguments: String) {

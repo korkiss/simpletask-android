@@ -104,16 +104,6 @@ object TodoList {
         return todoItems.size
     }
 
-    val priorities: ArrayList<Priority>
-        get() {
-            val res = HashSet<Priority>()
-            todoItems.forEach {
-                res.add(it.priority)
-            }
-            val ret = ArrayList(res)
-            Collections.sort(ret)
-            return ret
-        }
 
     val projects: ArrayList<String>
         get() {

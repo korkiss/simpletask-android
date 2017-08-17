@@ -16,9 +16,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import nl.mpcjanssen.simpletask.remote.FileDialog
-import nl.mpcjanssen.simpletask.remote.FileSelectedListener
-import nl.mpcjanssen.simpletask.task.Priority
 import nl.mpcjanssen.simpletask.task.TodoList
 import nl.mpcjanssen.simpletask.util.*
 import java.io.File
@@ -108,15 +105,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         projectTab.arguments = arguments
         pagerAdapter!!.add(projectTab)
 
-        // Fill arguments for fragment
-        arguments = Bundle()
-        arguments.putStringArrayList(FILTER_ITEMS, Priority.inCode(TodoList.priorities))
-        arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, Priority.inCode(mFilter.priorities))
-        arguments.putBoolean(INITIAL_NOT, mFilter.prioritiesNot)
-        arguments.putString(TAB_TYPE, PRIO_TAB)
-        val prioTab = FilterListFragment()
-        prioTab.arguments = arguments
-        pagerAdapter!!.add(prioTab)
 
         // Fill arguments for fragment
         arguments = Bundle()
@@ -229,11 +217,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
                     val pf = f as FilterListFragment
                     mFilter.projects = pf.getSelectedItems()
                     mFilter.projectsNot = pf.getNot()
-                }
-                PRIO_TAB -> {
-                    val prf = f as FilterListFragment
-                    mFilter.priorities = Priority.toPriority(prf.getSelectedItems())
-                    mFilter.prioritiesNot = prf.getNot()
                 }
                 SORT_TAB -> {
                     val sf = f as FilterSortFragment
@@ -360,7 +343,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         val TAB_TYPE = "type"
         val CONTEXT_TAB = "context"
         val PROJECT_TAB = "project"
-        val PRIO_TAB = getString(R.string.filter_tab_header_prio)
         val OTHER_TAB = getString(R.string.filter_tab_header_other)
         val SORT_TAB = getString(R.string.filter_tab_header_sort)
 

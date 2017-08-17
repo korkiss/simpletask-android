@@ -12,7 +12,7 @@ data class Task(
         val annotations: List<String>,
         val project: String?,
         val tags: List<String>,
-        val priority: Priority,
+        val urgency: Double,
         val status: String,
         val dueDate: String?,
         val waitDate: String?,
@@ -59,7 +59,7 @@ data class Task(
                 return waitDate ?: empty
             }
         } else if (sort.contains("by_prio")) {
-            return priority.code
+            return urgency.toInt().toString()
         } else if (sort.contains("by_due_date")) {
             return dueDate ?: empty
         }
