@@ -41,6 +41,12 @@ You should have received a copy of the GNU General Public License along with Tod
         android:clickable="true"
         android:id="@+id/checkBox"
         />
+    <ImageView
+            android:visibility="gone"
+            android:id="@+id/deletedIndicator"
+            android:background="@android:color/holo_red_light"
+            android:layout_width="20sp"
+            android:layout_height="match_parent"/>
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"

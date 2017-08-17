@@ -306,5 +306,14 @@ object TodoList {
 
         }
     }
+    fun updateProject(tasks: List<Task>, project: String) {
+        queue("Update tags") {
+            val args = ArrayList<String>()
+            args.add("modify")
+            args.add("project:$project")
+            TaskWarrior.callTaskForSelection(tasks, *args.toTypedArray())
+            reload()
+        }
+    }
 }
 

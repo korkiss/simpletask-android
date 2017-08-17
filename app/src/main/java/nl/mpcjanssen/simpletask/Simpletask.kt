@@ -18,6 +18,7 @@ import android.app.SearchManager
 import android.content.*
 import android.content.res.Configuration
 import android.content.res.TypedArray
+import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
@@ -41,9 +42,11 @@ import android.widget.*
 import android.widget.AdapterView.OnItemLongClickListener
 import hirondelle.date4j.DateTime
 import kotlinx.android.synthetic.main.list_header.view.*
+import kotlinx.android.synthetic.main.list_item.*
 import kotlinx.android.synthetic.main.list_item.view.*
 import kotlinx.android.synthetic.main.main.*
-import kotlinx.android.synthetic.main.update_items_dialog.view.*
+import kotlinx.android.synthetic.main.update_project_dialog.view.*
+import kotlinx.android.synthetic.main.update_tags_dialog.view.*
 import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
@@ -202,11 +205,6 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun handleIntent() {
-
-        // Check if we have SDCard permission for cloudless
-        if (!TaskWarrior.getWritePermission(this, REQUEST_PERMISSION)) {
-            return
-        }
 
         // Set the list's click listener
         filter_drawer?.onItemClickListener = DrawerItemClickListener()
@@ -679,7 +677,12 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
             R.id.help -> showHelp()
             R.id.sync -> TodoList.sync()
-            R.id.open_file -> m_app.browseForNewFile(this)
+            R.id.open_file -> {
+                // Check if we have SDCard permission for cloudless
+                if (TaskWarrior.getWritePermission(this, REQUEST_PERMISSION)) {
+                    m_app.browseForNewFile(this)
+                }
+            }
             R.id.btn_filter_add -> onAddFilterClick()
             R.id.clear_filter -> clearFilter()
             R.id.update -> startAddTaskActivity()
@@ -1140,6 +1143,13 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
 
             }
+            if (task.isDeleted()) {
+                view.deletedIndicator.visibility = View.VISIBLE
+                view.checkBox.isEnabled = false
+            } else {
+                view.deletedIndicator.visibility = View.GONE
+                view.checkBox.isEnabled = true
+            }
             cb.isChecked = completed
 
             val relAge = getRelativeAge(task, m_app)
@@ -1330,80 +1340,37 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    @SuppressLint("InflateParams")
-    private fun updateItemsDialog(title: String,
-                                  checkedTasks: List<Task>,
-                                  allItems: ArrayList<String>,
-                                  retrieveFromTask: (Task) -> SortedSet<String>,
-                                  addToTask: (Task, String) -> Unit,
-                                  removeFromTask: (Task, String) -> Unit
-    ) {
-        val checkedTaskItems = ArrayList<HashSet<String>>()
-        checkedTasks.forEach {
-            val items = HashSet<String>()
-            items.addAll(retrieveFromTask.invoke(it))
-            checkedTaskItems.add(items)
-        }
+    private fun updateProject(checkedTasks: List<Task>) {
+        val allItems = TodoList.projects
+        allItems.add(0,"")
+        allItems.sort()
 
-        // Determine items on all tasks (intersection of the sets)
-        val onAllTasks = checkedTaskItems.intersection()
 
-        // Determine items on some tasks (union of the sets)
-        var onSomeTasks = checkedTaskItems.union()
-        onSomeTasks -= onAllTasks
-
-        allItems.removeAll(onAllTasks)
-        allItems.removeAll(onSomeTasks)
-
-        val sortedAllItems = ArrayList<String>()
-        sortedAllItems += alfaSortList(onAllTasks, Config.sortCaseSensitive)
-        sortedAllItems += alfaSortList(onSomeTasks, Config.sortCaseSensitive)
-        sortedAllItems += alfaSortList(allItems.toSet(), Config.sortCaseSensitive)
-
-        val view = layoutInflater.inflate(R.layout.update_items_dialog, null, false)
+        val view = layoutInflater.inflate(R.layout.update_project_dialog, null, false)
         val builder = AlertDialog.Builder(this)
         builder.setView(view)
 
-        val itemAdapter = ItemDialogAdapter(sortedAllItems, onAllTasks.toHashSet(), onSomeTasks.toHashSet())
-        val rcv = view.current_items_list
-        rcv.setHasFixedSize(true)
-        val layoutManager = LinearLayoutManager(this)
-        rcv.layoutManager = layoutManager
-        rcv.adapter = itemAdapter
-        val ed = view.new_item_text
+        val rcv = view.current_projects_list
+        rcv.adapter = ArrayAdapter(this, R.layout.simple_list_item_single_choice, allItems)
+        val ed = view.new_project_text
+
         builder.setPositiveButton(R.string.ok) { _, _ ->
-            val updatedValues = itemAdapter.currentState
-            for (i in 0..updatedValues.lastIndex) {
-                when (updatedValues[i] ) {
-                    false -> {
-                        checkedTasks.forEach {
-                            removeFromTask(it, sortedAllItems[i])
-                        }
-                    }
-                    true -> {
-                        checkedTasks.forEach {
-                            addToTask(it, sortedAllItems[i])
-                        }
-                    }
-                }
-            }
             val newText = ed.text.toString()
             if (newText.isNotEmpty()) {
-                checkedTasks.forEach {
-                    addToTask(it, newText)
-                }
+                TodoList.updateProject(checkedTasks, newText)
+                return@setPositiveButton
             }
         }
         builder.setNegativeButton(R.string.cancel) { _, _ -> }
-        // Create the AlertDialog
         val dialog = builder.create()
 
-        dialog.setTitle(title)
-        dialog.show()
-    }
+        rcv.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            TodoList.updateProject(checkedTasks, allItems[position])
+            dialog.cancel()
+        }
 
-    private fun updateProject(checkedTasks: List<Task>) {
-            // TODO: Implement
+        dialog.setTitle(Config.listTerm)
+        dialog.show()
     }
 
     private fun updateTags(checkedTasks: List<Task>) {
@@ -1430,7 +1397,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         sortedAllItems += alfaSortList(onSomeTasks, Config.sortCaseSensitive)
         sortedAllItems += alfaSortList(allItems.toSet(), Config.sortCaseSensitive)
 
-        val view = layoutInflater.inflate(R.layout.update_items_dialog, null, false)
+        val view = layoutInflater.inflate(R.layout.update_tags_dialog, null, false)
         val builder = AlertDialog.Builder(this)
         builder.setView(view)
 
