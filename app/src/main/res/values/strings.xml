@@ -1,34 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!--
-This file is part of Todo.txt Touch, an Android app for managing your todo.txt file (http://todotxt.com).
-
-Copyright (c) 2009-2012 Todo.txt contributors (http://todotxt.com)
-Copyright (c) 2015 Vojtech Kral
-
-LICENSE:
-
-Todo.txt Touch is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any
-later version.
-
-Todo.txt Touch is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-details.
-
-You should have received a copy of the GNU General Public License along with Todo.txt Touch.  If not, see
-<http://www.gnu.org/licenses/>.
-
-@author Todo.txt contributors <todotxt@yahoogroups.com>
-@license http://www.gnu.org/licenses/gpl.html
-@copyright 2009-2012 Todo.txt contributors (http://todotxt.com)
-@copyright 2013 Mark Janssen
-@copyright 2015 Vojtech Kral
--->
 <!--suppress ALL -->
 <resources>
-    <string name="invalid_context">Invalid list name</string>
-    <string name="invalid_project">Invalid tag name</string>
-    <string name="app_label">Simpletask</string>
+    <string name="invalid_project">Invalid project name</string>
+    <string name="invalid_tag">Invalid tag name</string>
+    <string name="app_label">SimpleTW</string>
     <string name="added_task">Added task</string>
     <string name="add_task_failed">Could not add task</string>
     <string name="save_task">Save task</string>
@@ -41,9 +16,6 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="preferences">Settings</string>
     <string name="archive">Archive</string>
     <string name="help">Help</string>
-    <string name="history">History</string>
-    <string name="debug_info">Debugging info</string>
-    <string name="log">Log</string>
     <string name="next">Next</string>
     <string name="prev">Previous</string>
     <string name="open_file">Open taskrc file</string>
@@ -68,36 +40,31 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="update">Update</string>
     <string name="delete">Delete</string>
     <string name="defer_due">Set due date</string>
-    <string name="defer_threshold">Set threshold date</string>
+    <string name="defer_wait">Set wait date</string>
     <string name="insert_due">Insert due date</string>
-    <string name="insert_threshold">Insert threshold date</string>
+    <string name="insert_wait">Insert wait date</string>
     <string name="share">Share</string>
-    <string name="share_database">Share database</string>
     <string name="unComplete">Undo complete</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="clear_filter">Clear filter</string>
     <string name="write_failed">Failed writing the file!. Your changes were NOT saved.</string>
 
-    <string name="tasktexthint">\@Discuss +Paris issue with +Hector @Troy
-\nTell +Hector not to be such a drag @Troy
-\nRemove this text from the menu @Phone</string>
+    <string name="tasktexthint">Discuss +Paris issue with +Hector proj:Troy
+\nTell +Hector not to be such a drag proj:Troy
+\nRemove this text from the menu proj:Config</string>
 
     <string name="filter_name_empty">No name specified, not adding filter</string>
     <string name="widget_name_empty">No widget name specified, not adding widget</string>
     <string name="add_task_help">Add or update a task to the task list. When adding tasks, each line is a separate task for quick adding.
 
- <b>Priority</b>
-
- start the line with (.), like (A)
-
  <b>Tags</b>
  start with a + sign, like +Kitchen
 
- <b>Lists</b>
- start with an @ sign, like @home
+ <b>Project</b>
+ start with proj: sign, like @]proj:home
 
- A task can include any number of tags or be on multiple lists.
+ A task can include any number of tags but only be part of a single project.
  </string>
 
     <!-- other_preferences -->
@@ -105,20 +72,6 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="preference_interface">Interface</string>
     <string name="preference_widget">Widget</string>
     <string name="preference_other">Other</string>
-
-    <string name="ARCHIVE_settings_header">Archive</string>
-    <string name="ARCHIVE_settings_summary">Settings for archiving completed tasks in done.txt</string>
-    <string name="auto_archive_pref_title">Auto archive</string>
-    <string name="auto_archive_pref_summary">Archive tasks immediately on completion.</string>
-    <string name="archive_now_pref_title">Archive now</string>
-    <string name="archive_now_pref_summary">Move completed tasks from todo.txt to done.txt.</string>
-    <string name="dropbox_logout_pref_title">Log out</string>
-    <string name="dropbox_logout_pref_summary">Log out of Dropbox.</string>
-    <string name="TODOTXTPATH_title">File location</string>
-    <string name="TODOTXTPATH_summary">The Dropbox folder where todo.txt is stored.</string>
-    <string name="TODOTXTPATH_defaultPath">/todo</string>
-    <string name="DROPBOX_settings_header">Dropbox</string>
-    <string name="DROPBOX_settings_summary">Settings for Dropbox synchronisation</string>
 
     <string name="todotxt_features_settings_header">Features</string>
     <string name="todotxt_features_settings_summary">Enable or disable features</string>
@@ -134,8 +87,7 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="todotxt_settings_summary">Application wide settings</string>
     <string name="sort_complete_last_pref_title">Show completed last</string>
     <string name="sort_complete_last_pref_summary">Always display the completed tasks at the bottom of the list</string>
-    <string name="keep_prio_header">Keep priority in completed tasks</string>
-    <string name="keep_prio_summary">Todo.txt removes priority on completion</string>
+
     <string name="prepend_date_pref_title">Date new tasks</string>
     <string name="prepend_date_pref_summary">Automatically add creation date</string>
     <string name="line_breaks_pref_title">Windows-friendly line breaks</string>

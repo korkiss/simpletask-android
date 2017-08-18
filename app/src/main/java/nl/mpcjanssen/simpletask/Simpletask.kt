@@ -70,7 +70,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     var textSize: Float = 14.0F
 
     internal var options_menu: Menu? = null
-    internal lateinit var m_app: TodoApplication
+    internal lateinit var m_app: STWApplication
 
     internal var m_adapter: TaskAdapter? = null
     private var m_broadcastReceiver: BroadcastReceiver? = null
@@ -88,7 +88,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(TAG, "onCreate")
-        m_app = application as TodoApplication
+        m_app = application as STWApplication
         m_savedInstanceState = savedInstanceState
         val intentFilter = IntentFilter()
 
@@ -565,7 +565,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     private fun deferTasks(tasks: List<Task>, dateType: DateType) {
         var titleId = R.string.defer_due
         if (dateType === DateType.THRESHOLD) {
-            titleId = R.string.defer_threshold
+            titleId = R.string.defer_wait
         }
         val d = createDeferDialog(this, titleId, object : InputDialogListener {
             /* Suppress showCalendar deprecation message. It works fine on older devices
@@ -1204,7 +1204,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                                     startActivity(actionIntent)
                                 } catch (e: ActivityNotFoundException) {
                                     Log.i(TAG, "No handler for task action $url")
-                                    showToastLong(TodoApplication.app, "No handler for $url" )
+                                    showToastLong(STWApplication.app, "No handler for $url" )
                                 }
                             ACTION_PHONE -> {
                                 actionIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(url)))

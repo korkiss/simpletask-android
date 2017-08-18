@@ -1,14 +1,13 @@
 package nl.mpcjanssen.simpletask.util
 
-import android.content.SharedPreferences
 import me.smichel.android.KPreferences.Preferences
 import nl.mpcjanssen.simpletask.R
-import nl.mpcjanssen.simpletask.TodoApplication
+import nl.mpcjanssen.simpletask.STWApplication
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import java.io.File
 import java.io.IOException
 
-object Config : Preferences(TodoApplication.app) {
+object Config : Preferences(STWApplication.app) {
     val TAG = "Config"
 
     val projectTerm = getString(R.string.project_prompt)
@@ -29,7 +28,7 @@ object Config : Preferences(TodoApplication.app) {
 
     fun hasDonated(): Boolean {
         try {
-            TodoApplication.app.packageManager.getInstallerPackageName("nl.mpcjanssen.simpletask.donate")
+            STWApplication.app.packageManager.getInstallerPackageName("nl.mpcjanssen.simpletask.donate")
             return true
         } catch (e: IllegalArgumentException) {
             return false
@@ -102,7 +101,7 @@ object Config : Preferences(TodoApplication.app) {
     val showConfirmationDialogs by BooleanPreference(R.string.ui_show_confirmation_dialogs, true)
 
     val defaultSorts: Array<String>
-        get() = TodoApplication.app.resources.getStringArray(R.array.sortKeys)
+        get() = STWApplication.app.resources.getStringArray(R.array.sortKeys)
 
     private var _rcFileName by StringOrNullPreference(R.string.taskrc_file_key)
     val rcFileName: String

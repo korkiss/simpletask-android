@@ -190,7 +190,7 @@ object TodoList {
     }
 
     fun getSortedTasks(filter: ActiveFilter, sorts: ArrayList<String>, caseSensitive: Boolean): Sequence<Task> {
-        val comp = MultiComparator(sorts, TodoApplication.app.today, caseSensitive, filter.createIsThreshold)
+        val comp = MultiComparator(sorts, STWApplication.app.today, caseSensitive, filter.createIsThreshold)
         val itemsToSort = if (comp.fileOrder) {
             todoItems
         } else {
@@ -205,7 +205,7 @@ object TodoList {
 
     fun sync() {
         queue("Sync") {
-            TodoApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
+            STWApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
             TaskWarrior.callTask("sync")
             reload()
         }
@@ -214,7 +214,7 @@ object TodoList {
         val logText = "Reload: " + reason
         queue(logText) {
 
-            TodoApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
+            STWApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
             if (!Config.hasKeepSelection) {
                 TodoList.clearSelection()
             }
@@ -222,7 +222,7 @@ object TodoList {
             todoItems.addAll(TaskWarrior.taskList())
             mLists = null
             mTags = null
-            broadcastRefreshUI(TodoApplication.app.localBroadCastManager)
+            broadcastRefreshUI(STWApplication.app.localBroadCastManager)
         }
     }
 
@@ -237,7 +237,7 @@ object TodoList {
     fun selectTasks(items: List<Task>) {
         queue("Select") {
             selectedItems.addAll(items)
-            broadcastRefreshSelection(TodoApplication.app.localBroadCastManager)
+            broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }
 
@@ -254,7 +254,7 @@ object TodoList {
     fun unSelectTasks(items: List<Task>) {
         queue("Unselect") {
             selectedItems.removeAll(items)
-            broadcastRefreshSelection(TodoApplication.app.localBroadCastManager)
+            broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }
 
@@ -262,7 +262,7 @@ object TodoList {
     fun clearSelection() {
         queue("Clear selection") {
             selectedItems.clear()
-            broadcastRefreshSelection(TodoApplication.app.localBroadCastManager)
+            broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }
 

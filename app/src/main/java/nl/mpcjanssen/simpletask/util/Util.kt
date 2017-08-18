@@ -71,7 +71,7 @@ fun runOnMainThread(r: Runnable) {
 }
 
 fun getString (resId : Int) : String {
-    return TodoApplication.app.getString(resId)
+    return STWApplication.app.getString(resId)
 }
 
 fun showConfirmationDialog(cxt: Context,
@@ -486,12 +486,12 @@ fun readAsset(assets: AssetManager, name: String): String {
     return buf.toString()
 }
 
-fun getRelativeWaitDate(task: Task, app: TodoApplication): String? {
+fun getRelativeWaitDate(task: Task, app: STWApplication): String? {
     val date = task.waitDate ?: return null
     return getRelativeDate(app, "T: ", date).toString()
 }
 
-fun getRelativeDueDate(task: Task, app: TodoApplication): SpannableString? {
+fun getRelativeDueDate(task: Task, app: STWApplication): SpannableString? {
     val date = task.dueDate ?: return null
     return getRelativeDate(app, "Due: ", date)
 }
@@ -516,7 +516,7 @@ fun getRelativeDueDate(task: Task, app: TodoApplication): SpannableString? {
  * @return String representing the relative date
  */
 
-private fun getRelativeDate(app: TodoApplication, prefix: String, dateString: String): SpannableString? {
+private fun getRelativeDate(app: STWApplication, prefix: String, dateString: String): SpannableString? {
     val date = dateString.toDateTime() ?: return null
     val now = DateTime.today(TimeZone.getDefault())
     val days = date.numDaysFrom(now)
@@ -553,7 +553,7 @@ private fun getRelativeDate(app: TodoApplication, prefix: String, dateString: St
     return ss
 }
 
-fun getRelativeAge(task: Task, app: TodoApplication): String? {
+fun getRelativeAge(task: Task, app: STWApplication): String? {
     return getRelativeDate(app, "", task.entryDate).toString()
 }
 

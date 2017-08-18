@@ -40,7 +40,7 @@ import java.util.*
 class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var prefs: SharedPreferences
-    lateinit var app: TodoApplication
+    lateinit var app: STWApplication
 
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private lateinit var m_broadcastReceiver: BroadcastReceiver
@@ -48,7 +48,7 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        app = application as TodoApplication
+        app = application as STWApplication
         localBroadcastManager = app.localBroadCastManager
         val intentFilter = IntentFilter()
         intentFilter.addAction(Constants.BROADCAST_THEME_CHANGED)
@@ -87,13 +87,11 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
 
     override fun onResume() {
         super.onResume()
-        // Set up a listener whenever a key changes
         prefs.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        // Set up a listener whenever a key changes
         prefs.unregisterOnSharedPreferenceChangeListener(this)
     }
 
@@ -105,6 +103,7 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
     override fun onBuildHeaders(target: MutableList<Header>) {
         val allHeaders = ArrayList<Header>()
         loadHeadersFromResource(R.xml.preference_headers, allHeaders)
+        target.addAll(allHeaders)
     }
 
     override fun isValidFragment(fragmentName: String): Boolean {
@@ -167,8 +166,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
             }
         }
     }
-
-    class WidgetPrefFragment : PrefFragment(R.xml.widget_preferences)
 
     class DonatePrefFragment : PrefFragment(R.xml.donate_preferences) {
         override fun onCreate(savedInstanceState: Bundle?) {

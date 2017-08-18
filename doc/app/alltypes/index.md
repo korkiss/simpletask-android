@@ -183,7 +183,7 @@
 | [nl.mpcjanssen.simpletask.sort.ThresholdDateComparator](../nl.mpcjanssen.simpletask.sort/-threshold-date-comparator/index.md) |  |
 | [nl.mpcjanssen.simpletask.task.ThresholdDateToken](../nl.mpcjanssen.simpletask.task/-threshold-date-token/index.md) |  |
 | [nl.mpcjanssen.simpletask.TimePreference](../nl.mpcjanssen.simpletask/-time-preference/index.md) |  |
-| [nl.mpcjanssen.simpletask.TodoApplication](../nl.mpcjanssen.simpletask/-todo-application/index.md) |  |
+| [nl.mpcjanssen.simpletask.STWApplication](../nl.mpcjanssen.simpletask/-todo-application/index.md) |  |
 | [nl.mpcjanssen.simpletask.TodoException](../nl.mpcjanssen.simpletask/-todo-exception/index.md) |  |
 | [nl.mpcjanssen.simpletask.dao.gen.TodoFile](../nl.mpcjanssen.simpletask.dao.gen/-todo-file/index.md) | Entity mapped to table "TODO_FILE". |
 | [nl.mpcjanssen.simpletask.dao.gen.TodoFile](../nl.mpcjanssen.simpletask.dao.gen/-todo-file/index.md) | Entity mapped to table "TODO_FILE". |

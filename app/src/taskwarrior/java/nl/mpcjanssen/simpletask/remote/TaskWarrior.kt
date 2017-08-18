@@ -2,14 +2,12 @@ package nl.mpcjanssen.simpletask.remote
 
 import android.Manifest
 import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.LocalServerSocket
 import android.os.Build
 import nl.mpcjanssen.simpletask.R
 
-import nl.mpcjanssen.simpletask.TodoApplication
-import org.json.JSONObject
+import nl.mpcjanssen.simpletask.STWApplication
 import nl.mpcjanssen.simpletask.TodoException
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.showToastLong
@@ -17,13 +15,10 @@ import java.io.*
 import java.util.regex.Pattern
 
 import android.net.LocalSocket
-import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.taskwc2.controller.sync.SSLHelper
-import nl.mpcjanssen.simpletask.Constants
-import nl.mpcjanssen.simpletask.task.Priority
 import nl.mpcjanssen.simpletask.task.Task
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -78,7 +73,7 @@ object TaskWarrior {
     }
 
     fun getDefaultPath(): File {
-        return File(TodoApplication.app.filesDir , "taskrc.android")
+        return File(STWApplication.app.filesDir , "taskrc.android")
     }
 
     private fun eabiExecutable(): String? {
@@ -93,9 +88,9 @@ object TaskWarrior {
             Arch.X86 -> rawID = if (Build.VERSION.SDK_INT >= 16) R.raw.task_x86_16 else R.raw.task_x86
         }
         try {
-            val file = File(TodoApplication.app.getFilesDir(), "task")
+            val file = File(STWApplication.app.getFilesDir(), "task")
             if (!file.exists()) {
-                val rawStream = TodoApplication.app.getResources().openRawResource(rawID)
+                val rawStream = STWApplication.app.getResources().openRawResource(rawID)
                 val outputStream = FileOutputStream(file)
                 rawStream.copyTo(outputStream, 8912)
                 outputStream.close()
@@ -185,7 +180,7 @@ object TaskWarrior {
                 syncSocket.close()
             }
             if (arguments[0]=="sync") {
-                showToastLong(TodoApplication.app, stderrOutput.last())
+                showToastLong(STWApplication.app, stderrOutput.last())
             }
             return exitCode
         } catch (e: Exception) {
@@ -243,7 +238,7 @@ object TaskWarrior {
         try {
             if (!config.containsKey("taskd.server")) {
                 // Not configured
-                showToastLong(TodoApplication.app, "Sync disabled: no taskd.server value")
+                showToastLong(STWApplication.app, "Sync disabled: no taskd.server value")
                 Log.d(TAG, "taskd.server is empty: sync disabled")
                 return null
             }
@@ -252,7 +247,7 @@ object TaskWarrior {
                 runner = LocalSocketRunner(name, config)
             } catch (e: Exception) {
                 Log.e(TAG, "Sync disabled: certificate load failure",  e)
-                showToastLong(TodoApplication.app, "Sync disabled: certificate load failure")
+                showToastLong(STWApplication.app, "Sync disabled: certificate load failure")
                 return null
             }
 

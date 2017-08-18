@@ -23,7 +23,7 @@ class FilterSortFragment : Fragment() {
     internal var sortUpId: Int = 0
     internal var sortDownId: Int = 0
 
-    internal lateinit var m_app: TodoApplication
+    internal lateinit var m_app: STWApplication
 
     private val onDrop = DragSortListView.DropListener { from, to ->
         if (from != to) {
@@ -56,7 +56,7 @@ class FilterSortFragment : Fragment() {
             }
         }
         Log.d(TAG, "Created view with: " + originalItems!!)
-        m_app = activity.application as TodoApplication
+        m_app = activity.application as STWApplication
 
         // Set the proper theme
         if (Config.isDarkTheme) {

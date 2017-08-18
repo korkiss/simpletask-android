@@ -33,7 +33,6 @@ import android.app.Activity
 import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
 import android.content.*
 import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
@@ -44,7 +43,7 @@ import nl.mpcjanssen.simpletask.util.appVersion
 import nl.mpcjanssen.simpletask.util.todayAsString
 import java.util.*
 
-class TodoApplication : Application(), FileSelectedListener {
+class STWApplication : Application(), FileSelectedListener {
 
     lateinit private var androidUncaughtExceptionHandler: Thread.UncaughtExceptionHandler
     lateinit var localBroadCastManager: LocalBroadcastManager
@@ -134,9 +133,9 @@ class TodoApplication : Application(), FileSelectedListener {
     }
 
     companion object {
-        private val TAG = TodoApplication::class.java.simpleName
+        private val TAG = STWApplication::class.java.simpleName
         fun atLeastAPI(api: Int): Boolean = android.os.Build.VERSION.SDK_INT >= api
-        lateinit var app : TodoApplication
+        lateinit var app : STWApplication
     }
 
     var today: String = todayAsString

@@ -19,7 +19,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
     internal lateinit var mFilter: ActiveFilter
 
-    internal lateinit var m_app: TodoApplication
+    internal lateinit var m_app: STWApplication
     val prefs = Config.prefs
 
     private var pager: ViewPager? = null
@@ -31,7 +31,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
         super.onCreate(savedInstanceState)
 
         Log.i(TAG, "Called with intent: " + intent.toString())
-        m_app = application as TodoApplication
+        m_app = application as STWApplication
 
         setContentView(R.layout.filter)
         val toolbar = findViewById(R.id.toolbar_edit_filter) as Toolbar

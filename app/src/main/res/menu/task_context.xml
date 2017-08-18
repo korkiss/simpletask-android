@@ -66,7 +66,7 @@ You should have received a copy of the GNU General Public License along with Tod
         />
     <item
         android:id="@+id/defer_threshold"
-        android:title="@string/defer_threshold"
+        android:title="@string/defer_wait"
         android:icon="@drawable/ic_clock_start_white_24dp"
         app:showAsAction="ifRoom"
         />

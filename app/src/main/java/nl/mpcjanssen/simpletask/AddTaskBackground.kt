@@ -32,13 +32,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import hirondelle.date4j.DateTime
-import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TodoList
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.showToastShort
 import java.io.IOException
-import java.util.*
 
 class AddTaskBackground : Activity() {
     val TAG = "AddTaskBackground"
@@ -55,7 +52,7 @@ class AddTaskBackground : Activity() {
             if (Intent.ACTION_SEND == action) {
                 Log.d(TAG, "Share")
                 var share_text = ""
-                if (TodoApplication.atLeastAPI(21) && intent.hasExtra(Intent.EXTRA_STREAM)) {
+                if (STWApplication.atLeastAPI(21) && intent.hasExtra(Intent.EXTRA_STREAM)) {
                     val uri = intent.extras.get(Intent.EXTRA_STREAM) as Uri?
                     try {
                         val `is` = contentResolver.openInputStream(uri)
@@ -109,7 +106,7 @@ class AddTaskBackground : Activity() {
         val tasks = sharedText.split("\r\n|\r|\n".toRegex()).filter { it.isNotBlank()}.map { "$it$appendText" }
 
         todoList.add(tasks)
-        showToastShort(TodoApplication.app, R.string.task_added)
+        showToastShort(STWApplication.app, R.string.task_added)
         finish()
     }
 }
