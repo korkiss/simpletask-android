@@ -1,0 +1,2 @@
+/home/mpcjanssen/bin/android/ndk-bundle/toolchains/x86-4.9/prebuilt/linux-x86_64/bin/i686-linux-android-gcc-ar qc libglob.a  CMakeFiles/glob.dir/glob.c.o
+/home/mpcjanssen/bin/android/ndk-bundle/toolchains/x86-4.9/prebuilt/linux-x86_64/bin/i686-linux-android-ranlib libglob.a

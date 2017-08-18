@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/task.dir/CLI2.cpp.o"
+  "CMakeFiles/task.dir/Color.cpp.o"
+  "CMakeFiles/task.dir/Config.cpp.o"
+  "CMakeFiles/task.dir/Context.cpp.o"
+  "CMakeFiles/task.dir/DOM.cpp.o"
+  "CMakeFiles/task.dir/Dates.cpp.o"
+  "CMakeFiles/task.dir/Eval.cpp.o"
+  "CMakeFiles/task.dir/Filter.cpp.o"
+  "CMakeFiles/task.dir/FS.cpp.o"
+  "CMakeFiles/task.dir/Hooks.cpp.o"
+  "CMakeFiles/task.dir/ISO8601.cpp.o"
+  "CMakeFiles/task.dir/JSON.cpp.o"
+  "CMakeFiles/task.dir/Lexer.cpp.o"
+  "CMakeFiles/task.dir/Msg.cpp.o"
+  "CMakeFiles/task.dir/Nibbler.cpp.o"
+  "CMakeFiles/task.dir/RX.cpp.o"
+  "CMakeFiles/task.dir/TDB2.cpp.o"
+  "CMakeFiles/task.dir/Task.cpp.o"
+  "CMakeFiles/task.dir/Timer.cpp.o"
+  "CMakeFiles/task.dir/TLSClient.cpp.o"
+  "CMakeFiles/task.dir/Variant.cpp.o"
+  "CMakeFiles/task.dir/ViewTask.cpp.o"
+  "CMakeFiles/task.dir/ViewText.cpp.o"
+  "CMakeFiles/task.dir/dependency.cpp.o"
+  "CMakeFiles/task.dir/feedback.cpp.o"
+  "CMakeFiles/task.dir/interactive.cpp.o"
+  "CMakeFiles/task.dir/legacy.cpp.o"
+  "CMakeFiles/task.dir/recur.cpp.o"
+  "CMakeFiles/task.dir/rules.cpp.o"
+  "CMakeFiles/task.dir/sort.cpp.o"
+  "CMakeFiles/task.dir/text.cpp.o"
+  "CMakeFiles/task.dir/utf8.cpp.o"
+  "CMakeFiles/task.dir/util.cpp.o"
+  "CMakeFiles/task.dir/wcwidth6.cpp.o"
+  "libtask.pdb"
+  "libtask.a"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/task.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
