@@ -271,19 +271,16 @@
 
     <!-- sort -->
     <string name="sort_help">Drag and drop to change the sort order. Click the items to change sort direction.</string>
-    <string name="file_order">File Order (unsorted)</string>
     <string name="alphabetical">Alphabetical</string>
-    <string name="by_prio">By Priority</string>
-    <string name="by_project">By Tag</string>
-    <string name="by_context">By List</string>
-    <string name="by_project_todotxt">By Project</string>
-    <string name="by_context_todotxt">By Context</string>
+    <string name="by_urgency">By Urgency</string>
+    <string name="by_tag">By Tag</string>
+    <string name="by_project">By Project</string>
     <string name="completed">Completed</string>
-    <string name="by_creation_date">By Creation Date</string>
-    <string name="in_future">Threshold date in future</string>
+    <string name="by_creation_date">By Entry Date</string>
+    <string name="in_future">Wait date in future</string>
     <string name="by_due_date">By Due Date</string>
-    <string name="by_threshold_date">By Threshold Date</string>
-    <string name="by_completion_date">By Completion Date</string>
+    <string name="by_threshold_date">By Wait Date</string>
+    <string name="by_completion_date">By End Date</string>
 	
     <!-- filter -->
     <string name="filter_select_all">Select all</string>

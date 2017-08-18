@@ -30,6 +30,7 @@ android {
     buildToolsVersion "25.0.2"
     compileSdkVersion 25
 
+
 		lintOptions {
 				disable 'InvalidPackage', 'MissingTranslation'
 		}
@@ -45,18 +46,13 @@ android {
     defaultConfig {
         versionName '9.0.7'
         versionCode 3061
-	minSdkVersion 14
+	    minSdkVersion 14
+        applicationId 'nl.mpcjanssen.simpletask.tw'
+        manifestPlaceholders = [ providerFlavour:"tw"]
         // target API 23 because anything newer breaks root:// links
         //noinspection OldTargetApi
         targetSdkVersion 23
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-
-    productFlavors {
-        taskwarrior {
-            applicationId 'nl.mpcjanssen.simpletask.tw'
-            manifestPlaceholders = [ providerFlavour:"tw"]
-        }
     }
 
     signingConfigs {
