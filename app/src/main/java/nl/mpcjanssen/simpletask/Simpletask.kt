@@ -33,8 +33,10 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -1093,11 +1095,16 @@ class Simpletask : ThemedNoActionBarActivity() {
                 view.checkBox.visibility = View.GONE
             }
 
-            val txt = task.displayText
-
-            val ss = SpannableString(txt)
-
             val completed = task.isCompleted()
+            val text = task.displayText
+
+            val startColorSpan = text.length
+            val tags = task.tags.map { "+"+it }.joinToString(" ")
+            val project = task.project?.let {" @" + it} ?: ""
+            val fullText = (text + project + " " + tags).trim()
+            val ss = SpannableString(fullText)
+
+            ss.setSpan(ForegroundColorSpan(Color.GRAY), startColorSpan, ss.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
             taskAge.textSize = textSize * Config.dateBarRelativeSize
             taskDue.textSize = textSize * Config.dateBarRelativeSize
@@ -1136,15 +1143,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                 view.checkBox.isEnabled = true
             }
             cb.isChecked = completed
-
-            if (task.project!=null || task.tags.isNotEmpty()) {
-                view.detailsbar.visibility = View.VISIBLE
-                view.detailsbar.taskproject.text = task.project?: ""
-                view.detailsbar.tasktags.text = task.tags.joinToString(", ")
-            } else {
-                view.detailsbar.visibility = View.GONE
-            }
-
 
             val relAge = getRelativeAge(task, m_app)
             val relDue = getRelativeDueDate(task, m_app)
