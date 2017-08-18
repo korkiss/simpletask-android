@@ -29,7 +29,6 @@
  */
 package nl.mpcjanssen.simpletask.task
 
-import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import nl.mpcjanssen.simpletask.*
@@ -38,14 +37,13 @@ import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.sort.MultiComparator
 import nl.mpcjanssen.simpletask.util.*
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.collections.ArrayList
 
 /**
- * Implementation of the in memory representation of the Todo list
- * uses an ActionQueue to ensure modifications and access of the underlying todo list are
- * sequential. If this is not done properly the result is a likely ConcurrentModificationException.
+ * Implementation of the in memory representation of the Task list
+ * uses an ActionQueue to ensure modifications and access of the underlying task list are
+ * sequential.
 
  * @author Mark Janssen
  */
@@ -53,13 +51,13 @@ import kotlin.collections.ArrayList
 
 
 
-object TodoList {
+object TaskList {
 
     private var mLists: ArrayList<String>? = null
     private var mTags: ArrayList<String>? = null
-    val todoItems = CopyOnWriteArrayList<Task>()
-    val selectedItems = CopyOnWriteArraySet<Task>()
-    internal val TAG = TodoList::class.java.simpleName
+    private val todoItems = ArrayList<Task>()
+    private val selectedUUIDs = CopyOnWriteArraySet<String>()
+    internal val TAG = TaskList::class.java.simpleName
 
     fun hasPendingAction(): Boolean {
         return ActionQueue.hasPending()
@@ -95,7 +93,8 @@ object TodoList {
     fun removeAll(tasks: List<Task>) {
         queue("Remove") {
             TaskWarrior.callTaskForSelection(tasks, "delete")
-            selectedItems.removeAll(tasks)
+            val deletedUUIDs = tasks.map(Task::uuid)
+            selectedUUIDs.removeAll(deletedUUIDs)
             reload()
         }
     }
@@ -170,24 +169,12 @@ object TodoList {
         }
     }
 
-    var selectedTasks: List<Task> = ArrayList()
+    var selection: List<Task> = ArrayList()
         get() {
-            return selectedItems.toList()
+            return todoItems.filter {
+                it.uuid in selectedUUIDs
+            }
         }
-
-    var completedTasks: List<Task> = ArrayList()
-        get() {
-            return todoItems.filter { it.isCompleted }
-        }
-
-    fun startAddTaskActivity(act: Activity, prefill: String) {
-        queue("Start add/edit task activity") {
-            Log.i(TAG, "Starting addTask activity")
-            val intent = Intent(act, AddTask::class.java)
-            intent.putExtra(Constants.EXTRA_PREFILL_TEXT, prefill)
-            act.startActivity(intent)
-        }
-    }
 
     fun getSortedTasks(filter: ActiveFilter, sorts: ArrayList<String>, caseSensitive: Boolean): Sequence<Task> {
         val comp = MultiComparator(sorts, STWApplication.app.today, caseSensitive, filter.createIsThreshold)
@@ -216,7 +203,7 @@ object TodoList {
 
             STWApplication.app.localBroadCastManager.sendBroadcast(Intent(Constants.BROADCAST_SYNC_START))
             if (!Config.hasKeepSelection) {
-                TodoList.clearSelection()
+                TaskList.clearSelection()
             }
             todoItems.clear()
             todoItems.addAll(TaskWarrior.taskList())
@@ -227,16 +214,17 @@ object TodoList {
     }
 
     fun isSelected(item: Task): Boolean {
-        return selectedItems.indexOf(item) > -1
+        return item.uuid in selectedUUIDs
     }
 
     fun numSelected(): Int {
-        return selectedItems.size
+        return selectedUUIDs.size
     }
 
     fun selectTasks(items: List<Task>) {
         queue("Select") {
-            selectedItems.addAll(items)
+            val uuids = items.map(Task::uuid)
+            selectedUUIDs.addAll(uuids)
             broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }
@@ -253,7 +241,8 @@ object TodoList {
 
     fun unSelectTasks(items: List<Task>) {
         queue("Unselect") {
-            selectedItems.removeAll(items)
+            val uuids = items.map(Task::uuid)
+            selectedUUIDs.removeAll(uuids)
             broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }
@@ -261,7 +250,7 @@ object TodoList {
 
     fun clearSelection() {
         queue("Clear selection") {
-            selectedItems.clear()
+            selectedUUIDs.clear()
             broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
     }

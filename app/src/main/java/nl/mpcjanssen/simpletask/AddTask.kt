@@ -18,7 +18,7 @@ import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
 import kotlinx.android.synthetic.main.add_task.*
-import nl.mpcjanssen.simpletask.task.TodoList
+import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
 
 class AddTask : ThemedActionBarActivity() {
@@ -172,10 +172,10 @@ class AddTask : ThemedActionBarActivity() {
             return
         }
 
-        // Update the TodoList with changes
+        // Update the TaskList with changes
         // Create new tasks
         val enteredTasks = getLines().filter { it.isNotBlank()}
-        TodoList.add(enteredTasks)
+        TaskList.add(enteredTasks)
         finish()
     }
 

@@ -37,7 +37,7 @@ import android.content.*
 import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import nl.mpcjanssen.simpletask.remote.*
-import nl.mpcjanssen.simpletask.task.TodoList
+import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.appVersion
 import nl.mpcjanssen.simpletask.util.todayAsString
@@ -57,7 +57,7 @@ class STWApplication : Application(), FileSelectedListener {
         setupUncaughtExceptionHandler()
 
 
-        Log.i(TAG, "Created todolist " + TodoList)
+        Log.i(TAG, "Created todolist " + TaskList)
         Log.i(TAG, "onCreate()")
         Log.i(TAG, "Started ${appVersion(this)}")
         scheduleOnNewDay()
@@ -103,7 +103,7 @@ class STWApplication : Application(), FileSelectedListener {
 
     fun loadTodoList(reason: String) {
         Log.v(TAG, "Reloading file: $reason")
-        TodoList.reload()
+        TaskList.reload()
     }
 
     override fun fileSelected(file: String) {

@@ -52,7 +52,7 @@ import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.task.Task
-import nl.mpcjanssen.simpletask.task.TodoList
+import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
 import nl.mpcjanssen.simpletask.util.*
 import org.json.JSONObject
@@ -177,14 +177,14 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun selectedTasksAsTodoTxt(): String {
-        return TodoList.selectedTasks.asCliList()
+        return TaskList.selection.asCliList()
     }
 
     private fun selectAllTasks() {
         val selectedTasks = m_adapter!!.visibleLines
                 .filterNot(VisibleLine::header)
                 .map { it.task!! }
-        TodoList.selectTasks(selectedTasks)
+        TaskList.selectTasks(selectedTasks)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -281,12 +281,12 @@ class Simpletask : ThemedNoActionBarActivity() {
                 if (position > -1) {
                     val itemAtPosition = adapter.getNthTask(position)
                     itemAtPosition?.let {
-                        TodoList.clearSelection()
-                        TodoList.selectTask(itemAtPosition)
+                        TaskList.clearSelection()
+                        TaskList.selectTask(itemAtPosition)
                     }
                 }
             }
-            val selection = TodoList.selectedTasks
+            val selection = TaskList.selection
             if (selection.isNotEmpty()) {
                 val selectedTask = selection[0]
                 m_scrollPosition = adapter.getPosition(selectedTask)
@@ -302,9 +302,9 @@ class Simpletask : ThemedNoActionBarActivity() {
             actionbar.visibility = View.GONE
         }
         val count = if (m_adapter != null) m_adapter!!.countVisibleTasks else 0
-        TodoList.queue("Update filter bar") {
+        TaskList.queue("Update filter bar") {
             runOnUiThread {
-                val total = TodoList.getTaskCount()
+                val total = TaskList.getTaskCount()
                 filter_text.text = MainFilter.getTitle(
                         count,
                         total,
@@ -369,7 +369,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
 
                 inflater.inflate(R.menu.task_context_actionbar, menu)
-                title = "${TodoList.numSelected()}"
+                title = "${TaskList.numSelected()}"
                 toggle.isDrawerIndicatorEnabled = false
                 fab.visibility = View.GONE
                 toolbar.setOnMenuItemClickListener { item ->
@@ -380,7 +380,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 inflater.inflate(R.menu.task_context, toolbar.menu)
 
                 val cbItem = toolbar.menu.findItem(R.id.multicomplete_checkbox)
-                val selectedTasks = TodoList.selectedTasks
+                val selectedTasks = TaskList.selection
                 val initialCompleteTasks = ArrayList<Task>()
                 val initialIncompleteTasks = ArrayList<Task>()
                 var cbState: Boolean?
@@ -460,7 +460,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     private fun activeMode(): Mode {
         if (isDrawerOpen(NAV_DRAWER)) return Mode.NAV_DRAWER
         if (isDrawerOpen(FILTER_DRAWER)) return Mode.FILTER_DRAWER
-        if (TodoList.selectedTasks.isNotEmpty()) return Mode.SELECTION
+        if (TaskList.selection.isNotEmpty()) return Mode.SELECTION
         return Mode.MAIN
     }
 
@@ -555,11 +555,11 @@ class Simpletask : ThemedNoActionBarActivity() {
         uncompleteTasks(tasks)
     }
     private fun completeTasks(tasks: List<Task>) {
-        TodoList.complete(tasks)
+        TaskList.complete(tasks)
     }
 
     private fun uncompleteTasks(tasks: List<Task>) {
-        TodoList.uncomplete(tasks)
+        TaskList.uncomplete(tasks)
     }
 
     private fun deferTasks(tasks: List<Task>, dateType: DateType) {
@@ -578,7 +578,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                         var startMonth = month
                         startMonth++
                         val date = DateTime.forDateOnly(year, startMonth, day)
-                        TodoList.defer(date.format(Constants.DATE_FORMAT), tasks, dateType)
+                        TaskList.defer(date.format(Constants.DATE_FORMAT), tasks, dateType)
                     },
                             today.year!!,
                             today.month!! - 1,
@@ -586,7 +586,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
                     dialog.show()
                 } else {
-                    TodoList.defer(input, tasks, dateType)
+                    TaskList.defer(input, tasks, dateType)
                 }
 
             }
@@ -599,7 +599,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val title = getString(R.string.delete_task_title)
                     .replaceFirst(Regex("%s"), numTasks.toString())
         val delete = DialogInterface.OnClickListener { _, _ ->
-            TodoList.removeAll(tasks)
+            TaskList.removeAll(tasks)
             invalidateOptionsMenu()
         }
 
@@ -609,7 +609,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         Log.i(TAG, "onMenuItemSelected: " + item.itemId)
-        val checkedTasks = TodoList.selectedTasks
+        val checkedTasks = TaskList.selection
         when (item.itemId) {
             androidId.home -> {
                 when (activeMode()) {
@@ -641,7 +641,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 shareText(this@Simpletask, "Simpletask tasks", shareText)
             }
             R.id.help -> showHelp()
-            R.id.sync -> TodoList.sync()
+            R.id.sync -> TaskList.sync()
             R.id.open_file -> {
                 // Check if we have SDCard permission for cloudless
                 if (TaskWarrior.getWritePermission(this, REQUEST_PERMISSION)) {
@@ -797,7 +797,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun closeSelectionMode() {
-        TodoList.clearSelection()
+        TaskList.clearSelection()
         invalidateOptionsMenu()
         m_adapter?.notifyDataSetChanged()
         m_adapter?.setFilteredTasks()
@@ -967,8 +967,8 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun updateFilterDrawer() {
-        val decoratedContexts = alfaSortList(TodoList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
-        val decoratedProjects = alfaSortList(TodoList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
+        val decoratedContexts = alfaSortList(TaskList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
+        val decoratedProjects = alfaSortList(TaskList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
                 Config.projectTerm,
                 decoratedContexts,
@@ -1157,16 +1157,16 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskThreshold.visibility = View.GONE
             }
             // Set selected state
-            view.isActivated = TodoList.isSelected(item)
+            view.isActivated = TaskList.isSelected(item)
 
             // Set click listeners
             view.setOnClickListener { it ->
 
-                val newSelectedState = !TodoList.isSelected(item)
+                val newSelectedState = !TaskList.isSelected(item)
                 if (newSelectedState) {
-                    TodoList.selectTask(item)
+                    TaskList.selectTask(item)
                 } else {
-                    TodoList.unSelectTask(item)
+                    TaskList.unSelectTask(item)
                 }
                 it.isActivated = newSelectedState
                 invalidateOptionsMenu()
@@ -1231,14 +1231,14 @@ class Simpletask : ThemedNoActionBarActivity() {
         internal var visibleLines = ArrayList<VisibleLine>()
 
         internal fun setFilteredTasks() {
-            TodoList.queue("setFilteredTasks") {
+            TaskList.queue("setFilteredTasks") {
                 runOnUiThread {
                     showListViewProgress(true)
                 }
                 val visibleTasks: Sequence<Task>
-                Log.i(TAG, "setFilteredTasks called: " + TodoList)
+                Log.i(TAG, "setFilteredTasks called: " + TaskList)
                 val sorts = MainFilter.getSort(Config.defaultSorts)
-                visibleTasks = TodoList.getSortedTasks(MainFilter, sorts, Config.sortCaseSensitive)
+                visibleTasks = TaskList.getSortedTasks(MainFilter, sorts, Config.sortCaseSensitive)
                 val newVisibleLines = ArrayList<VisibleLine>()
 
                 newVisibleLines.addAll(addHeaderLines(visibleTasks, MainFilter, getString(R.string.no_header)))
@@ -1320,7 +1320,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun updateProject(checkedTasks: List<Task>) {
-        val allItems = TodoList.projects
+        val allItems = TaskList.projects
         allItems.add(0,"")
         allItems.sort()
 
@@ -1336,7 +1336,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         builder.setPositiveButton(R.string.ok) { _, _ ->
             val newText = ed.text.toString()
             if (newText.isNotEmpty()) {
-                TodoList.updateProject(checkedTasks, newText)
+                TaskList.updateProject(checkedTasks, newText)
                 return@setPositiveButton
             }
         }
@@ -1344,7 +1344,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val dialog = builder.create()
 
         rcv.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            TodoList.updateProject(checkedTasks, allItems[position])
+            TaskList.updateProject(checkedTasks, allItems[position])
             dialog.cancel()
         }
 
@@ -1354,7 +1354,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun updateTags(checkedTasks: List<Task>) {
         val checkedTaskItems = ArrayList<HashSet<String>>()
-        val allItems = TodoList.tags
+        val allItems = TaskList.tags
         checkedTasks.forEach {
             val items = HashSet<String>()
             items.addAll(it.tags)
@@ -1402,7 +1402,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             if (newText.isNotEmpty()) {
                     tagsToAdd.add(newText)
             }
-            TodoList.updateTags(checkedTasks, tagsToAdd, tagsToRemove)
+            TaskList.updateTags(checkedTasks, tagsToAdd, tagsToRemove)
         }
         builder.setNegativeButton(R.string.cancel) { _, _ -> }
         // Create the AlertDialog
@@ -1447,7 +1447,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             MainFilter.saveInPrefs(Config.prefs)
             setIntent(intent)
             if (!Config.hasKeepSelection) {
-                TodoList.clearSelection()
+                TaskList.clearSelection()
             }
             m_adapter!!.setFilteredTasks()
         }

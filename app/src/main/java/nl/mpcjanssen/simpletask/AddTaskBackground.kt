@@ -32,7 +32,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import nl.mpcjanssen.simpletask.task.TodoList
+import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.showToastShort
 import java.io.IOException
@@ -100,7 +100,7 @@ class AddTaskBackground : Activity() {
     }
 
     private fun addBackgroundTask(sharedText: String, appendText: String) {
-        val todoList = TodoList
+        val todoList = TaskList
         Log.d(TAG, "Adding background tasks to todolist {} " + todoList)
 
         val tasks = sharedText.split("\r\n|\r|\n".toRegex()).filter { it.isNotBlank()}.map { "$it$appendText" }

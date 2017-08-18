@@ -189,7 +189,7 @@
 | [nl.mpcjanssen.simpletask.dao.gen.TodoFile](../nl.mpcjanssen.simpletask.dao.gen/-todo-file/index.md) | Entity mapped to table "TODO_FILE". |
 | [nl.mpcjanssen.simpletask.dao.gen.TodoFileDao](../nl.mpcjanssen.simpletask.dao.gen/-todo-file-dao/index.md) | DAO for table "TODO_FILE". |
 | [nl.mpcjanssen.simpletask.dao.gen.TodoFileDao](../nl.mpcjanssen.simpletask.dao.gen/-todo-file-dao/index.md) | DAO for table "TODO_FILE". |
-| [nl.mpcjanssen.simpletask.task.TodoList](../nl.mpcjanssen.simpletask.task/-todo-list/index.md) | Implementation of the in memory representation of the Todo list uses an ActionQueue to ensure modifications and access of the underlying todo list are sequential. If this is not done properly the result is a likely ConcurrentModificationException. |
+| [nl.mpcjanssen.simpletask.task.TaskList](../nl.mpcjanssen.simpletask.task/-todo-list/index.md) | Implementation of the in memory representation of the Todo list uses an ActionQueue to ensure modifications and access of the underlying todo list are sequential. If this is not done properly the result is a likely ConcurrentModificationException. |
 | [nl.mpcjanssen.simpletask.remote.TodoObserver](../nl.mpcjanssen.simpletask.remote/-todo-observer/index.md) |  |
 | [nl.mpcjanssen.simpletask.VisibleLine](../nl.mpcjanssen.simpletask/-visible-line/index.md) |  |
 | [nl.mpcjanssen.simpletask.task.WhiteSpaceToken](../nl.mpcjanssen.simpletask.task/-white-space-token/index.md) |  |
