@@ -124,52 +124,7 @@ object TaskWarrior {
                 line?.let{result.add(it)}
             }}, *params.toTypedArray())
         Log.d(TAG, "List for size  ${result.size}")
-        return result.map { jsonToTask(it) }
-    }
-
-
-    fun jsonToTask (jsonStr: String) : Task {
-        val json = JSONObject(jsonStr)
-        val uuid = json.getString("uuid")
-        val desc = json.getString("description")
-        val endDate = json.optString("end", null)?.let {
-            val year = it.slice(0..3)
-            val month = it.slice(4..5)
-            val day = it.slice(6..7)
-            "$year-$month-$day "
-        }
-        val entryDate = json.getString("entry").let {
-            val year = it.slice(0..3)
-            val month = it.slice(4..5)
-            val day = it.slice(6..7)
-            "$year-$month-$day "
-        }
-        val tags = ArrayList<String>()
-        json.optJSONArray("tags")?.let {
-            for (i in 0..it.length() - 1) {
-                tags.add(it.getString(i))
-            }
-        }
-        val annotations = ArrayList<String>()
-        json.optJSONArray("annotations")?.let {
-            for (i in 0..it.length() - 1) {
-                annotations.add(it.getString(i))
-            }
-        }
-        val project = json.optString("project", null)
-
-        val status =  json.getString("status")
-
-        val waitDate = json.optString("wait", null)?.let {
-            val year = it.slice(0..3)
-            val month = it.slice(4..5)
-            val day = it.slice(6..7)
-            "$year-$month-$day"
-        }
-
-        val urgency = json.getDouble("urgency")
-
-        return Task(json, uuid, desc, annotations, project, tags, urgency, status, null, waitDate, endDate, entryDate )
+        return result.map(Task.Companion::fromJSON)
     }
 
     fun callTask(vararg arguments: String) {

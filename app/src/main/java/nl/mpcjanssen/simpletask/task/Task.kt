@@ -1,9 +1,9 @@
 package nl.mpcjanssen.simpletask.task
 
-import hirondelle.date4j.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.*
+import java.util.regex.Pattern
+
 
 data class Task(
         val json: JSONObject,
@@ -19,13 +19,15 @@ data class Task(
         val endDate: String?,
         val entryDate: String) {
 
-    fun isCompleted(): Boolean {
-        return status =="completed"
-    }
+    val isCompleted: Boolean
+        get() {
+            return status == "completed"
+        }
 
-    fun isDeleted(): Boolean {
-        return status =="deleted"
-    }
+    val isDeleted: Boolean
+        get() {
+            return status == "deleted"
+        }
 
 
     fun inFuture(today: String): Boolean {
@@ -38,6 +40,38 @@ data class Task(
 
     val displayText: String = description
 
+    val asTodoTxt: String
+    get() {
+        val resultBuilder = StringBuilder()
+        resultBuilder.append(if (isCompleted) "x $endDate " else "")
+        resultBuilder.append("$entryDate ")
+
+        resultBuilder.append(description.trim())
+
+        dueDate?.let {
+            resultBuilder.append(" due:$it")
+        }
+        waitDate?.let {
+            resultBuilder.append(" t:$it")
+        }
+        project?.let {
+            resultBuilder.append(" @$project")
+        }
+        if (tags.isNotEmpty()) {
+            val tagsString = tags.map { "+$it" }.joinToString(" ")
+            resultBuilder.append(" $tagsString")
+        }
+        if (isDeleted) {
+            resultBuilder.append(" h:1")
+        }
+        return resultBuilder.toString()
+    }
+
+    val links : List<String>
+    get() {
+        val text = description + " " + annotations.joinToString(" ")
+        return MATCH_URI.findAll(text).map { it.value }.toList()
+    }
 
     fun getHeader(sort: String, empty: String, createIsThreshold: Boolean): String {
         if (sort.contains("by_context")) {
@@ -47,7 +81,7 @@ data class Task(
                 return empty
             }
         } else if (sort.contains("by_project")) {
-            if (tags.size > 0) {
+            if (tags.isNotEmpty()) {
                 return tags.first()
             } else {
                 return empty
@@ -69,14 +103,55 @@ data class Task(
 
     companion object {
         const val DATE_FORMAT = "YYYY-MM-DD"
+        val MATCH_URI = Regex("[a-z]+://(\\S+)")
+        fun fromJSON (jsonStr: String) : Task {
+            val json = JSONObject(jsonStr)
+            val uuid = json.getString("uuid")
+            val desc = json.getString("description")
+            val endDate = json.optString("end", null)?.let {
+                val year = it.slice(0..3)
+                val month = it.slice(4..5)
+                val day = it.slice(6..7)
+                "$year-$month-$day"
+            }
+            val entryDate = json.getString("entry").let {
+                val year = it.slice(0..3)
+                val month = it.slice(4..5)
+                val day = it.slice(6..7)
+                "$year-$month-$day"
+            }
+            val tags = ArrayList<String>()
+            json.optJSONArray("tags")?.let {
+                for (i in 0..it.length() - 1) {
+                    tags.add(it.getString(i))
+                }
+            }
+            val annotations = ArrayList<String>()
+            json.optJSONArray("annotations")?.let {
+                for (i in 0..it.length() - 1) {
+                    val annotationObj = it.getJSONObject(i)
+                    annotations.add(annotationObj.getString("description"))
+                }
+            }
+            val project = json.optString("project", null)
+
+            val status =  json.getString("status")
+
+            val waitDate = json.optString("wait", null)?.let {
+                val year = it.slice(0..3)
+                val month = it.slice(4..5)
+                val day = it.slice(6..7)
+                "$year-$month-$day"
+            }
+
+            val urgency = json.getDouble("urgency")
+
+            return Task(json, uuid, desc, annotations, project, tags, urgency, status, null, waitDate, endDate, entryDate )
+        }
     }
 }
 
-val <Task> List<Task>.asJSON: String
-    get() {
-        val result = JSONArray()
-        this.forEach {
-            result.put(it)
-        }
-        return result.toString(1)
+fun List<Task>.asTodoTxtList(): String {
+        return this.map { it.asTodoTxt }.joinToString ("\n")
     }
+

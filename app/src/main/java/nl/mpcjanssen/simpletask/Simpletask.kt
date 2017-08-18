@@ -44,7 +44,6 @@ import android.widget.*
 import android.widget.AdapterView.OnItemLongClickListener
 import hirondelle.date4j.DateTime
 import kotlinx.android.synthetic.main.list_header.view.*
-import kotlinx.android.synthetic.main.list_item.*
 import kotlinx.android.synthetic.main.list_item.view.*
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.update_project_dialog.view.*
@@ -52,10 +51,9 @@ import kotlinx.android.synthetic.main.update_tags_dialog.view.*
 import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
-import nl.mpcjanssen.simpletask.task.Priority
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TodoList
-import nl.mpcjanssen.simpletask.task.asJSON
+import nl.mpcjanssen.simpletask.task.asTodoTxtList
 import nl.mpcjanssen.simpletask.util.*
 import org.json.JSONObject
 import java.io.File
@@ -147,15 +145,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_SHARE_PARTS -> if (resultCode != Activity.RESULT_CANCELED) {
-                val flags = resultCode - Activity.RESULT_FIRST_USER
-                shareTodoList(flags)
-            }
-        }
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -187,9 +176,8 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    private fun selectedTasksAsString(): String {
-        val result = ArrayList<String>()
-        return TodoList.selectedTasks.asJSON
+    private fun selectedTasksAsTodoTxt(): String {
+        return TodoList.selectedTasks.asTodoTxtList()
     }
 
     private fun selectAllTasks() {
@@ -397,10 +385,10 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val initialCompleteTasks = ArrayList<Task>()
                 val initialIncompleteTasks = ArrayList<Task>()
                 var cbState: Boolean?
-                cbState = selectedTasks.getOrNull(0)?.isCompleted()
+                cbState = selectedTasks.getOrNull(0)?.isCompleted
 
                 selectedTasks.forEach {
-                    if (it.isCompleted()) {
+                    if (it.isCompleted) {
                         initialCompleteTasks.add(it)
                         if (!(cbState ?: false)) { cbState = null }
                     } else {
@@ -549,12 +537,14 @@ class Simpletask : ThemedNoActionBarActivity() {
         return null
     }*/
 
-    private fun shareTodoList(format: Int) {
-        val text = StringBuilder()
+    private fun shareVisibleTodoList() {
+        val text =
         m_adapter!!.visibleLines
                 .filterNot { it.header }
-                .forEach { text.append(it.task?.description).append("\n") }
-        shareText(this, "Simpletask list", text.toString())
+                .map {it.task }
+                .filterNotNull().asTodoTxtList()
+
+        shareText(this, "Simpletask list", text)
     }
 
     private fun prioritizeTasks(tasks: List<Task>) {
@@ -655,11 +645,10 @@ class Simpletask : ThemedNoActionBarActivity() {
             R.id.context_delete -> deleteTasks(checkedTasks)
             R.id.context_select_all -> selectAllTasks()
             R.id.share -> {
-                val shareText = TodoList.todoItems.map(Task::description).joinToString(separator = "\n")
-                shareText(this@Simpletask, "Simpletask list", shareText)
+                shareVisibleTodoList()
             }
             R.id.context_share -> {
-                val shareText = selectedTasksAsString()
+                val shareText = selectedTasksAsTodoTxt()
                 shareText(this@Simpletask, "Simpletask tasks", shareText)
             }
             R.id.help -> showHelp()
@@ -1095,7 +1084,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 view.checkBox.visibility = View.GONE
             }
 
-            val completed = task.isCompleted()
+            val completed = task.isCompleted
             val text = task.displayText
 
             val startColorSpan = text.length
@@ -1135,13 +1124,22 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
 
             }
-            if (task.isDeleted()) {
+            if (task.isDeleted) {
                 view.deletedIndicator.visibility = View.VISIBLE
                 view.checkBox.isEnabled = false
             } else {
                 view.deletedIndicator.visibility = View.GONE
                 view.checkBox.isEnabled = true
             }
+
+
+            if (task.annotations.isNotEmpty()) {
+                view.annotationbar.visibility=View.VISIBLE
+                view.annotationbar.annotations.text = task.annotations.joinToString("\n")
+            } else {
+                view.annotationbar.visibility=View.GONE
+            }
+
             cb.isChecked = completed
 
             val relAge = getRelativeAge(task, m_app)
@@ -1189,8 +1187,8 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val links = ArrayList<String>()
                 val actions = ArrayList<String>()
                 val t = item
-                for (link in t.annotations) {
-                    actions.add(ANNOTATION_LINE)
+                for (link in t.links) {
+                    actions.add(ACTION_LINK)
                     links.add(link)
                 }
                 if (actions.size != 0) {
@@ -1468,11 +1466,9 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     companion object {
 
-        private val REQUEST_SHARE_PARTS = 1
         private val REQUEST_PREFERENCES = 2
         private val REQUEST_PERMISSION = 3
 
-        private val ANNOTATION_LINE = "annotation"
         private val ACTION_LINK = "link"
         private val ACTION_SMS = "sms"
         private val ACTION_PHONE = "phone"
@@ -1483,5 +1479,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         private val TAG = "Simpletask"
     }
 }
+
+
 
 

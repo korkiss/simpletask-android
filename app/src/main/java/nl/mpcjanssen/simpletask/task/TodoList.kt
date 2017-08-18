@@ -177,7 +177,7 @@ object TodoList {
 
     var completedTasks: List<Task> = ArrayList()
         get() {
-            return todoItems.filter { it.isCompleted() }
+            return todoItems.filter { it.isCompleted }
         }
 
     fun startAddTaskActivity(act: Activity, prefill: String) {

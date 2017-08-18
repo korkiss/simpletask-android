@@ -93,7 +93,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
             itemForLightTheme(rv)
         }
 
-        if (task.isCompleted()) {
+        if (task.isCompleted) {
             ss.setSpan(StrikethroughSpan(), 0, ss.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         rv.setTextViewText(R.id.tasktext, ss)
@@ -120,7 +120,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
         } else {
             rv.setTextViewText(R.id.taskthreshold, "")
         }
-        if (!anyDateShown || task.isCompleted() || !extended_widget) {
+        if (!anyDateShown || task.isCompleted || !extended_widget) {
             rv.setViewVisibility(R.id.datebar, View.GONE)
             //rv.setViewPadding(R.id.tasktext,
             //       4, 4, 4, 4);

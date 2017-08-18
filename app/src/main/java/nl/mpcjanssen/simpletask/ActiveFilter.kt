@@ -235,10 +235,10 @@ class ActiveFilter(val options: FilterOptions) {
             if (options.showSelected && TodoList.isSelected(it)) {
                 return@filter true
             }
-            if (this.hideHidden && it.isDeleted()) {
+            if (this.hideHidden && it.isDeleted) {
                 return@filter false
             }
-            if (this.hideCompleted && it.isCompleted()) {
+            if (this.hideCompleted && it.isCompleted) {
                 return@filter false
             }
             if (this.hideFuture && it.inFuture(today)) {
