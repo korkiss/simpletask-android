@@ -27,13 +27,9 @@
  */
 package nl.mpcjanssen.simpletask
 
-import android.Manifest
 import android.content.*
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.preference.*
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import android.view.MenuItem
@@ -71,8 +67,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
         when (key) {
-            getString(R.string.calendar_sync_thresholds),
-            getString(R.string.calendar_sync_dues) -> requestCalendarPermission()
             getString(R.string.theme_pref_key) -> {
                 onContentChanged()
                 val broadcastIntent = Intent(Constants.BROADCAST_THEME_CHANGED)
@@ -87,18 +81,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
             getString(R.string.font_size) -> {
                 val broadcastIntent = Intent(Constants.BROADCAST_UPDATE_UI)
                 localBroadcastManager.sendBroadcast(broadcastIntent)
-            }
-        }
-    }
-
-    private fun requestCalendarPermission() {
-        if (Config.isSyncDues || Config.isSyncThresholds) {
-            val permissionCheck = ContextCompat.checkSelfPermission(app,
-            Manifest.permission.WRITE_CALENDAR)
-
-            if (permissionCheck == PackageManager.PERMISSION_DENIED) {
-                ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.WRITE_CALENDAR), 0)
             }
         }
     }
@@ -123,13 +105,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
     override fun onBuildHeaders(target: MutableList<Header>) {
         val allHeaders = ArrayList<Header>()
         loadHeadersFromResource(R.xml.preference_headers, allHeaders)
-
-        // Remove calendar preferences for older devices
-        if (!TodoApplication.atLeastAPI(16)) {
-            target.addAll(allHeaders.filter { !it.fragment.equals(CalendarPrefFragment::class.java.name) })
-        } else {
-            target.addAll(allHeaders)
-        }
     }
 
     override fun isValidFragment(fragmentName: String): Boolean {
@@ -194,9 +169,6 @@ class Preferences : ThemedPreferenceActivity(), SharedPreferences.OnSharedPrefer
     }
 
     class WidgetPrefFragment : PrefFragment(R.xml.widget_preferences)
-    class CalendarPrefFragment : PrefFragment(R.xml.calendar_preferences)
-    class ConfigurationPrefFragment : PrefFragment(R.xml.configuration_preferences)
-    class OtherPrefFragment : PrefFragment(R.xml.other_preferences)
 
     class DonatePrefFragment : PrefFragment(R.xml.donate_preferences) {
         override fun onCreate(savedInstanceState: Bundle?) {

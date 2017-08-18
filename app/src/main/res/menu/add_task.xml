@@ -16,12 +16,6 @@
         app:showAsAction="never"
         />
     <item
-        android:id="@+id/menu_capitalize_tasks"
-        android:title="@string/menu_capitalize_tasks"
-        android:checkable="true"
-        app:showAsAction="never"
-        />
-    <item
         android:id="@+id/menu_show_edittext_hint"
         android:title="@string/show_edittext_hint_title"
         android:checkable="true"

@@ -2,6 +2,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/ui_sort_case_sensitive"
+            android:title="@string/sort_case_sensitive_title"
+    />
+    <CheckBoxPreference
         android:defaultValue="true"
         android:key="@string/ui_show_confirmation_dialogs"
         android:summary="@string/show_confirmation_dialogs_summary"
@@ -26,14 +31,4 @@
         android:summary="@string/share_task_append_text_summary"
         android:title="@string/share_task_append_text_title"
         />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="@string/ui_show_calendarview"
-        android:title="@string/show_calendarview_title"
-        />
-    <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="@string/use_uuids"
-            android:title="@string/use_uuid_title"
-    />
 </PreferenceScreen>

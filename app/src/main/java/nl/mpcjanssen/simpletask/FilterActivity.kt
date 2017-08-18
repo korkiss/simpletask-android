@@ -1,8 +1,5 @@
 package nl.mpcjanssen.simpletask
 
-import android.app.Activity
-import android.appwidget.AppWidgetManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.TabLayout
@@ -10,22 +7,16 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
 import android.support.v4.view.ViewPager
-import android.support.v7.app.AlertDialog
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.EditText
-import nl.mpcjanssen.simpletask.task.TodoList
-import nl.mpcjanssen.simpletask.util.*
-import java.io.File
-
+import nl.mpcjanssen.simpletask.util.Config
+import nl.mpcjanssen.simpletask.util.getString
 import java.util.*
 
 class FilterActivity : ThemedNoActionBarActivity() {
 
-    internal var asWidgetConfigure = false
-    internal var asWidgetReConfigure = false
     internal lateinit var mFilter: ActiveFilter
 
     internal lateinit var m_app: TodoApplication
@@ -35,13 +26,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
     private var m_menu: Menu? = null
     private var pagerAdapter: ScreenSlidePagerAdapter? = null
     private var m_page = 0
-
-    override fun onBackPressed() {
-        if (!asWidgetConfigure && !asWidgetReConfigure) {
-            applyFilter()
-        }
-        super.onBackPressed()
-    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,56 +39,22 @@ class FilterActivity : ThemedNoActionBarActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp)
 
-        var arguments = Bundle()
-
         val intent = intent
-        var environment = "mainui"
-        if (intent.action != null) {
-            asWidgetConfigure = getIntent().action == AppWidgetManager.ACTION_APPWIDGET_CONFIGURE
-            environment = "widget" + getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 0).toString()
-        }
 
-        mFilter = ActiveFilter(FilterOptions(luaModule = environment))
-        val context = applicationContext
+        mFilter = ActiveFilter()
+        mFilter.initFromIntent(intent)
 
-        if (asWidgetConfigure) {
-            if (intent.getBooleanExtra(Constants.EXTRA_WIDGET_RECONFIGURE, false)) {
-                asWidgetReConfigure = true
-                asWidgetConfigure = false
-                setTitle(R.string.config_widget)
-                val preferences = context.getSharedPreferences("" + intent.getIntExtra(Constants.EXTRA_WIDGET_ID, -1), Context.MODE_PRIVATE)
-                mFilter.initFromPrefs(preferences)
-            } else {
-                setTitle(R.string.create_widget)
-                mFilter.initFromPrefs(prefs)
-            }
-        } else {
-            mFilter.initFromIntent(intent)
-        }
 
         pagerAdapter = ScreenSlidePagerAdapter(supportFragmentManager)
 
-        // Fill arguments for fragment
-        arguments.putStringArrayList(FILTER_ITEMS,
-                alfaSortList(TodoList.projects, Config.sortCaseSensitive, "-"))
-        arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, mFilter.contexts)
-        arguments.putBoolean(INITIAL_NOT, mFilter.contextsNot)
-        arguments.putString(TAB_TYPE, CONTEXT_TAB)
-        val contextTab = FilterListFragment()
-        contextTab.arguments = arguments
-        pagerAdapter!!.add(contextTab)
 
         // Fill arguments for fragment
-        arguments = Bundle()
-        arguments.putStringArrayList(FILTER_ITEMS,
-                alfaSortList(TodoList.tags, Config.sortCaseSensitive, "-"))
-        arguments.putStringArrayList(INITIAL_SELECTED_ITEMS, mFilter.projects)
-        arguments.putBoolean(INITIAL_NOT, mFilter.projectsNot)
-        arguments.putString(TAB_TYPE, PROJECT_TAB)
-        val projectTab = FilterListFragment()
-        projectTab.arguments = arguments
-        pagerAdapter!!.add(projectTab)
-
+        var arguments = Bundle()
+        arguments.putStringArrayList(FILTER_ITEMS, mFilter.getSort(Config.defaultSorts))
+        arguments.putString(TAB_TYPE, SORT_TAB)
+        val sortTab = FilterSortFragment()
+        sortTab.arguments = arguments
+        pagerAdapter!!.add(sortTab)
 
         // Fill arguments for fragment
         arguments = Bundle()
@@ -120,13 +70,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
         otherTab.arguments = arguments
         pagerAdapter!!.add(otherTab)
 
-        // Fill arguments for fragment
-        arguments = Bundle()
-        arguments.putStringArrayList(FILTER_ITEMS, mFilter.getSort(Config.defaultSorts))
-        arguments.putString(TAB_TYPE, SORT_TAB)
-        val sortTab = FilterSortFragment()
-        sortTab.arguments = arguments
-        pagerAdapter!!.add(sortTab)
 
 
         pager = findViewById(R.id.pager) as ViewPager
@@ -169,15 +112,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
                 finish()
                 return true
             }
-            R.id.menu_filter_action ->
-                if (asWidgetConfigure) {
-                    askWidgetName()
-                } else if (asWidgetReConfigure) {
-                    updateWidget()
-                    finish()
-                } else {
-                    applyFilter()
-                }
+            R.id.menu_filter_action -> applyFilter()
         }
         return true
     }
@@ -208,16 +143,6 @@ class FilterActivity : ThemedNoActionBarActivity() {
                     mFilter.hideHidden = of.hideHidden
                     mFilter.createIsThreshold = of.createAsThreshold
                 }
-                CONTEXT_TAB -> {
-                    val lf = f as FilterListFragment
-                    mFilter.contexts = lf.getSelectedItems()
-                    mFilter.contextsNot = lf.getNot()
-                }
-                PROJECT_TAB -> {
-                    val pf = f as FilterListFragment
-                    mFilter.projects = pf.getSelectedItems()
-                    mFilter.projectsNot = pf.getNot()
-                }
                 SORT_TAB -> {
                     val sf = f as FilterSortFragment
                     mFilter.setSort(sf.selectedItem)
@@ -227,77 +152,10 @@ class FilterActivity : ThemedNoActionBarActivity() {
         }
     }
 
-
-    private fun updateWidget() {
-        updateFilterFromFragments()
-        val widgetId = intent.getIntExtra(Constants.EXTRA_WIDGET_ID, 0)
-        Log.i(TAG, "Saving settings for widget $widgetId")
-        val preferences = applicationContext.getSharedPreferences("" + widgetId, Context.MODE_PRIVATE)
-        mFilter.saveInPrefs(preferences)
-        broadcastRefreshWidgets(m_app.localBroadCastManager)
-    }
-
-    private fun createWidget(name: String) {
-        val mAppWidgetId: Int
-
-        val intent = intent
-        val extras = intent.extras
-        updateFilterFromFragments()
-        if (extras != null) {
-            mAppWidgetId = extras.getInt(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID)
-
-            val context = applicationContext
-
-            // Store widget filter
-            val preferences = context.getSharedPreferences("" + mAppWidgetId, Context.MODE_PRIVATE)
-            mFilter.name = name
-            mFilter.saveInPrefs(preferences)
-
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            MyAppWidgetProvider.updateAppWidget(context, appWidgetManager,
-                    mAppWidgetId, name)
-
-            val resultValue = Intent(applicationContext, AppWidgetService::class.java)
-            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId)
-            setResult(Activity.RESULT_OK, resultValue)
-            finish()
-        }
-    }
-
     private fun applyFilter() {
         val data = createFilterIntent()
         startActivity(data)
         finish()
-    }
-
-    private fun askWidgetName() {
-        val name: String = mFilter.proposedName
-        val alert = AlertDialog.Builder(this)
-
-        alert.setTitle("Create widget")
-        alert.setMessage("Widget title")
-        updateFilterFromFragments()
-
-        // Set an EditText view to get user input
-        val input = EditText(this)
-        alert.setView(input)
-        input.setText(name)
-
-        alert.setPositiveButton("Ok") { _, whichButton ->
-            val value = input.text.toString()
-            if (value == "") {
-                showToastShort(applicationContext, R.string.widget_name_empty)
-            } else {
-                createWidget(value)
-            }
-        }
-
-        alert.setNegativeButton("Cancel") { _, _ -> }
-
-        alert.show()
-
     }
 
     override fun onDestroy() {
@@ -320,11 +178,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
         override fun getPageTitle(position: Int): CharSequence {
             val f = fragments[position]
             val type = f.arguments.getString(TAB_TYPE, "unknown")
-            when (type) {
-                PROJECT_TAB -> return Config.tagTerm
-                CONTEXT_TAB -> return Config.listTerm
-                else -> return type
-            }
+            return type
         }
 
         override fun getItem(position: Int): Fragment {
@@ -341,15 +195,12 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
         val TAG = "FilterActivity"
         val TAB_TYPE = "type"
-        val CONTEXT_TAB = "context"
-        val PROJECT_TAB = "project"
+
         val OTHER_TAB = getString(R.string.filter_tab_header_other)
         val SORT_TAB = getString(R.string.filter_tab_header_sort)
 
         // Constants for saving state
         val FILTER_ITEMS = "items"
-        val INITIAL_SELECTED_ITEMS = "initialSelectedItems"
-        val INITIAL_NOT = "initialNot"
     }
 }
 

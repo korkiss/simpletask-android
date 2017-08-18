@@ -146,7 +146,7 @@ fun createParentDirectory(dest: File?) {
     }
 }
 
-fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header: String, createIsThreshold : Boolean, moduleName : String?): List<VisibleLine> {
+fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header: String, createIsThreshold : Boolean): List<VisibleLine> {
     var firstGroupSortIndex = 0
     if (sorts.size > 1 && sorts[0].contains("completed") || sorts[0].contains("future")) {
         firstGroupSortIndex++
@@ -191,7 +191,7 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
 
 fun addHeaderLines(visibleTasks: Sequence<Task>, filter: ActiveFilter, no_header: String): List<VisibleLine> {
     val sorts = filter.getSort(Config.defaultSorts)
-    return addHeaderLines(visibleTasks, sorts, no_header, filter.createIsThreshold, filter.options.luaModule)
+    return addHeaderLines(visibleTasks, sorts, no_header, filter.createIsThreshold)
 }
 
 fun join(s: Collection<String>?, delimiter: String): String {
@@ -554,8 +554,7 @@ private fun getRelativeDate(app: TodoApplication, prefix: String, dateString: St
 }
 
 fun getRelativeAge(task: Task, app: TodoApplication): String? {
-    val date = task.entryDate ?: return null
-    return getRelativeDate(app, "", date).toString()
+    return getRelativeDate(app, "", task.entryDate).toString()
 }
 
 

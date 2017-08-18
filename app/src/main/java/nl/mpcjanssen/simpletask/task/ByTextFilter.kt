@@ -31,7 +31,7 @@ import java.util.*
  *
  * @author Tim Barlotta
  */
-class ByTextFilter(val moduleName : String, searchText: String?, internal val isCaseSensitive: Boolean) : TaskFilter {
+class ByTextFilter(searchText: String?, internal val isCaseSensitive: Boolean) : TaskFilter {
     /* FOR TESTING ONLY, DO NOT USE IN APPLICATION */
     private val parts: Array<String>
     private var casedText: String

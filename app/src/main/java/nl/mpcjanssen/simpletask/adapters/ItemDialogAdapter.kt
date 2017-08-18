@@ -66,7 +66,7 @@ class ItemDialogAdapter// Provide a suitable constructor (depends on the kind of
         holder.mCheckBox.text = viewItem
         holder.mCheckBox.setIndeterminateUsed(initialState[adapterPosition]==null)
         holder.mCheckBox.state = currentState[adapterPosition]
-        holder.mCheckBox.setOnStateChangedListener { indeterminateCheckBox, b ->
+        holder.mCheckBox.setOnStateChangedListener { _, b ->
             Log.i("ItemAdapter", "state chaged $position:$viewItem, new state: $b")
             currentState[adapterPosition] = b
         }

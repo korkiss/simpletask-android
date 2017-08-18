@@ -12,12 +12,10 @@ import nl.mpcjanssen.simpletask.util.todayAsString
 import org.json.JSONObject
 import java.util.*
 
-data class FilterOptions(val luaModule: String, val showSelected: Boolean = false)
-
 /**
  * Active filter, has methods for serialization in several formats
  */
-class ActiveFilter(val options: FilterOptions) {
+class ActiveFilter(val showSelected: Boolean = false) {
     var priorities = ArrayList<Priority>()
     var contexts = ArrayList<String>()
     var projects = ArrayList<String>()
@@ -131,14 +129,11 @@ class ActiveFilter(val options: FilterOptions) {
                 || !isEmptyOrNull(search)
     }
 
-    fun getTitle(visible: Int, total: Long, prio: CharSequence, tag: CharSequence, list: CharSequence, search: CharSequence, script: CharSequence, filterApplied: CharSequence, noFilter: CharSequence): String {
+    fun getTitle(visible: Int, total: Long, tag: CharSequence, list: CharSequence, search: CharSequence, script: CharSequence, filterApplied: CharSequence, noFilter: CharSequence): String {
         var filterTitle = "" + filterApplied
         if (hasFilter()) {
             filterTitle = "($visible/$total) $filterTitle"
             val activeParts = ArrayList<String>()
-            if (priorities.size > 0) {
-                activeParts.add(prio.toString())
-            }
 
             if (projects.size > 0) {
                 activeParts.add(tag.toString())
@@ -229,10 +224,8 @@ class ActiveFilter(val options: FilterOptions) {
 
         val today = todayAsString
 
-        Log.i(TAG, "Resetting onFilter callback in module ${options.luaModule}")
-
         return items.filter {
-            if (options.showSelected && TodoList.isSelected(it)) {
+            if (showSelected && TodoList.isSelected(it)) {
                 return@filter true
             }
             if (this.hideHidden && it.isDeleted) {
@@ -253,8 +246,6 @@ class ActiveFilter(val options: FilterOptions) {
 
             return@filter true
         }
-
-        return emptySequence()
     }
 
     fun setSort(sort: ArrayList<String>) {
@@ -274,7 +265,7 @@ class ActiveFilter(val options: FilterOptions) {
             }
 
             if (!isEmptyOrNull(search)) {
-                addFilter(ByTextFilter(options.luaModule, search, false))
+                addFilter(ByTextFilter(search, false))
             }
         }
 

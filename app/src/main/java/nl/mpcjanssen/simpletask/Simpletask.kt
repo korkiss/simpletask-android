@@ -12,7 +12,7 @@
 package nl.mpcjanssen.simpletask
 
 import android.annotation.SuppressLint
-import android.app.Activity
+
 import android.app.DatePickerDialog
 import android.app.SearchManager
 import android.content.*
@@ -308,9 +308,8 @@ class Simpletask : ThemedNoActionBarActivity() {
                 filter_text.text = MainFilter.getTitle(
                         count,
                         total,
-                        getText(R.string.priority_prompt),
                         Config.tagTerm,
-                        Config.listTerm,
+                        Config.projectTerm,
                         getText(R.string.search),
                         getText(R.string.script),
                         getText(R.string.title_filter_applied),
@@ -443,11 +442,8 @@ class Simpletask : ThemedNoActionBarActivity() {
                 inflater.inflate(R.menu.main, menu)
 
                 populateSearch(menu)
-                if (Config.showTodoPath) {
-                    title = Config.rcFileName.replace("([^/])[^/]*/".toRegex(), "$1/")
-                } else {
-                    setTitle(R.string.app_label)
-                }
+                setTitle(R.string.app_label)
+
                 toggle.isDrawerIndicatorEnabled = true
                 fab.visibility = View.VISIBLE
                 selection_fab.visibility = View.GONE
@@ -547,10 +543,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         shareText(this, "Simpletask list", text)
     }
 
-    private fun prioritizeTasks(tasks: List<Task>) {
-
-    }
-
     private fun completeTasks(task: Task) {
         val tasks = ArrayList<Task>()
         tasks.add(task)
@@ -592,9 +584,6 @@ class Simpletask : ThemedNoActionBarActivity() {
                             today.month!! - 1,
                             today.day!!)
 
-                    val showCalendar = Config.showCalendar
-                    dialog.datePicker.calendarViewShown = showCalendar
-                    dialog.datePicker.spinnersShown = !showCalendar
                     dialog.show()
                 } else {
                     TodoList.defer(input, tasks, dateType)
@@ -664,7 +653,6 @@ class Simpletask : ThemedNoActionBarActivity() {
             R.id.update -> startAddTaskActivity()
             R.id.defer_due -> deferTasks(checkedTasks, DateType.DUE)
             R.id.defer_threshold -> deferTasks(checkedTasks, DateType.THRESHOLD)
-            R.id.priority -> prioritizeTasks(checkedTasks)
             R.id.update_project -> updateProject(checkedTasks)
             R.id.update_tags -> updateTags(checkedTasks)
             R.id.menu_export_filter_export -> exportFilters(File(Config.rcFile.parent, "saved_filters.txt"))
@@ -699,7 +687,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             val filterIds = saved_filter_ids.getStringSet("ids", HashSet<String>())
             for (id in filterIds) {
                 val filter_pref = getSharedPreferences(id, Context.MODE_PRIVATE)
-                val filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+                val filter = ActiveFilter()
                 filter.initFromPrefs(filter_pref)
                 filter.prefName = id
                 saved_filters.add(filter)
@@ -713,7 +701,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val contents = importFile.readText()
                 val jsonFilters = JSONObject(contents)
                 jsonFilters.keys().forEach {
-                    val filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+                    val filter = ActiveFilter()
                     filter.initFromJSON(jsonFilters.getJSONObject(it))
                     saveFilterInPrefs(it, filter)
                 }
@@ -919,7 +907,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         ids.remove(prefsName)
         saved_filters.edit().putStringSet("ids", ids).apply()
         val filter_prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val deleted_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val deleted_filter = ActiveFilter()
         deleted_filter.initFromPrefs(filter_prefs)
         filter_prefs.edit().clear().apply()
         val prefs_path = File(this.filesDir, "../shared_prefs")
@@ -933,7 +921,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun updateSavedFilter(prefsName: String) {
         val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val old_filter = ActiveFilter()
         old_filter.initFromPrefs(filter_pref)
         val filterName = old_filter.name
         MainFilter.name = filterName
@@ -943,7 +931,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun renameSavedFilter(prefsName: String) {
         val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val old_filter = ActiveFilter()
         old_filter.initFromPrefs(filter_pref)
         val filterName = old_filter.name
         val alert = AlertDialog.Builder(this)
@@ -982,7 +970,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         val decoratedContexts = alfaSortList(TodoList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
         val decoratedProjects = alfaSortList(TodoList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
-                Config.listTerm,
+                Config.projectTerm,
                 decoratedContexts,
                 Config.tagTerm,
                 decoratedProjects)
@@ -1355,12 +1343,12 @@ class Simpletask : ThemedNoActionBarActivity() {
         builder.setNegativeButton(R.string.cancel) { _, _ -> }
         val dialog = builder.create()
 
-        rcv.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+        rcv.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             TodoList.updateProject(checkedTasks, allItems[position])
             dialog.cancel()
         }
 
-        dialog.setTitle(Config.listTerm)
+        dialog.setTitle(Config.projectTerm)
         dialog.show()
     }
 

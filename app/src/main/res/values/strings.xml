@@ -364,13 +364,10 @@ You should have received a copy of the GNU General Public License along with Tod
     <!-- title bar changes -->
     <string name="title_filter_applied">Filtered on:</string>
     <string name="add_task_help_btn">Help</string>
-    <string name="priority_prompt">Priority</string>
-    <string name="priority_short_prompt">Prio</string>
-    <string name="project_prompt">Tag</string>
-    <string name="context_prompt">List</string>
-    <string name="project_prompt_todotxt">Project</string>
-    <string name="context_prompt_todotxt">Context</string>
-    <string name="priority_format">(prio)</string>
+
+    <string name="tag_prompt">Tag</string>
+    <string name="project_prompt">Project</string>
+
 
     <string name="separator">Separator</string>
 

@@ -12,7 +12,6 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.LocalBroadcastManager
-import android.text.InputType
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -77,22 +76,13 @@ class AddTask : ThemedActionBarActivity() {
         setTitle(R.string.addtask)
 
         val preFillString = if (intent.hasExtra(ActiveFilter.INTENT_JSON)) {
-            val opt = FilterOptions(luaModule = "from_intent")
-            val filter  = ActiveFilter(opt)
+            val filter  = ActiveFilter()
             filter.initFromIntent(intent)
             filter.prefill
         } else {
             ""
         }
         textInputField.setText(preFillString)
-        // Listen to enter events, use IME_ACTION_NEXT for soft keyboards
-        // like Swype where ENTER keyCode is not generated.
-
-        var inputFlags = InputType.TYPE_CLASS_TEXT
-
-        if (Config.isCapitalizeTasks) {
-            inputFlags = inputFlags or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-        }
 
         setWordWrap(Config.isWordWrap)
 
@@ -125,9 +115,6 @@ class AddTask : ThemedActionBarActivity() {
         val menuShowHint = menu.findItem(R.id.menu_show_edittext_hint)
         menuShowHint.isChecked = Config.isShowEditTextHint
 
-        val menuCapitalizeTasks = menu.findItem(R.id.menu_capitalize_tasks)
-        menuCapitalizeTasks.isChecked = Config.isCapitalizeTasks
-
         return true
     }
 
@@ -145,17 +132,6 @@ class AddTask : ThemedActionBarActivity() {
                 val newVal = !Config.isWordWrap
                 Config.isWordWrap = newVal
                 setWordWrap(newVal)
-                item.isChecked = !item.isChecked
-            }
-            R.id.menu_capitalize_tasks -> {
-                Config.isCapitalizeTasks = !Config.isCapitalizeTasks
-                var inputFlags = textInputField.inputType
-                if (Config.isCapitalizeTasks) {
-                    inputFlags = inputFlags or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                } else {
-                    inputFlags = inputFlags and InputType.TYPE_TEXT_FLAG_CAP_SENTENCES.inv()
-                }
-                textInputField.setRawInputType(inputFlags)
                 item.isChecked = !item.isChecked
             }
             R.id.menu_show_edittext_hint -> {

@@ -48,7 +48,6 @@ class TodoApplication : Application(), FileSelectedListener {
 
     lateinit private var androidUncaughtExceptionHandler: Thread.UncaughtExceptionHandler
     lateinit var localBroadCastManager: LocalBroadcastManager
-    private lateinit var m_broadcastReceiver: BroadcastReceiver
 
     override fun onCreate() {
         app = this
@@ -58,27 +57,6 @@ class TodoApplication : Application(), FileSelectedListener {
 
         setupUncaughtExceptionHandler()
 
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(Constants.BROADCAST_UPDATE_UI)
-        intentFilter.addAction(Constants.BROADCAST_UPDATE_WIDGETS)
-
-        m_broadcastReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                Log.i(TAG, "Received broadcast ${intent.action}")
-                if (intent.action == Constants.BROADCAST_UPDATE_UI) {
-                    TodoList.queue("Refresh UI") {
-                        redrawWidgets()
-                        updateWidgets()
-                    }
-                } else if (intent.action == Constants.BROADCAST_UPDATE_WIDGETS) {
-                    Log.i(TAG, "Refresh widgets from broadcast")
-                    redrawWidgets()
-                    updateWidgets()
-                }
-            }
-        }
-
-        localBroadCastManager.registerReceiver(m_broadcastReceiver, intentFilter)
 
         Log.i(TAG, "Created todolist " + TodoList)
         Log.i(TAG, "onCreate()")
@@ -119,12 +97,6 @@ class TodoApplication : Application(), FileSelectedListener {
                 AlarmManager.INTERVAL_DAY, pi)
     }
 
-    override fun onTerminate() {
-        Log.i(TAG, "De-registered receiver")
-        localBroadCastManager.unregisterReceiver(m_broadcastReceiver)
-        super.onTerminate()
-    }
-
     fun switchTodoFile(newTodo: String) {
         Config.setRcFile(newTodo)
         loadTodoList("from file switch")
@@ -140,23 +112,6 @@ class TodoApplication : Application(), FileSelectedListener {
         loadTodoList("from fileChanged")
     }
 
-    fun updateWidgets() {
-        val mgr = AppWidgetManager.getInstance(applicationContext)
-        for (appWidgetId in mgr.getAppWidgetIds(ComponentName(applicationContext, MyAppWidgetProvider::class.java))) {
-            mgr.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widgetlv)
-            Log.i(TAG, "Updating widget: " + appWidgetId)
-        }
-    }
-
-    fun redrawWidgets() {
-        val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
-        val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(this, MyAppWidgetProvider::class.java))
-        Log.i(TAG, "Redrawing widgets ")
-        if (appWidgetIds.isNotEmpty()) {
-            MyAppWidgetProvider().onUpdate(this, appWidgetManager, appWidgetIds)
-        }
-    }
-
     fun browseForNewFile(act: Activity) {
         FileDialog.browseForNewFile(
                 act,
@@ -169,14 +124,6 @@ class TodoApplication : Application(), FileSelectedListener {
     }
 
     fun getSortString(key: String): String {
-        if (Config.useTodoTxtTerms) {
-            if ("by_context" == key) {
-                return getString(R.string.by_context_todotxt)
-            }
-            if ("by_project" == key) {
-                return getString(R.string.by_project_todotxt)
-            }
-        }
         val keys = Arrays.asList(*resources.getStringArray(R.array.sortKeys))
         val values = resources.getStringArray(R.array.sort)
         val index = keys.indexOf(key)
