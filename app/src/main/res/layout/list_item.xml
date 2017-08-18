@@ -114,7 +114,7 @@ You should have received a copy of the GNU General Public License along with Tod
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingLeft="4dip"
-                    android:paddingBottom="4dip"
+                    android:paddingBottom="2dip"
             />
         </LinearLayout>
     </LinearLayout>

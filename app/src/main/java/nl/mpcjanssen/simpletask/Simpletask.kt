@@ -53,7 +53,7 @@ import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TodoList
-import nl.mpcjanssen.simpletask.task.asTodoTxtList
+import nl.mpcjanssen.simpletask.task.asCliList
 import nl.mpcjanssen.simpletask.util.*
 import org.json.JSONObject
 import java.io.File
@@ -177,7 +177,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun selectedTasksAsTodoTxt(): String {
-        return TodoList.selectedTasks.asTodoTxtList()
+        return TodoList.selectedTasks.asCliList()
     }
 
     private fun selectAllTasks() {
@@ -542,7 +542,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         m_adapter!!.visibleLines
                 .filterNot { it.header }
                 .map {it.task }
-                .filterNotNull().asTodoTxtList()
+                .filterNotNull().asCliList()
 
         shareText(this, "Simpletask list", text)
     }
@@ -1135,7 +1135,8 @@ class Simpletask : ThemedNoActionBarActivity() {
 
             if (task.annotations.isNotEmpty()) {
                 view.annotationbar.visibility=View.VISIBLE
-                view.annotationbar.annotations.text = task.annotations.joinToString("\n")
+                view.annotationbar.annotations.text = task.annotations.map{"- $it"}.joinToString("\n")
+                view.annotationbar.annotations.textSize = textSize * Config.dateBarRelativeSize
             } else {
                 view.annotationbar.visibility=View.GONE
             }

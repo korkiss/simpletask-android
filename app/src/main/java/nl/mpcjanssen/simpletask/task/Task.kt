@@ -40,30 +40,27 @@ data class Task(
 
     val displayText: String = description
 
-    val asTodoTxt: String
+    val asCliTxt: String
     get() {
         val resultBuilder = StringBuilder()
-        resultBuilder.append(if (isCompleted) "x $endDate " else "")
-        resultBuilder.append("$entryDate ")
-
         resultBuilder.append(description.trim())
+        resultBuilder.append(" entry:$entryDate")
 
         dueDate?.let {
             resultBuilder.append(" due:$it")
         }
         waitDate?.let {
-            resultBuilder.append(" t:$it")
+            resultBuilder.append(" wait:$it")
         }
         project?.let {
-            resultBuilder.append(" @$project")
+            resultBuilder.append(" proj:$project")
         }
         if (tags.isNotEmpty()) {
             val tagsString = tags.map { "+$it" }.joinToString(" ")
             resultBuilder.append(" $tagsString")
         }
-        if (isDeleted) {
-            resultBuilder.append(" h:1")
-        }
+
+        resultBuilder.append(" status:${status}")
         return resultBuilder.toString()
     }
 
@@ -151,7 +148,7 @@ data class Task(
     }
 }
 
-fun List<Task>.asTodoTxtList(): String {
-        return this.map { it.asTodoTxt }.joinToString ("\n")
+fun List<Task>.asCliList(): String {
+        return this.map { it.asCliTxt }.joinToString ("\n")
     }
 
