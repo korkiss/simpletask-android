@@ -47,12 +47,10 @@ android {
     defaultConfig {
         versionName '9.0.7'
         versionCode 3061
-	    minSdkVersion 14
+	    minSdkVersion 16
         applicationId 'nl.mpcjanssen.simpletask.tw'
         manifestPlaceholders = [ providerFlavour:"tw"]
-        // target API 23 because anything newer breaks root:// links
-        //noinspection OldTargetApi
-        targetSdkVersion 23
+        targetSdkVersion 24
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 

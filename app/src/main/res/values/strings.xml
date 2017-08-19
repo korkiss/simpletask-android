@@ -304,7 +304,7 @@
     <string name="filter_show_completed_short">Completed</string>
     <string name="filter_show_future_short">Future</string>
     <string name="filter_show_prompt">Show</string>
-    <string name="filter_saved_prompt">Saved filters</string>
+    <string name="report_prompt">Reports</string>
 
     <!-- task parts -->
     <string name="task_select_parts">Select task parts</string>

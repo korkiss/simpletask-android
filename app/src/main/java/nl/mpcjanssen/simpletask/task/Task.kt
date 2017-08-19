@@ -70,7 +70,23 @@ data class Task(
         return MATCH_URI.findAll(text).map { it.value }.toList()
     }
 
-    fun getHeader(sort: String, empty: String, createIsThreshold: Boolean): String {
+    fun matchesQuickFilter(filterProjects: Set<String>?, filterTags: Set<String>?) : Boolean {
+        val matchProjects = when {
+            filterProjects == null -> true
+            project in filterProjects -> true
+            filterProjects.contains("-") -> true
+            else -> false
+        }
+        val matchTags = when {
+            filterTags == null -> true
+            tags.union(filterTags).isNotEmpty()  -> true
+            filterTags.contains("-") -> true
+            else -> false
+        }
+        return matchProjects && matchTags
+    }
+
+    fun getHeader(sort: String, empty: String): String {
         if (sort.contains("by_context")) {
             if (project != null) {
                 return project
@@ -84,11 +100,7 @@ data class Task(
                 return empty
             }
         } else if (sort.contains("by_threshold_date")) {
-            if (createIsThreshold) {
-                return waitDate ?: entryDate ?: empty
-            } else {
-                return waitDate ?: empty
-            }
+            return waitDate ?: entryDate ?: empty
         } else if (sort.contains("by_prio")) {
             return urgency.toInt().toString()
         } else if (sort.contains("by_due_date")) {

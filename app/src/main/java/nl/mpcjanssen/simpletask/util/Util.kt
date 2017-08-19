@@ -49,6 +49,7 @@ import android.widget.ListView
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.*
 import nl.mpcjanssen.simpletask.sort.AlphabeticalStringComparator
+import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
@@ -128,15 +129,17 @@ fun createParentDirectory(dest: File?) {
     }
 }
 
-fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header: String, createIsThreshold : Boolean): List<VisibleLine> {
+fun addHeaderLines(visibleTasks: Sequence<Task>, report: ActiveReport, no_header: String): List<VisibleLine> {
     var firstGroupSortIndex = 0
-    if (sorts.size > 1 && sorts[0].contains("completed") || sorts[0].contains("future")) {
-        firstGroupSortIndex++
-        if (sorts.size > 2 && sorts[1].contains("completed") || sorts[1].contains("future")) {
-            firstGroupSortIndex++
-        }
-    }
-    val firstSort = sorts[firstGroupSortIndex]
+//    if (sorts.size > 1 && sorts[0].contains("completed") || sorts[0].contains("future")) {
+//        firstGroupSortIndex++
+//        if (sorts.size > 2 && sorts[1].contains("completed") || sorts[1].contains("future")) {
+//            firstGroupSortIndex++
+//        }
+//    }
+//    val firstSort = sorts[firstGroupSortIndex]
+
+    val firstSort = "by_context"
 
     var header = ""
     val result = ArrayList<VisibleLine>()
@@ -144,7 +147,7 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
     var headerLine: HeaderLine? = null
     for (item in visibleTasks) {
         val t = item
-        val newHeader = t.getHeader(firstSort, no_header, createIsThreshold)
+        val newHeader = t.getHeader(firstSort, no_header)
         if (header != newHeader) {
             if (headerLine != null) {
                 headerLine.title += " ($count)"
@@ -169,11 +172,6 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
         result.removeAt(i - 1)
     }
     return result
-}
-
-fun addHeaderLines(visibleTasks: Sequence<Task>, filter: ActiveFilter, no_header: String): List<VisibleLine> {
-    val sorts = filter.getSort(Config.defaultSorts)
-    return addHeaderLines(visibleTasks, sorts, no_header, filter.createIsThreshold)
 }
 
 fun join(s: Collection<String>?, delimiter: String): String {

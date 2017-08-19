@@ -17,6 +17,7 @@ import android.net.LocalSocket
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import com.taskwc2.controller.sync.SSLHelper
+import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createParentDirectory
 import org.jetbrains.anko.*
@@ -113,9 +114,14 @@ object TaskWarrior : AnkoLogger {
         return null
     }
 
-    fun taskList(): List<Task> {
+    fun taskList(reportName: String): List<Task> {
         val result = ArrayList<String>()
         val params = ArrayList<String>()
+        val reportFilter = config.getOrDefault("report.$reportName.filter", "")
+        if (reportFilter.isNotBlank()) {
+            params.add("( $reportFilter )")
+        }
+
         params.add("rc.json.array=off")
         params.add("rc.verbose=nothing")
         params.add("export")
@@ -197,6 +203,18 @@ object TaskWarrior : AnkoLogger {
             err.eat(e.message)
             return 255
         }
+    }
+
+    private fun reportName(reportLine: String) : String {
+        return reportLine.split(" ", "\t")[0].split(".")[1]
+
+    }
+    fun filters() : Set<String> {
+        // returns all defined filters
+        if (config.isEmpty()) {
+            reloadConfig()
+        }
+        return config.keys.filter {it.startsWith("report.")}.map {reportName(it)}.toSortedSet()
     }
 
     fun getWritePermission(act: Activity, activityResult: Int): Boolean {

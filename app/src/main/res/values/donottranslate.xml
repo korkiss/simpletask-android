@@ -145,4 +145,7 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="ui_complete_checkbox"           translatable="false">ui_complete_checkbox</string>
     <string name="ui_last_scroll_position"        translatable="false">ui_last_scroll_position</string>
     <string name="ui_last_scroll_offset"          translatable="false">ui_last_scroll_offset</string>
+    <string name="active_report_name"             translatable="false">active_report_name</string>
+    <string name="quick_projects_filter"          translatable="false">quick_projects_filter</string>
+    <string name="quick_tags_filter"              translatable="false">quick_tags_filter</string>
 </resources>

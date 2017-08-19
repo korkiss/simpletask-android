@@ -52,6 +52,7 @@ import kotlinx.android.synthetic.main.update_tags_dialog.view.*
 import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
+import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
@@ -65,9 +66,11 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 import android.R.id as androidId
 
 class Simpletask : ThemedNoActionBarActivity() {
+
     enum class Mode {
         NAV_DRAWER, FILTER_DRAWER, SELECTION, MAIN
     }
@@ -95,6 +98,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         Log.i(TAG, "onCreate")
         m_app = application as STWApplication
         m_savedInstanceState = savedInstanceState
+
         val intentFilter = IntentFilter()
 
         intentFilter.addAction(Constants.BROADCAST_UPDATE_UI)
@@ -163,16 +167,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         startActivity(i)
     }
 
-    override fun onSearchRequested(): Boolean {
-        if (options_menu == null) {
-            return false
-        }
-        val searchMenuItem = options_menu!!.findItem(R.id.search)
-        MenuItemCompat.expandActionView(searchMenuItem)
-
-        return true
-    }
-
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         // Sync the toggle state after onRestoreInstanceState has occurred.
@@ -200,6 +194,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun handleIntent() {
+
 
         // Set the list's click listener
         filter_drawer?.onItemClickListener = DrawerItemClickListener()
@@ -238,30 +233,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
 
         // Show search or filter results
-        val intent = intent
-        if (Constants.INTENT_START_FILTER == intent.action) {
-            MainFilter.initFromIntent(intent)
-            Log.i(TAG, "handleIntent: launched with filter" + MainFilter)
-            val extras = intent.extras
-            if (extras != null) {
-                for (key in extras.keySet()) {
-                    val value = extras.get(key)
-                    if (value != null) {
-                        Log.d(TAG, "%s %s (%s)".format(key, value.toString(), value.javaClass.name))
-                    } else {
-                        Log.d(TAG, "%s %s)".format(key, "<null>"))
-                    }
-
-                }
-
-            }
-            Log.i(TAG, "handleIntent: saving filter in prefs")
-            MainFilter.saveInPrefs(Config.prefs)
-        } else {
-            // Set previous filters and sort
-            Log.i(TAG, "handleIntent: from m_prefs state")
-            MainFilter.initFromPrefs(Config.prefs)
-        }
 
         val adapter = m_adapter ?: TaskAdapter(layoutInflater)
         m_adapter = adapter
@@ -299,30 +270,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         })
     }
 
-    private fun updateFilterBar() {
-
-        if (MainFilter.hasFilter()) {
-            actionbar.visibility = View.VISIBLE
-        } else {
-            actionbar.visibility = View.GONE
-        }
-        val count = if (m_adapter != null) m_adapter!!.countVisibleTasks else 0
-        TaskList.queue("Update filter bar") {
-            runOnUiThread {
-                val total = TaskList.getTaskCount()
-                filter_text.text = MainFilter.getTitle(
-                        count,
-                        total,
-                        Config.tagTerm,
-                        Config.projectTerm,
-                        getText(R.string.search),
-                        getText(R.string.script),
-                        getText(R.string.title_filter_applied),
-                        getText(R.string.no_filter))
-            }
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         localBroadcastManager!!.unregisterReceiver(m_broadcastReceiver)
@@ -358,8 +305,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
         when (activeMode()) {
             Mode.NAV_DRAWER -> {
-                inflater.inflate(R.menu.nav_drawer, menu)
-                setTitle(R.string.filter_saved_prompt)
+                setTitle(R.string.report_prompt)
             }
             Mode.FILTER_DRAWER -> {
                 inflater.inflate(R.menu.filter_drawer, menu)
@@ -446,8 +392,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
                 inflater.inflate(R.menu.main, menu)
 
-                populateSearch(menu)
-                setTitle(R.string.app_label)
+                setTitle(Config.activeReport)
 
                 toggle.isDrawerIndicatorEnabled = true
                 fab.visibility = View.VISIBLE
@@ -480,63 +425,6 @@ class Simpletask : ThemedNoActionBarActivity() {
     private fun closeDrawer(drawer: Int) {
         drawer_layout?.closeDrawer(drawer)
     }
-
-    private fun populateSearch(menu: Menu) {
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchMenu = menu.findItem(R.id.search)
-
-        val searchView = searchMenu.actionView as SearchView
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-
-        searchView.setIconifiedByDefault(false)
-        MenuItemCompat.setOnActionExpandListener(searchMenu, object : OnActionExpandListener {
-            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                // Do something when collapsed
-                return true // Return true to collapse action view
-            }
-
-            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                //get focus
-                item.actionView.requestFocus()
-                //get input method
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
-                return true // Return true to expand action view
-            }
-        })
-
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            var m_ignoreSearchChangeCallback: Boolean = false
-
-            override fun onQueryTextSubmit(query: String): Boolean {
-                // Stupid searchView code will call onQueryTextChange callback
-                // When the actionView collapse and the textView is reset
-                // ugly global hack around this
-                m_ignoreSearchChangeCallback = true
-                menu.findItem(R.id.search).collapseActionView()
-                m_ignoreSearchChangeCallback = false
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                if (!m_ignoreSearchChangeCallback) {
-                    MainFilter.search = newText
-                    MainFilter.saveInPrefs(Config.prefs)
-                    if (m_adapter != null) {
-                        m_adapter!!.setFilteredTasks()
-                    }
-                }
-                return true
-            }
-        })
-    }
-
-/*    private fun getTaskAt(pos: Int): TodoListItem? {
-        if (pos < m_adapter!!.count) {
-            return m_adapter!!.getItem(pos)
-        }
-        return null
-    }*/
 
     private fun shareVisibleTodoList() {
         val text =
@@ -633,9 +521,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     }
                 }
             }
-            R.id.search -> { }
             R.id.preferences -> startPreferencesActivity()
-            R.id.filter -> startFilterActivity()
             R.id.context_delete -> deleteTasks(checkedTasks)
             R.id.context_select_all -> selectAllTasks()
             R.id.share -> {
@@ -653,15 +539,11 @@ class Simpletask : ThemedNoActionBarActivity() {
                     m_app.browseForNewFile(this)
                 }
             }
-            R.id.btn_filter_add -> onAddFilterClick()
-            R.id.clear_filter -> clearFilter()
             R.id.update -> startAddTaskActivity()
             R.id.defer_due -> deferTasks(checkedTasks, DateType.DUE)
             R.id.defer_threshold -> deferTasks(checkedTasks, DateType.THRESHOLD)
             R.id.update_project -> updateProject(checkedTasks)
             R.id.update_tags -> updateTags(checkedTasks)
-            R.id.menu_export_filter_export -> exportFilters(File(Config.rcFile.parent, "saved_filters.txt"))
-            R.id.menu_export_filter_import -> importFilters(File(Config.rcFile.parent, "saved_filters.txt"))
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -679,105 +561,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         startActivityForResult(settingsActivity, REQUEST_PREFERENCES)
     }
 
-    /**
-     * Handle clear filter click *
-     */
-    @Suppress("unused")
-    fun onClearClick(@Suppress("UNUSED_PARAMETER") v: View) = clearFilter()
-
-    val savedFilters: ArrayList<ActiveFilter>
-        get() {
-            val saved_filters = ArrayList<ActiveFilter>()
-            val saved_filter_ids = getSharedPreferences("filters", Context.MODE_PRIVATE)
-            val filterIds = saved_filter_ids.getStringSet("ids", HashSet<String>())
-            for (id in filterIds) {
-                val filter_pref = getSharedPreferences(id, Context.MODE_PRIVATE)
-                val filter = ActiveFilter()
-                filter.initFromPrefs(filter_pref)
-                filter.prefName = id
-                saved_filters.add(filter)
-            }
-            return saved_filters
-        }
-
-    fun importFilters (importFile: File) {
-        val r = Runnable {
-            try {
-                val contents = importFile.readText()
-                val jsonFilters = JSONObject(contents)
-                jsonFilters.keys().forEach {
-                    val filter = ActiveFilter()
-                    filter.initFromJSON(jsonFilters.getJSONObject(it))
-                    saveFilterInPrefs(it, filter)
-                }
-                localBroadcastManager?.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
-            } catch (e: IOException) {
-                Log.e(TAG, "Import filters, cant read file ${importFile.canonicalPath}", e)
-                longToast("Error reading file ${importFile.canonicalPath}")
-            }
-        }
-        Thread(r).start()
-    }
-
-    fun exportFilters (exportFile: File) {
-        val jsonFilters = JSONObject()
-        savedFilters.forEach {
-            val jsonItem = JSONObject()
-            it.saveInJSON(jsonItem)
-            jsonFilters.put(it.name, jsonItem)
-        }
-	try {
-        exportFile.writeText(jsonFilters.toString(2))
-	    toast(R.string.saved_filters_exported)
-	} catch (e: Exception) {
-            Log.e(TAG, "Export filters failed", e)
-	    longToast("Error exporting filters")
-        }
-    }
-    /**
-     * Handle add filter click *
-     */
-    fun onAddFilterClick() {
-        val alert = AlertDialog.Builder(this)
-
-        alert.setTitle(R.string.save_filter)
-        alert.setMessage(R.string.save_filter_message)
-
-        // Set an EditText view to get user input
-        val input = EditText(this)
-        alert.setView(input)
-        input.setText(MainFilter.proposedName)
-
-        alert.setPositiveButton("Ok") { _, _ ->
-            val text = input.text
-            val value: String
-            if (text == null) {
-                value = ""
-            } else {
-                value = text.toString()
-            }
-            if (value == "") {
-                toast(R.string.filter_name_empty)
-            } else {
-                saveFilterInPrefs(value, MainFilter)
-                updateNavDrawer()
-            }
-        }
-
-        alert.setNegativeButton("Cancel") { _, _ -> }
-        alert.show()
-    }
-
-    private fun saveFilterInPrefs(name: String, filter: ActiveFilter) {
-        val saved_filters = getSharedPreferences("filters", Context.MODE_PRIVATE)
-        val newId = saved_filters.getInt("max_id", 1) + 1
-        val filters = saved_filters.getStringSet("ids", HashSet<String>())
-        filters.add("filter_" + newId)
-        saved_filters.edit().putStringSet("ids", filters).putInt("max_id", newId).apply()
-        val test_filter_prefs = getSharedPreferences("filter_" + newId, Context.MODE_PRIVATE)
-        filter.name = name
-        filter.saveInPrefs(test_filter_prefs)
-    }
 
     override fun onBackPressed() {
         when (activeMode()) {
@@ -791,11 +574,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 closeSelectionMode()
             }
             Mode.MAIN -> {
-                if (!Config.backClearsFilter || !MainFilter.hasFilter()) {
-                    return super.onBackPressed()
-                }
-                clearFilter()
-                onNewIntent(intent)
+                return super.onBackPressed()
             }
         }
         return
@@ -814,10 +593,6 @@ class Simpletask : ThemedNoActionBarActivity() {
             val currentIntent = getIntent()
             currentIntent.putExtra(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY))
             setIntent(currentIntent)
-            if (options_menu == null) {
-                return
-            }
-            options_menu!!.findItem(R.id.search).collapseActionView()
 
         } else if (CalendarContract.ACTION_HANDLE_CUSTOM_EVENT == intent.action) {
             // Uri uri = Uri.parse(intent.getStringExtra(CalendarContract.EXTRA_CUSTOM_APP_URI));
@@ -831,69 +606,59 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     }
 
-    internal fun clearFilter() {
-        // Also clear the intent so we wont get the old filter after
-        // switching back to app later fixes [1c5271ee2e]
-        val intent = Intent()
-        MainFilter.clear()
-        MainFilter.saveInIntent(intent)
-        MainFilter.saveInPrefs(Config.prefs)
-        setIntent(intent)
-        updateDrawers()
-        m_adapter!!.setFilteredTasks()
-    }
-
     private fun updateDrawers() {
         updateFilterDrawer()
         updateNavDrawer()
     }
 
     private fun updateNavDrawer() {
-        val filters = savedFilters
-        Collections.sort(filters) { f1, f2 -> f1.name!!.compareTo(f2.name!!, ignoreCase = true) }
-        val names = filters.map { it.name!! }
+        val names = TaskWarrior.filters().toTypedArray()
         nav_drawer.adapter = ArrayAdapter(this, R.layout.drawer_list_item, names)
-        nav_drawer.choiceMode = AbsListView.CHOICE_MODE_NONE
+        nav_drawer.choiceMode = AbsListView.CHOICE_MODE_SINGLE
+        val index = names.indexOf(Config.activeReport)
+        nav_drawer.setSelection(if (index!=-1) index else 0)
         nav_drawer.isLongClickable = true
         nav_drawer.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            MainFilter = filters[position]
-            val intent = intent
-            MainFilter.saveInIntent(intent)
-            setIntent(intent)
-            MainFilter.saveInPrefs(Config.prefs)
+
+//            MainFilter = names[position]
+//            val intent = intent
+//            MainFilter.saveInIntent(intent)
+//            setIntent(intent)
+//            MainFilter.saveInPrefs(Config.prefs)
+            Config.activeReport = names[position]
             closeDrawer(NAV_DRAWER)
             closeSelectionMode()
+            TaskList.reload("report changed")
             updateDrawers()
         }
         nav_drawer.onItemLongClickListener = OnItemLongClickListener { _, view, position, _ ->
-            val filter = filters[position]
-            val prefsName = filter.prefName!!
-            val popupMenu = PopupMenu(this@Simpletask, view)
-            popupMenu.setOnMenuItemClickListener { item ->
-                val menuId = item.itemId
-                when (menuId) {
-                    R.id.menu_saved_filter_delete -> deleteSavedFilter(prefsName)
-                    R.id.menu_saved_filter_shortcut -> createFilterShortcut(filter)
-                    R.id.menu_saved_filter_rename -> renameSavedFilter(prefsName)
-                    R.id.menu_saved_filter_update -> updateSavedFilter(prefsName)
-                    else -> {
-                    }
-                }
-                true
-            }
-            val inflater = popupMenu.menuInflater
-            inflater.inflate(R.menu.saved_filter, popupMenu.menu)
-            popupMenu.show()
+//            val filter = filters[position]
+//            val prefsName = filter.prefName!!
+//            val popupMenu = PopupMenu(this@Simpletask, view)
+//            popupMenu.setOnMenuItemClickListener { item ->
+//                val menuId = item.itemId
+//                when (menuId) {
+//                    R.id.menu_saved_filter_delete -> deleteSavedFilter(prefsName)
+//                    R.id.menu_saved_filter_shortcut -> createFilterShortcut(filter)
+//                    R.id.menu_saved_filter_rename -> renameSavedFilter(prefsName)
+//                    R.id.menu_saved_filter_update -> updateSavedFilter(prefsName)
+//                    else -> {
+//                    }
+//                }
+//                true
+//            }
+//            val inflater = popupMenu.menuInflater
+//            inflater.inflate(R.menu.saved_filter, popupMenu.menu)
+//            popupMenu.show()
             true
         }
     }
 
-    fun createFilterShortcut(filter: ActiveFilter) {
+    fun createFilterShortcut(filterName: String) {
         val shortcut = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
         val target = Intent(Constants.INTENT_START_FILTER)
-        filter.saveInIntent(target)
 
-        target.putExtra("name", filter.name)
+        target.putExtra("name", filterName)
 
         // Setup target intent for shortcut
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_INTENT, target)
@@ -901,75 +666,10 @@ class Simpletask : ThemedNoActionBarActivity() {
         // Set shortcut icon
         val iconRes = Intent.ShortcutIconResource.fromContext(this, R.drawable.ic_launcher)
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconRes)
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, filter.name)
+        shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, filterName)
         sendBroadcast(shortcut)
     }
 
-    private fun deleteSavedFilter(prefsName: String) {
-        val saved_filters = getSharedPreferences("filters", Context.MODE_PRIVATE)
-        val ids = HashSet<String>()
-        ids.addAll(saved_filters.getStringSet("ids", HashSet<String>()))
-        ids.remove(prefsName)
-        saved_filters.edit().putStringSet("ids", ids).apply()
-        val filter_prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val deleted_filter = ActiveFilter()
-        deleted_filter.initFromPrefs(filter_prefs)
-        filter_prefs.edit().clear().apply()
-        val prefs_path = File(this.filesDir, "../shared_prefs")
-        val prefs_xml = File(prefs_path, prefsName + ".xml")
-        val deleted = prefs_xml.delete()
-        if (!deleted) {
-            Log.w(TAG, "Failed to delete saved filter: " + deleted_filter.name!!)
-        }
-        updateNavDrawer()
-    }
-
-    private fun updateSavedFilter(prefsName: String) {
-        val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter()
-        old_filter.initFromPrefs(filter_pref)
-        val filterName = old_filter.name
-        MainFilter.name = filterName
-        MainFilter.saveInPrefs(filter_pref)
-        updateNavDrawer()
-    }
-
-    private fun renameSavedFilter(prefsName: String) {
-        val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter()
-        old_filter.initFromPrefs(filter_pref)
-        val filterName = old_filter.name
-        val alert = AlertDialog.Builder(this)
-
-        alert.setTitle(R.string.rename_filter)
-        alert.setMessage(R.string.rename_filter_message)
-
-        // Set an EditText view to get user input
-        val input = EditText(this)
-        alert.setView(input)
-        input.setText(filterName)
-
-        alert.setPositiveButton("Ok") { _, _ ->
-            val text = input.text
-            val value: String
-            if (text == null) {
-                value = ""
-            } else {
-                value = text.toString()
-            }
-            if (value == "") {
-                toast(R.string.filter_name_empty)
-            } else {
-                old_filter.name = value
-                old_filter.saveInPrefs(filter_pref)
-                updateNavDrawer()
-            }
-        }
-
-        alert.setNegativeButton("Cancel") { _, _ -> }
-
-        alert.show()
-    }
 
     private fun updateFilterDrawer() {
         val decoratedContexts = alfaSortList(TaskList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
@@ -984,24 +684,18 @@ class Simpletask : ThemedNoActionBarActivity() {
         filter_drawer.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
         filter_drawer.onItemClickListener = DrawerItemClickListener()
 
-        MainFilter.contexts
-                .map { drawerAdapter.getIndexOf("@" + it) }
-                .filter { it != -1 }
-                .forEach { filter_drawer.setItemChecked(it, true) }
+        Config.quickProjectsFilter?.let { it
+                    .map { drawerAdapter.getIndexOf(it) }
+                    .filter { it != -1 }
+                    .forEach { filter_drawer.setItemChecked(it, true) }
+        }
 
-        MainFilter.projects
-                .map { drawerAdapter.getIndexOf("+" + it) }
-                .filter { it != -1 }
-                .forEach { filter_drawer.setItemChecked(it, true) }
-        filter_drawer.setItemChecked(drawerAdapter.contextHeaderPosition, MainFilter.contextsNot)
-        filter_drawer.setItemChecked(drawerAdapter.projectsHeaderPosition, MainFilter.projectsNot)
+        Config.quickProjectsFilter?.let { it
+                    .map { drawerAdapter.getIndexOf("+" + it) }
+                    .filter { it != -1 }
+                    .forEach { filter_drawer.setItemChecked(it, true) }
+        }
         filter_drawer.deferNotifyDataSetChanged()
-    }
-
-    fun startFilterActivity() {
-        val i = Intent(this, FilterActivity::class.java)
-        MainFilter.saveInIntent(i)
-        startActivity(i)
     }
 
     val listView: RecyclerView?
@@ -1142,7 +836,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             val relAge = getRelativeAge(task, m_app)
             val relDue = getRelativeDueDate(task, m_app)
             val relativeThresholdDate = getRelativeWaitDate(task, m_app)
-            if (!isEmptyOrNull(relAge) && !MainFilter.hideCreateDate) {
+            if (!isEmptyOrNull(relAge)) {
                 taskAge.text = relAge
                 taskAge.visibility = View.VISIBLE
             } else {
@@ -1245,16 +939,15 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
                 val visibleTasks: Sequence<Task>
                 Log.i(TAG, "setFilteredTasks called: " + TaskList)
-                val sorts = MainFilter.getSort(Config.defaultSorts)
-                visibleTasks = TaskList.getSortedTasks(MainFilter, sorts, Config.sortCaseSensitive)
+                val activeReport = ActiveReport(Config.activeReport)
+                visibleTasks = TaskList.getSortedTasks(activeReport)
                 val newVisibleLines = ArrayList<VisibleLine>()
 
-                newVisibleLines.addAll(addHeaderLines(visibleTasks, MainFilter, getString(R.string.no_header)))
+                newVisibleLines.addAll(addHeaderLines(visibleTasks, activeReport, getString(R.string.no_header)))
                 runOnUiThread {
                     // Replace the array in the main thread to prevent OutOfIndex exceptions
                     visibleLines = newVisibleLines
                     notifyDataSetChanged()
-                    updateFilterBar()
                     showProgress(false)
                     if (Config.lastScrollPosition != -1) {
                         val manager = listView?.layoutManager as LinearLayoutManager?
@@ -1268,10 +961,6 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
         }
 
-        val countVisibleTasks: Int
-            get() {
-               return visibleLines.count { !it.header }
-            }
 
         /*
         ** Get the adapter position for task
@@ -1429,16 +1118,14 @@ class Simpletask : ThemedNoActionBarActivity() {
             val lv = parent as ListView
             val adapter = lv.adapter as DrawerAdapter
             if (adapter.projectsHeaderPosition == position) {
-                MainFilter.projectsNot = !MainFilter.projectsNot
                 updateDrawers()
             }
             if (adapter.contextHeaderPosition == position) {
-                MainFilter.contextsNot = !MainFilter.contextsNot
                 updateDrawers()
             } else {
                 tags = getCheckedItems(lv, true)
-                val filteredContexts = ArrayList<String>()
-                val filteredProjects = ArrayList<String>()
+                val filteredContexts = HashSet<String>()
+                val filteredProjects = HashSet<String>()
 
                 for (tag in tags) {
                     if (tag.startsWith("+")) {
@@ -1447,13 +1134,10 @@ class Simpletask : ThemedNoActionBarActivity() {
                         filteredContexts.add(tag.substring(1))
                     }
                 }
-                MainFilter.contexts = filteredContexts
-                MainFilter.projects = filteredProjects
+                Config.quickProjectsFilter = filteredContexts
+                Config.quickTagsFilter = filteredProjects
             }
-            val intent = intent
-            MainFilter.saveInIntent(intent)
-            MainFilter.saveInPrefs(Config.prefs)
-            setIntent(intent)
+
             if (!Config.hasKeepSelection) {
                 TaskList.clearSelection()
             }

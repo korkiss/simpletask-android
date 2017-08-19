@@ -75,14 +75,14 @@ class AddTask : ThemedActionBarActivity() {
 
         setTitle(R.string.addtask)
 
-        val preFillString = if (intent.hasExtra(ActiveFilter.INTENT_JSON)) {
-            val filter  = ActiveFilter()
-            filter.initFromIntent(intent)
-            filter.prefill
-        } else {
-            ""
-        }
-        textInputField.setText(preFillString)
+//        val preFillString = if (intent.hasExtra(ActiveFilter.INTENT_JSON)) {
+//            val filter  = ActiveFilter()
+//            filter.initFromIntent(intent)
+//            filter.prefill
+//        } else {
+//            ""
+//        }
+//        textInputField.setText(preFillString)
 
         setWordWrap(Config.isWordWrap)
 

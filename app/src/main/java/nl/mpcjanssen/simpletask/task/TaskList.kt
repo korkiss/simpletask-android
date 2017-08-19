@@ -34,7 +34,6 @@ import android.util.Log
 import nl.mpcjanssen.simpletask.*
 
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
-import nl.mpcjanssen.simpletask.sort.MultiComparator
 import nl.mpcjanssen.simpletask.util.*
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
@@ -176,18 +175,10 @@ object TaskList {
             }
         }
 
-    fun getSortedTasks(filter: ActiveFilter, sorts: ArrayList<String>, caseSensitive: Boolean): Sequence<Task> {
-        val comp = MultiComparator(sorts, STWApplication.app.today, caseSensitive, filter.createIsThreshold)
-        val itemsToSort = if (comp.fileOrder) {
-            todoItems
-        } else {
-            todoItems.reversed()
+    fun getSortedTasks(report: ActiveReport): Sequence<Task> {
+        return todoItems.asSequence().filter {
+            it.matchesQuickFilter(Config.quickProjectsFilter, Config.quickTagsFilter)
         }
-        val filteredTasks = filter.apply(itemsToSort.asSequence())
-        comp.comparator?.let {
-            return filteredTasks.sortedWith(it)
-        }
-        return filteredTasks
     }
 
     fun sync() {
@@ -206,7 +197,7 @@ object TaskList {
                 TaskList.clearSelection()
             }
             todoItems.clear()
-            todoItems.addAll(TaskWarrior.taskList())
+            todoItems.addAll(TaskWarrior.taskList(Config.activeReport))
             mLists = null
             mTags = null
             broadcastRefreshUI(STWApplication.app.localBroadCastManager)

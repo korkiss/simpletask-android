@@ -121,4 +121,9 @@ object Config : Preferences(STWApplication.app) {
 
     val hasColorDueDates by BooleanPreference(R.string.color_due_date_key, true)
 
+    var activeReport: String by StringPreference(R.string.active_report_name, "next")
+    var quickProjectsFilter: Set<String>? by StringSetOrNullPreference(R.string.quick_projects_filter, null)
+    var quickTagsFilter: Set<String>? by StringSetOrNullPreference(R.string.quick_tags_filter, null)
+
+
 }
