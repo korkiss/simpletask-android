@@ -55,6 +55,7 @@ import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
 import nl.mpcjanssen.simpletask.util.*
+import org.jetbrains.anko.share
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
@@ -540,7 +541,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 .map {it.task }
                 .filterNotNull().asCliList()
 
-        shareText(this, "Simpletask list", text)
+        share(text, "Simpletask list")
     }
 
     private fun completeTasks(task: Task) {
@@ -638,7 +639,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
             R.id.context_share -> {
                 val shareText = selectedTasksAsTodoTxt()
-                shareText(this@Simpletask, "Simpletask tasks", shareText)
+                share( shareText, "Simpletask tasks")
             }
             R.id.help -> showHelp()
             R.id.sync -> TaskList.sync()

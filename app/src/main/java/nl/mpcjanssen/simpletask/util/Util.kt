@@ -36,6 +36,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.support.compat.BuildConfig
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
@@ -387,38 +388,13 @@ fun alfaSortList(items: Set<String>, caseSensitive: Boolean, prefix: String? = n
 fun appVersion(ctx: Context): String {
     val packageInfo = ctx.packageManager.getPackageInfo(
             ctx.packageName, 0)
-    return "Simpletask " + BuildConfig.FLAVOR + " v" + packageInfo.versionName + " (" + BuildConfig.VERSION_CODE + ")"
+    return "Simpletask " + " v" + packageInfo.versionName + " (" + BuildConfig.VERSION_CODE + ")"
 }
 
 fun shortAppVersion(): String {
     return "${BuildConfig.FLAVOR.first()}${BuildConfig.VERSION_CODE}"
 }
 
-fun shareText(act: Activity, subject: String, text: String) {
-
-    val shareIntent = Intent(android.content.Intent.ACTION_SEND)
-    shareIntent.type = "text/plain"
-    shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,
-            subject)
-
-    // If text is small enough SEND it directly
-    if (text.length < 50000) {
-        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, text)
-    } else {
-
-        // Create a cache file to pass in EXTRA_STREAM
-        try {
-            createCachedFile(act,
-                    Constants.SHARE_FILE_NAME, text)
-            val fileUri = Uri.parse("content://" + CachedFileProvider.AUTHORITY + "/" + Constants.SHARE_FILE_NAME)
-            shareIntent.putExtra(android.content.Intent.EXTRA_STREAM, fileUri)
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to create file for sharing")
-        }
-
-    }
-    act.startActivity(Intent.createChooser(shareIntent, "Share"))
-}
 
 fun showLoadingOverlay(act: Activity, visibleDialog: Dialog?, show: Boolean): Dialog? {
 

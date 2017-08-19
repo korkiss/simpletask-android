@@ -1,5 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.1.4'
+    ext.anko_version = '0.10.1'
     ext.dokka_version = '0.9.15'
     ext.android_support_version = '25.3.1'
     repositories {
@@ -93,6 +94,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.anko:anko-commons:$anko_version"
     compile "com.android.support:support-v4:$android_support_version"
     compile "com.android.support:design:$android_support_version"
     compile "com.android.support:appcompat-v7:$android_support_version"
