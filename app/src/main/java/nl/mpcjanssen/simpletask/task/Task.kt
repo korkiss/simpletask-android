@@ -81,7 +81,7 @@ data class Task(
         val matchTags = when {
             filterTags == null -> true
             filterTags.isEmpty() -> true
-            tags.union(filterTags).isNotEmpty()  -> true
+            tags.intersect(filterTags).isNotEmpty()  -> true
             filterTags.contains("-") -> true
             else -> false
         }
