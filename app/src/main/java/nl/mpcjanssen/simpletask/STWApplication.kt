@@ -48,11 +48,11 @@ import java.util.*
 class STWApplication : Application(), FileSelectedListener , AnkoLogger {
 
     lateinit var localBroadCastManager: LocalBroadcastManager
-
     override fun onCreate() {
         app = this
         super.onCreate()
         localBroadCastManager = LocalBroadcastManager.getInstance(this)
+
 
         info("Created todolist " + TaskList)
         info("onCreate()")

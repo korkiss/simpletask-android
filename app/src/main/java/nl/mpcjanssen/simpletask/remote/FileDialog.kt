@@ -102,8 +102,11 @@ class FileDialog
     private fun getChosenFile(fileChosen: String): File {
         if (fileChosen == PARENT_DIR)
             return currentPath!!.parentFile
-        else
+        else if (fileChosen == "/") {
+            return File("/")
+        } else {
             return File(currentPath, fileChosen)
+        }
     }
 
     companion object {
@@ -117,5 +120,5 @@ class FileDialog
 }
 
 interface FileSelectedListener {
-    fun fileSelected(file: String)
+    fun fileSelected(fileName: String)
 }

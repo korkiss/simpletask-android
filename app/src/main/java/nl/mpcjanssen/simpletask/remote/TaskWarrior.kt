@@ -34,8 +34,6 @@ interface StreamConsumer {
 }
 
 
-
-
 object TaskWarrior : AnkoLogger {
     private val errConsumer = object : StreamConsumer {
         val log = AnkoLogger("TaskWarrior")
