@@ -14,6 +14,7 @@ package nl.mpcjanssen.simpletask
 import android.annotation.SuppressLint
 
 import android.app.DatePickerDialog
+import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.*
 import android.content.res.Configuration
@@ -55,7 +56,10 @@ import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
 import nl.mpcjanssen.simpletask.util.*
+import org.jetbrains.anko.indeterminateProgressDialog
+import org.jetbrains.anko.longToast
 import org.jetbrains.anko.share
+import org.jetbrains.anko.toast
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
@@ -122,9 +126,9 @@ class Simpletask : ThemedNoActionBarActivity() {
                     m_adapter?.notifyDataSetChanged()
                     invalidateOptionsMenu()
                 } else if (receivedIntent.action == Constants.BROADCAST_SYNC_START) {
-                    showListViewProgress(true)
+                    showProgress(true)
                 } else if (receivedIntent.action == Constants.BROADCAST_SYNC_DONE) {
-                    showListViewProgress(false)
+                    showProgress(false)
                 } else if (receivedIntent.action == Constants.BROADCAST_THEME_CHANGED ||
                         receivedIntent.action == Constants.BROADCAST_DATEBAR_SIZE_CHANGED) {
                     recreate()
@@ -150,7 +154,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            REQUEST_PERMISSION -> m_app.switchTodoFile(Config.rcFileName)
+            REQUEST_PERMISSION -> longToast("Permission granted, try again.")
         }
     }
 
@@ -709,7 +713,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 localBroadcastManager?.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_UI))
             } catch (e: IOException) {
                 Log.e(TAG, "Import filters, cant read file ${importFile.canonicalPath}", e)
-                showToastLong(this, "Error reading file ${importFile.canonicalPath}")
+                longToast("Error reading file ${importFile.canonicalPath}")
             }
         }
         Thread(r).start()
@@ -724,10 +728,10 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
 	try {
         exportFile.writeText(jsonFilters.toString(2))
-	    showToastShort(this, R.string.saved_filters_exported)
+	    toast(R.string.saved_filters_exported)
 	} catch (e: Exception) {
             Log.e(TAG, "Export filters failed", e)
-	    showToastLong(this, "Error exporting filters")
+	    longToast("Error exporting filters")
         }
     }
     /**
@@ -753,7 +757,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 value = text.toString()
             }
             if (value == "") {
-                showToastShort(applicationContext, R.string.filter_name_empty)
+                toast(R.string.filter_name_empty)
             } else {
                 saveFilterInPrefs(value, MainFilter)
                 updateNavDrawer()
@@ -954,7 +958,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 value = text.toString()
             }
             if (value == "") {
-                showToastShort(applicationContext, R.string.filter_name_empty)
+                toast(R.string.filter_name_empty)
             } else {
                 old_filter.name = value
                 old_filter.saveInPrefs(filter_pref)
@@ -1006,11 +1010,14 @@ class Simpletask : ThemedNoActionBarActivity() {
             return lv
         }
 
-    fun showListViewProgress(show: Boolean) {
-        if (show) {
-            empty_progressbar?.visibility = View.VISIBLE
+    private var progressDialog: ProgressDialog? = null
+
+    fun showProgress(show: Boolean) {
+        if (show && progressDialog == null) {
+            progressDialog = indeterminateProgressDialog(R.string.updating)
         } else {
-            empty_progressbar?.visibility = View.GONE
+            progressDialog?.cancel()
+            progressDialog = null
         }
     }
 
@@ -1205,7 +1212,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                                     startActivity(actionIntent)
                                 } catch (e: ActivityNotFoundException) {
                                     Log.i(TAG, "No handler for task action $url")
-                                    showToastLong(STWApplication.app, "No handler for $url" )
+                                    longToast("No handler for $url" )
                                 }
                             ACTION_PHONE -> {
                                 actionIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(url)))
@@ -1234,7 +1241,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         internal fun setFilteredTasks() {
             TaskList.queue("setFilteredTasks") {
                 runOnUiThread {
-                    showListViewProgress(true)
+                    showProgress(true)
                 }
                 val visibleTasks: Sequence<Task>
                 Log.i(TAG, "setFilteredTasks called: " + TaskList)
@@ -1248,7 +1255,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     visibleLines = newVisibleLines
                     notifyDataSetChanged()
                     updateFilterBar()
-                    showListViewProgress(false)
+                    showProgress(false)
                     if (Config.lastScrollPosition != -1) {
                         val manager = listView?.layoutManager as LinearLayoutManager?
                         val position = Config.lastScrollPosition

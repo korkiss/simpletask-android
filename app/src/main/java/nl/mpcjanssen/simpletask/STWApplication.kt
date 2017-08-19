@@ -35,45 +35,32 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.*
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
 import nl.mpcjanssen.simpletask.remote.*
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.appVersion
 import nl.mpcjanssen.simpletask.util.todayAsString
+import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
+import org.jetbrains.anko.verbose
 import java.util.*
 
-class STWApplication : Application(), FileSelectedListener {
+class STWApplication : Application(), FileSelectedListener , AnkoLogger {
 
-    lateinit private var androidUncaughtExceptionHandler: Thread.UncaughtExceptionHandler
     lateinit var localBroadCastManager: LocalBroadcastManager
 
     override fun onCreate() {
         app = this
         super.onCreate()
-
         localBroadCastManager = LocalBroadcastManager.getInstance(this)
 
-        setupUncaughtExceptionHandler()
-
-
-        Log.i(TAG, "Created todolist " + TaskList)
-        Log.i(TAG, "onCreate()")
-        Log.i(TAG, "Started ${appVersion(this)}")
+        info("Created todolist " + TaskList)
+        info("onCreate()")
+        info("Started ${appVersion(this)}}")
         scheduleOnNewDay()
         loadTodoList("Initial load")
     }
 
-    private fun setupUncaughtExceptionHandler() {
-        // save original Uncaught exception handler
-        androidUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-        // Handle all uncaught exceptions for logging.
-        // After that call the default uncaught exception handler
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Log.e(TAG, "Uncaught exception", throwable)
-            androidUncaughtExceptionHandler.uncaughtException(thread, throwable)
-        }
-    }
 
     private fun scheduleOnNewDay() {
         // Schedules activities to run on a new day
@@ -88,7 +75,7 @@ class STWApplication : Application(), FileSelectedListener {
         calendar.set(Calendar.MINUTE, 2)
         calendar.set(Calendar.SECOND, 0)
 
-        Log.i(TAG, "Scheduling daily UI updateCache alarm, first at ${calendar.time}")
+        info("Scheduling daily UI updateCache alarm, first at ${calendar.time}")
         val pi = PendingIntent.getBroadcast(this, 0,
                 Intent(this, AlarmReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
         val am = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -97,17 +84,17 @@ class STWApplication : Application(), FileSelectedListener {
     }
 
     fun switchTodoFile(newTodo: String) {
-        Config.setRcFile(newTodo)
+        Config.rcFileName = newTodo
         loadTodoList("from file switch")
     }
 
     fun loadTodoList(reason: String) {
-        Log.v(TAG, "Reloading file: $reason")
+        verbose("Reloading file: $reason")
         TaskList.reload()
     }
 
-    override fun fileSelected(file: String) {
-        Config.setRcFile(file)
+    override fun fileSelected(fileName: String) {
+        Config.rcFileName = fileName
         loadTodoList("from fileChanged")
     }
 
@@ -133,11 +120,9 @@ class STWApplication : Application(), FileSelectedListener {
     }
 
     companion object {
-        private val TAG = STWApplication::class.java.simpleName
         fun atLeastAPI(api: Int): Boolean = android.os.Build.VERSION.SDK_INT >= api
         lateinit var app : STWApplication
     }
-
     var today: String = todayAsString
 }
 

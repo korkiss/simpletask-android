@@ -34,7 +34,7 @@ import android.os.Bundle
 import android.util.Log
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
-import nl.mpcjanssen.simpletask.util.showToastShort
+import org.jetbrains.anko.toast
 import java.io.IOException
 
 class AddTaskBackground : Activity() {
@@ -106,7 +106,7 @@ class AddTaskBackground : Activity() {
         val tasks = sharedText.split("\r\n|\r|\n".toRegex()).filter { it.isNotBlank()}.map { "$it$appendText" }
 
         todoList.add(tasks)
-        showToastShort(STWApplication.app, R.string.task_added)
+        toast(R.string.task_added)
         finish()
     }
 }

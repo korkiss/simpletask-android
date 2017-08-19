@@ -419,4 +419,5 @@
     <string name="lua_open_config">Lua config</string>
 
     <string name="use_uuid_title">Assign a UUID to each task</string>
+    <string name="updating">"Updating..."</string>
 </resources>

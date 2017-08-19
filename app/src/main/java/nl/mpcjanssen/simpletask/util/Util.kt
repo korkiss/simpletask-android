@@ -46,8 +46,6 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.Window
 import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.Toast
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.*
 import nl.mpcjanssen.simpletask.sort.AlphabeticalStringComparator
@@ -107,23 +105,6 @@ private fun showConfirmationDialog(msgid: Int,
     } else {
         okListener.onClick(dialog, DialogInterface.BUTTON_POSITIVE)
     }
-}
-
-fun showToastShort(cxt: Context, resid: Int) {
-    runOnMainThread(Runnable { Toast.makeText(cxt, resid, Toast.LENGTH_SHORT).show() })
-}
-
-@Suppress("unused")
-fun showToastLong(cxt: Context, resid: Int) {
-    runOnMainThread(Runnable { Toast.makeText(cxt, resid, Toast.LENGTH_LONG).show() })
-}
-
-fun showToastShort(cxt: Context, msg: String) {
-    runOnMainThread(Runnable { Toast.makeText(cxt, msg, Toast.LENGTH_SHORT).show() })
-}
-
-fun showToastLong(cxt: Context, msg: String) {
-    runOnMainThread(Runnable { Toast.makeText(cxt, msg, Toast.LENGTH_LONG).show() })
 }
 
 interface InputDialogListener {
@@ -388,34 +369,7 @@ fun alfaSortList(items: Set<String>, caseSensitive: Boolean, prefix: String? = n
 fun appVersion(ctx: Context): String {
     val packageInfo = ctx.packageManager.getPackageInfo(
             ctx.packageName, 0)
-    return "Simpletask " + " v" + packageInfo.versionName + " (" + BuildConfig.VERSION_CODE + ")"
-}
-
-fun shortAppVersion(): String {
-    return "${BuildConfig.FLAVOR.first()}${BuildConfig.VERSION_CODE}"
-}
-
-
-fun showLoadingOverlay(act: Activity, visibleDialog: Dialog?, show: Boolean): Dialog? {
-
-    if (show) {
-        if (visibleDialog != null) {
-            visibleDialog.show()
-            return visibleDialog
-        }
-        val newDialog = Dialog(act)
-        newDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        newDialog.setContentView(R.layout.loading)
-        val pr = newDialog.findViewById(R.id.progress) as ProgressBar
-        pr.indeterminateDrawable.setColorFilter(-16737844, android.graphics.PorterDuff.Mode.MULTIPLY)
-        newDialog.window.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-        newDialog.setCancelable(false)
-        newDialog.show()
-        return newDialog
-    } else if (visibleDialog != null && visibleDialog.isShowing) {
-        visibleDialog.dismiss()
-    }
-    return null
+    return "SimpleTW " + " v" + packageInfo.versionName + " (" + BuildConfig.VERSION_CODE + ")"
 }
 
 fun showChangelogOverlay(act: Activity): Dialog? {
@@ -572,7 +526,3 @@ fun broadcastRefreshSelection(broadcastManager: LocalBroadcastManager) {
     broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_HIGHLIGHT_SELECTION))
 }
 
-fun broadcastRefreshWidgets(broadcastManager: LocalBroadcastManager) {
-    Log.i(TAG, "Sending widget refresh broadcast")
-    broadcastManager.sendBroadcast(Intent(Constants.BROADCAST_UPDATE_WIDGETS))
-}

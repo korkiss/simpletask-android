@@ -103,39 +103,15 @@ object Config : Preferences(STWApplication.app) {
     val defaultSorts: Array<String>
         get() = STWApplication.app.resources.getStringArray(R.array.sortKeys)
 
-    private var _rcFileName by StringOrNullPreference(R.string.taskrc_file_key)
-    val rcFileName: String
-        get() {
-            var name = _rcFileName
-            if (name == null || !File(name).exists()) {
-                return defaultRcFile
-            }
-            val todoFile = File(name)
-            try {
-                return todoFile.canonicalPath
-            } catch (e: IOException) {
-                return defaultRcFile
-            }
-
-        }
-
-    private val defaultRcFile : String
-        get () {
-           val name = TaskWarrior.getDefaultPath()
-            val dataDir = File(name.parent, "data")
-            dataDir.mkdirs()
-            if (!name.exists()) {
-                name.writeText("data.location=${dataDir.canonicalPath}\n")
-            }
-            return name.canonicalPath
-    }
+    var rcFileName by StringOrNullPreference(R.string.taskrc_file_key)
 
     val rcFile: File
-        get() = File(rcFileName)
-
-    fun setRcFile(path: String) {
-        _rcFileName = path
-    }
+        get()  {
+            rcFileName?.let {
+                return File(it)
+            }
+            return TaskWarrior.createDefaultRc()
+        }
 
     val hasKeepSelection by BooleanPreference(R.string.keep_selection, false)
 
