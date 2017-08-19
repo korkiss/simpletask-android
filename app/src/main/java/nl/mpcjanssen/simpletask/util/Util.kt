@@ -49,7 +49,6 @@ import android.widget.ListView
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.*
 import nl.mpcjanssen.simpletask.sort.AlphabeticalStringComparator
-import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
@@ -127,51 +126,6 @@ fun createParentDirectory(dest: File?) {
             }
         }
     }
-}
-
-fun addHeaderLines(visibleTasks: Sequence<Task>, report: ActiveReport, no_header: String): List<VisibleLine> {
-    var firstGroupSortIndex = 0
-//    if (sorts.size > 1 && sorts[0].contains("completed") || sorts[0].contains("future")) {
-//        firstGroupSortIndex++
-//        if (sorts.size > 2 && sorts[1].contains("completed") || sorts[1].contains("future")) {
-//            firstGroupSortIndex++
-//        }
-//    }
-//    val firstSort = sorts[firstGroupSortIndex]
-
-    val firstSort = "by_context"
-
-    var header = ""
-    val result = ArrayList<VisibleLine>()
-    var count = 0
-    var headerLine: HeaderLine? = null
-    for (item in visibleTasks) {
-        val t = item
-        val newHeader = t.getHeader(firstSort, no_header)
-        if (header != newHeader) {
-            if (headerLine != null) {
-                headerLine.title += " ($count)"
-            }
-            headerLine = HeaderLine(newHeader)
-            count = 0
-            result.add(headerLine)
-            header = newHeader
-        }
-        count++
-        val taskLine = TaskLine(item)
-        result.add(taskLine)
-    }
-    // Add count to last header
-    if (headerLine != null) {
-        headerLine.title += " ($count)"
-    }
-
-    // Clean up possible last empty list header that should be hidden
-    val i = result.size
-    if (i > 0 && result[i - 1].header) {
-        result.removeAt(i - 1)
-    }
-    return result
 }
 
 fun join(s: Collection<String>?, delimiter: String): String {

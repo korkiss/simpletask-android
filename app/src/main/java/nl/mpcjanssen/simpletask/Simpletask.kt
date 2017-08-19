@@ -28,8 +28,6 @@ import android.provider.CalendarContract
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
-import android.support.v4.view.MenuItemCompat
-import android.support.v4.view.MenuItemCompat.OnActionExpandListener
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
@@ -40,11 +38,9 @@ import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import android.widget.AdapterView.OnItemLongClickListener
 import hirondelle.date4j.DateTime
-import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item.view.*
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.update_project_dialog.view.*
@@ -52,7 +48,6 @@ import kotlinx.android.synthetic.main.update_tags_dialog.view.*
 import nl.mpcjanssen.simpletask.adapters.DrawerAdapter
 import nl.mpcjanssen.simpletask.adapters.ItemDialogAdapter
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
-import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
@@ -60,10 +55,6 @@ import nl.mpcjanssen.simpletask.util.*
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.share
-import org.jetbrains.anko.toast
-import org.json.JSONObject
-import java.io.File
-import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
@@ -180,10 +171,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun selectAllTasks() {
-        val selectedTasks = m_adapter!!.visibleLines
-                .filterNot(VisibleLine::header)
-                .map { it.task!! }
-        TaskList.selectTasks(selectedTasks)
+        TaskList.selectTasks(m_adapter!!.visibleTasks)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -255,7 +243,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 intent.removeExtra(Constants.INTENT_SELECTED_TASK_LINE)
                 setIntent(intent)
                 if (position > -1) {
-                    val itemAtPosition = adapter.getNthTask(position)
+                    val itemAtPosition = adapter.getTask(position)
                     itemAtPosition?.let {
                         TaskList.clearSelection()
                         TaskList.selectTask(itemAtPosition)
@@ -428,10 +416,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun shareVisibleTodoList() {
         val text =
-        m_adapter!!.visibleLines
-                .filterNot { it.header }
-                .map {it.task }
-                .filterNotNull().asCliList()
+        m_adapter!!.visibleTasks.asCliList()
 
         share(text, "Simpletask list")
     }
@@ -539,6 +524,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     m_app.browseForNewFile(this)
                 }
             }
+            R.id.clear_filter -> clearQuickFilter()
             R.id.update -> startAddTaskActivity()
             R.id.defer_due -> deferTasks(checkedTasks, DateType.DUE)
             R.id.defer_threshold -> deferTasks(checkedTasks, DateType.THRESHOLD)
@@ -547,6 +533,13 @@ class Simpletask : ThemedNoActionBarActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    internal fun clearQuickFilter() {
+        Config.quickProjectsFilter = null
+        Config.quickTagsFilter = null
+        updateDrawers()
+        m_adapter!!.setFilteredTasks()
     }
 
     private fun startAddTaskActivity() {
@@ -607,11 +600,11 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
     private fun updateDrawers() {
-        updateFilterDrawer()
-        updateNavDrawer()
+        updateQuickFilterDrawer()
+        updateReportDrawer()
     }
 
-    private fun updateNavDrawer() {
+    private fun updateReportDrawer() {
         val names = TaskWarrior.filters().toTypedArray()
         nav_drawer.adapter = ArrayAdapter(this, R.layout.drawer_list_item, names)
         nav_drawer.choiceMode = AbsListView.CHOICE_MODE_SINGLE
@@ -671,7 +664,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     }
 
 
-    private fun updateFilterDrawer() {
+    private fun updateQuickFilterDrawer() {
         val decoratedContexts = alfaSortList(TaskList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
         val decoratedProjects = alfaSortList(TaskList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
@@ -717,9 +710,11 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     class TaskViewHolder(itemView: View, val viewType : Int) : RecyclerView.ViewHolder(itemView)
 
+
     inner class TaskAdapter(private val m_inflater: LayoutInflater) : RecyclerView.Adapter <TaskViewHolder>() {
+        var visibleTasks : List<Task> = ArrayList<Task>()
         override fun getItemCount(): Int {
-            return visibleLines.size + 1
+            return visibleTasks.size + 1
         }
 
         override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): TaskViewHolder {
@@ -744,22 +739,15 @@ class Simpletask : ThemedNoActionBarActivity() {
         override fun onBindViewHolder(holder: TaskViewHolder?, position: Int) {
             if (holder == null) return
             when (holder.viewType) {
-                0 -> bindHeader(holder, position)
                 1 -> bindTask(holder, position)
                 else -> return
             }
         }
 
-        fun bindHeader(holder : TaskViewHolder, position: Int) {
-            val t = holder.itemView.list_header_title
-            val line = visibleLines[position]
-            t.text = line.title
-            t.textSize = textSize
-        }
 
         fun bindTask (holder : TaskViewHolder, position: Int) {
-            val line = visibleLines[position]
-            val item = line.task ?: return
+            val line = visibleTasks[position]
+            val item = line
             val view = holder.itemView
             val taskText = view.tasktext
             val taskAge = view.taskage
@@ -930,23 +918,19 @@ class Simpletask : ThemedNoActionBarActivity() {
                 true
             }
         }
-        internal var visibleLines = ArrayList<VisibleLine>()
+
 
         internal fun setFilteredTasks() {
             TaskList.queue("setFilteredTasks") {
                 runOnUiThread {
                     showProgress(true)
                 }
-                val visibleTasks: Sequence<Task>
                 Log.i(TAG, "setFilteredTasks called: " + TaskList)
-                val activeReport = ActiveReport(Config.activeReport)
-                visibleTasks = TaskList.getSortedTasks(activeReport)
-                val newVisibleLines = ArrayList<VisibleLine>()
+                val newVisibleTasks = TaskList.getSortedTasks(Config.activeReport)
 
-                newVisibleLines.addAll(addHeaderLines(visibleTasks, activeReport, getString(R.string.no_header)))
                 runOnUiThread {
                     // Replace the array in the main thread to prevent OutOfIndex exceptions
-                    visibleLines = newVisibleLines
+                    visibleTasks = newVisibleTasks.toList()
                     notifyDataSetChanged()
                     showProgress(false)
                     if (Config.lastScrollPosition != -1) {
@@ -966,12 +950,11 @@ class Simpletask : ThemedNoActionBarActivity() {
         ** Get the adapter position for task
         */
         fun getPosition(task: Task): Int {
-            val line = TaskLine(task = task)
-            return visibleLines.indexOf(line)
+            return visibleTasks.indexOf(task)
         }
 
-        fun getNthTask(n: Int) : Task? {
-            return visibleLines.filter { !it.header }.getOrNull(n)?.task
+        fun getTask(n: Int) : Task? {
+            return visibleTasks[n]
         }
 
         override fun getItemId(position: Int): Long {
@@ -979,12 +962,8 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
 
         override fun getItemViewType(position: Int): Int {
-            if (position == visibleLines.size) {
+            if (position == visibleTasks.size) {
                 return 2
-            }
-            val line = visibleLines[position]
-            if (line.header) {
-                return 0
             } else {
                 return 1
             }

@@ -17,7 +17,6 @@ import android.net.LocalSocket
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import com.taskwc2.controller.sync.SSLHelper
-import nl.mpcjanssen.simpletask.task.ActiveReport
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createParentDirectory
 import org.jetbrains.anko.*
@@ -301,6 +300,12 @@ object TaskWarrior : AnkoLogger {
         }
 
         return null
+    }
+
+    fun sort(reportName: String, itemsToShow: Sequence<Task>) : Sequence<Task> {
+        val reportSort = config.getOrDefault("report.$reportName.sort", "")
+        info("Sorting by: $reportSort")
+        return itemsToShow
     }
 
 

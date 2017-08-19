@@ -175,10 +175,11 @@ object TaskList {
             }
         }
 
-    fun getSortedTasks(report: ActiveReport): Sequence<Task> {
-        return todoItems.asSequence().filter {
+    fun getSortedTasks(reportName: String): Sequence<Task> {
+        val itemsToShow = todoItems.asSequence().filter {
             it.matchesQuickFilter(Config.quickProjectsFilter, Config.quickTagsFilter)
         }
+        return TaskWarrior.sort(reportName, itemsToShow)
     }
 
     fun sync() {

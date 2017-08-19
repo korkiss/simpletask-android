@@ -75,14 +75,14 @@ data class Task(
             filterProjects == null -> true
             filterProjects.isEmpty() -> true
             project in filterProjects -> true
-            filterProjects.contains("-") -> true
+            filterProjects.contains("-") && project.isNullOrBlank() -> true
             else -> false
         }
         val matchTags = when {
             filterTags == null -> true
             filterTags.isEmpty() -> true
             tags.intersect(filterTags).isNotEmpty()  -> true
-            filterTags.contains("-") -> true
+            filterTags.contains("-") && tags.isEmpty() -> true
             else -> false
         }
         return matchProjects && matchTags
