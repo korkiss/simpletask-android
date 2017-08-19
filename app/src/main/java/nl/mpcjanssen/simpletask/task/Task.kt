@@ -73,12 +73,14 @@ data class Task(
     fun matchesQuickFilter(filterProjects: Set<String>?, filterTags: Set<String>?) : Boolean {
         val matchProjects = when {
             filterProjects == null -> true
+            filterProjects.isEmpty() -> true
             project in filterProjects -> true
             filterProjects.contains("-") -> true
             else -> false
         }
         val matchTags = when {
             filterTags == null -> true
+            filterTags.isEmpty() -> true
             tags.union(filterTags).isNotEmpty()  -> true
             filterTags.contains("-") -> true
             else -> false

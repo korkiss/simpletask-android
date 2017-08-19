@@ -117,6 +117,9 @@ object TaskWarrior : AnkoLogger {
     fun taskList(reportName: String): List<Task> {
         val result = ArrayList<String>()
         val params = ArrayList<String>()
+        if (config.isEmpty()) {
+            reloadConfig()
+        }
         val reportFilter = config.getOrDefault("report.$reportName.filter", "")
         if (reportFilter.isNotBlank()) {
             params.add("( $reportFilter )")
