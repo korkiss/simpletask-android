@@ -102,7 +102,7 @@
 | [android.preference.Preference](../nl.mpcjanssen.simpletask/android.preference.-preference/index.md) (extensions in package nl.mpcjanssen.simpletask) |  |
 | [nl.mpcjanssen.simpletask.Preferences](../nl.mpcjanssen.simpletask/-preferences/index.md) |  |
 | [nl.mpcjanssen.simpletask.task.Priority](../nl.mpcjanssen.simpletask.task/-priority/index.md) |  |
-| [nl.mpcjanssen.simpletask.sort.PriorityComparator](../nl.mpcjanssen.simpletask.sort/-priority-comparator/index.md) |  |
+| [nl.mpcjanssen.simpletask.sort.UrgencyComparator](../nl.mpcjanssen.simpletask.sort/-priority-comparator/index.md) |  |
 | [nl.mpcjanssen.simpletask.task.PriorityToken](../nl.mpcjanssen.simpletask.task/-priority-token/index.md) |  |
 | [nl.mpcjanssen.simpletask.sort.ProjectComparator](../nl.mpcjanssen.simpletask.sort/-project-comparator/index.md) |  |
 | [nl.mpcjanssen.simpletask.R](../nl.mpcjanssen.simpletask/-r/index.md) |  |

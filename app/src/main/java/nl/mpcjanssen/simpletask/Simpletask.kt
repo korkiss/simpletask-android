@@ -926,11 +926,11 @@ class Simpletask : ThemedNoActionBarActivity() {
                     showProgress(true)
                 }
                 Log.i(TAG, "setFilteredTasks called: " + TaskList)
-                val newVisibleTasks = TaskList.getSortedTasks(Config.activeReport)
+                val newVisibleTasks = TaskList.applyQuickFilter(Config.quickProjectsFilter, Config.quickTagsFilter).toList()
 
                 runOnUiThread {
                     // Replace the array in the main thread to prevent OutOfIndex exceptions
-                    visibleTasks = newVisibleTasks.toList()
+                    visibleTasks = newVisibleTasks
                     notifyDataSetChanged()
                     showProgress(false)
                     if (Config.lastScrollPosition != -1) {

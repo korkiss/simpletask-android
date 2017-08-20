@@ -17,6 +17,9 @@ import android.net.LocalSocket
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import com.taskwc2.controller.sync.SSLHelper
+import nl.mpcjanssen.simpletask.sort.CompReverser
+import nl.mpcjanssen.simpletask.sort.CompletionDateComparator
+import nl.mpcjanssen.simpletask.sort.UrgencyComparator
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createParentDirectory
 import org.jetbrains.anko.*
@@ -26,6 +29,7 @@ import java.util.*
 import javax.net.ssl.SSLSocket
 
 import javax.net.ssl.SSLSocketFactory
+import kotlin.Comparator
 import kotlin.collections.ArrayList
 
 
@@ -136,7 +140,9 @@ object TaskWarrior : AnkoLogger {
                 line?.let{result.add(it)}
             }}, *params.toTypedArray())
         info("List size=${result.size}")
-        return result.map(Task.Companion::fromJSON)
+        val tasks =  result.map(Task.Companion::fromJSON)
+        val reportSort = config.getOrDefault("report.$reportName.sort", "")
+        return tasks.sort(reportSort)
     }
 
     fun callTask(vararg arguments: String) {
@@ -302,13 +308,51 @@ object TaskWarrior : AnkoLogger {
         return null
     }
 
-    fun sort(reportName: String, itemsToShow: Sequence<Task>) : Sequence<Task> {
-        val reportSort = config.getOrDefault("report.$reportName.sort", "")
-        info("Sorting by: $reportSort")
-        return itemsToShow
+
+
+
+}
+
+private fun List<Task>.sort(reportSort: String): List<Task> {
+    val log = AnkoLogger("TaskWarrior")
+    fun sortStringToComparator(sortString: String) : Comparator<Task>? {
+        val match = Regex("([A-Za-z]+)([-+])(/)?").matchEntire(sortString)
+        if (match == null) {
+            log.warn("Invalid sort string $reportSort")
+            return null
+        }
+        val (sortType, sortOrder, sortGrouping) = match.destructured
+        val comp = when (sortType) {
+            "end" -> CompletionDateComparator()
+            "urgency" -> UrgencyComparator()
+            else -> {
+                log.warn("Unknown sort type $sortType")
+                return null
+            }
+
+        }
+        if  (sortOrder == "-") {
+            return CompReverser(comp)
+        } else {
+            return comp
+        }
     }
 
-
+    log.info("Sorting by: $reportSort")
+    if (reportSort == "") {
+        return this
+    }
+    val comps = reportSort.split(",").map { sortStringToComparator(it) }.filterNotNull()
+    if (comps.isEmpty()) {
+        return this
+    }
+    val comp = comps.first()
+    if (comps.size > 1) {
+        comps.slice(1 until comps.size).fold(comp) {
+            currentComp, newComp -> currentComp.then(newComp)
+        }
+    }
+    return this.sortedWith(comp)
 }
 
 private class LocalSocketRunner(name: String, config: Map<String, String>) : AnkoLogger {
@@ -449,6 +493,4 @@ class Compat {
         }
     }
 }
-
-
 

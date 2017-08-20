@@ -35,6 +35,8 @@ import nl.mpcjanssen.simpletask.*
 
 import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.util.*
+import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.collections.ArrayList
@@ -50,7 +52,7 @@ import kotlin.collections.ArrayList
 
 
 
-object TaskList {
+object TaskList : AnkoLogger {
 
     private var mLists: ArrayList<String>? = null
     private var mTags: ArrayList<String>? = null
@@ -151,11 +153,6 @@ object TaskList {
 
     }
 
-    fun prioritize(tasks: List<Task>, prio: Priority) {
-
-
-    }
-
     fun defer(deferString: String, tasks: List<Task>, dateType: DateType) {
         queue("Defer") {
             // TODO: implement
@@ -175,11 +172,12 @@ object TaskList {
             }
         }
 
-    fun getSortedTasks(reportName: String): Sequence<Task> {
-        val itemsToShow = todoItems.asSequence().filter {
-            it.matchesQuickFilter(Config.quickProjectsFilter, Config.quickTagsFilter)
+    fun applyQuickFilter(projectsFilter: Set<String>?, tagsFilter: Set<String>?): Sequence<Task> {
+        info("Applyinq quickfilter $projectsFilter, $tagsFilter")
+        return todoItems.asSequence().filter {
+            it.matchesQuickFilter(projectsFilter, tagsFilter)
         }
-        return TaskWarrior.sort(reportName, itemsToShow)
+
     }
 
     fun sync() {

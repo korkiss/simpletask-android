@@ -36,7 +36,7 @@
 //                "by_context" -> comp = ContextComparator(caseSensitve)
 //                "by_project" -> comp = ProjectComparator(caseSensitve)
 //                "alphabetical" -> comp = AlphabeticalComparator(caseSensitve)
-//                "by_prio" -> comp = PriorityComparator()
+//                "by_prio" -> comp = UrgencyComparator()
 //                "completed" -> comp = CompletedComparator()
 //                "by_creation_date" -> comp = CreationDateComparator()
 //                "in_future" -> comp = FutureComparator(today)

@@ -3,7 +3,7 @@ package nl.mpcjanssen.simpletask.sort
 import nl.mpcjanssen.simpletask.task.Task
 import java.util.*
 
-class PriorityComparator : Comparator<Task> {
+class UrgencyComparator : Comparator<Task> {
 
     override fun compare(a: Task?, b: Task?): Int {
         if (a === b) {
