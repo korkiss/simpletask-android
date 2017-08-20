@@ -60,6 +60,12 @@ You should have received a copy of the GNU General Public License along with Sim
             tools:ignore="UnusedAttribute"
             />
         <activity
+                android:name=".EditRCActivity"
+                android:parentActivityName=".Simpletask"
+                android:label="@string/edit_rc"
+                tools:ignore="UnusedAttribute"
+        />
+        <activity
             android:name=".AddTask"
             android:exported="true"
             android:label="@string/addtask"
@@ -134,16 +140,6 @@ You should have received a copy of the GNU General Public License along with Sim
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"
                 />
-        </activity>
-
-        <activity
-            android:name=".FilterActivity"
-            android:exported="true"
-            android:label="@string/title_activity_filter"
-            >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
         </activity>
 
         <receiver android:name="nl.mpcjanssen.simpletask.AlarmReceiver"/>

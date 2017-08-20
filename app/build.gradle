@@ -50,7 +50,7 @@ android {
 	    minSdkVersion 16
         applicationId 'nl.mpcjanssen.simpletask.tw'
         manifestPlaceholders = [ providerFlavour:"tw"]
-        targetSdkVersion 24
+        targetSdkVersion 25
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 

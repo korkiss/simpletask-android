@@ -13,6 +13,7 @@
     <string name="filter">Filter</string>
     <string name="main_no_items">No tasks to display.</string>
     <string name="set_preferences">Settings</string>
+    <string name="edit_rc">Edit taskrc file</string>
     <string name="preferences">Settings</string>
     <string name="archive">Archive</string>
     <string name="help">Help</string>

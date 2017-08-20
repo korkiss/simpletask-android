@@ -52,9 +52,7 @@ import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.task.asCliList
 import nl.mpcjanssen.simpletask.util.*
-import org.jetbrains.anko.indeterminateProgressDialog
-import org.jetbrains.anko.longToast
-import org.jetbrains.anko.share
+import org.jetbrains.anko.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
@@ -526,6 +524,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
             R.id.clear_filter -> clearQuickFilter()
             R.id.update -> startAddTaskActivity()
+            R.id.edit_rc -> startActivity(intentFor<EditRCActivity>())
             R.id.defer_due -> deferTasks(checkedTasks, DateType.DUE)
             R.id.defer_threshold -> deferTasks(checkedTasks, DateType.THRESHOLD)
             R.id.update_project -> updateProject(checkedTasks)
