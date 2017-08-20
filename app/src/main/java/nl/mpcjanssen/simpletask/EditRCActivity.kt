@@ -45,7 +45,7 @@ class EditRCActivity : ThemedActionBarActivity() {
         // ensure file has ending "\n"
         val newContents = editText.text.split("\n").joinToString (separator = "\n", postfix = "\n")
         Config.rcFile.writeText(newContents)
-        TaskList.reload("updated rc file")
+        TaskList.reload("updated rc file", true)
         finish()
     }
 

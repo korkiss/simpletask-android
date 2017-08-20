@@ -187,7 +187,7 @@ object TaskList : AnkoLogger {
             reload()
         }
     }
-    fun reload(reason: String = "") {
+    fun reload(reason: String = "", reloadConfig: Boolean = false) {
         val logText = "Reload: " + reason
         queue(logText) {
 
@@ -196,7 +196,7 @@ object TaskList : AnkoLogger {
                 TaskList.clearSelection()
             }
             todoItems.clear()
-            todoItems.addAll(TaskWarrior.taskList(Config.activeReport))
+            todoItems.addAll(TaskWarrior.taskList(Config.activeReport, reloadConfig))
             mLists = null
             mTags = null
             broadcastRefreshUI(STWApplication.app.localBroadCastManager)
