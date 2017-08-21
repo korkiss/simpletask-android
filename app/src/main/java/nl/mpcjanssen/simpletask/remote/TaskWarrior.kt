@@ -37,14 +37,12 @@ interface StreamConsumer {
     fun eat(line: String?)
 }
 
-
 object TaskWarrior : AnkoLogger {
     private val errConsumer = object : StreamConsumer {
         val log = AnkoLogger("TaskWarrior")
         override fun eat(line: String?) {
             line?.let {log.error(it)}
         }
-
     }
 
     private val outConsumer = object : StreamConsumer {
@@ -52,10 +50,7 @@ object TaskWarrior : AnkoLogger {
         override fun eat(line: String?) {
             line?.let {log.debug(it)}
         }
-
     }
-
-
 
     val app = STWApplication.app
     private enum class Arch {
@@ -66,7 +61,6 @@ object TaskWarrior : AnkoLogger {
     val config = HashMap<String,String>()
 
     var configLinePattern = Pattern.compile("^([A-Za-z0-9\\._]+)\\s+(\\S.*)$")
-
 
     fun callTaskForSelection(selection: List<Task>, vararg arguments: String) {
         val args = ArrayList<String>()
@@ -269,7 +263,6 @@ object TaskWarrior : AnkoLogger {
         return thread
     }
 
-
     private fun openLocalSocket(name: String): LocalServerSocket? {
         try {
             if (!config.containsKey("taskd.server")) {
@@ -443,9 +436,8 @@ private class LocalSocketRunner(name: String, config: Map<String, String>) : Ank
                 val remoteInput = remoteSocket.inputStream
                 val remoteOutput = remoteSocket.outputStream
                 debug("Connected to taskd server" + remoteSocket.session.cipherSuite)
-                val bread = recvSend(localInput, remoteOutput)
-                val bwrite = recvSend(remoteInput, localOutput)
-
+                recvSend(localInput, remoteOutput)
+                recvSend(remoteInput, localOutput)
             } catch (e: Exception) {
                 debug("Transfer failure",e )
             } finally {
