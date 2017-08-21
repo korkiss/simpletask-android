@@ -23,8 +23,8 @@ import nl.mpcjanssen.simpletask.sort.UrgencyComparator
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createParentDirectory
 import org.jetbrains.anko.*
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.*
 import javax.net.ssl.SSLSocket
 
@@ -60,7 +60,8 @@ object TaskWarrior : AnkoLogger {
     val app = STWApplication.app
     private enum class Arch {
         Arm7, X86
-    };
+    }
+
     val executable = eabiExecutable()
     val config = HashMap<String,String>()
 
@@ -101,16 +102,16 @@ object TaskWarrior : AnkoLogger {
             Arch.X86 -> rawID = if (Build.VERSION.SDK_INT >= 16) R.raw.task_x86_16 else R.raw.task_x86
         }
         try {
-            val file = File(STWApplication.app.getFilesDir(), "task")
+            val file = File(STWApplication.app.filesDir, "task")
             if (!file.exists()) {
-                val rawStream = STWApplication.app.getResources().openRawResource(rawID)
+                val rawStream = STWApplication.app.resources.openRawResource(rawID)
                 val outputStream = FileOutputStream(file)
                 rawStream.copyTo(outputStream, 8912)
                 outputStream.close()
                 rawStream.close()
             }
             file.setExecutable(true, true)
-            return file.getAbsolutePath()
+            return file.absolutePath
         } catch (e: IOException) {
             error("Error preparing file", e)
         }
@@ -178,9 +179,9 @@ object TaskWarrior : AnkoLogger {
             if (arguments[0]=="sync") {
                 reloadConfig()
                 // Should setup TLS socket here
-                val socketName = UUID.randomUUID().toString().toLowerCase();
-                syncSocket = openLocalSocket(socketName);
-                args.add("rc.taskd.socket=" + socketName);
+                val socketName = UUID.randomUUID().toString().toLowerCase()
+                syncSocket = openLocalSocket(socketName)
+                args.add("rc.taskd.socket=" + socketName)
             }
 
             args.addAll(arguments)
@@ -192,8 +193,8 @@ object TaskWarrior : AnkoLogger {
             pb.environment().put("TASKRC", currentRc.absolutePath)
             val p = pb.start()
 
-            val outThread = readStream(p.getInputStream(), out, null )
-            val errThread = readStream(p.getErrorStream(), err, stderrOutput)
+            val outThread = readStream(p.inputStream, out, null )
+            val errThread = readStream(p.errorStream, err, stderrOutput)
             val exitCode = p.waitFor()
             debug("Exit code:  $exitCode")
             //            debug("Execute result:", exitCode);
@@ -321,7 +322,7 @@ private fun List<Task>.sort(reportSort: String): List<Task> {
             log.warn("Invalid sort string $reportSort")
             return null
         }
-        val (sortType, sortOrder, sortGrouping) = match.destructured
+        val (sortType, sortOrder, _) = match.destructured
         val comp = when (sortType) {
             "end" -> CompletionDateComparator()
             "urgency" -> UrgencyComparator()
@@ -368,7 +369,7 @@ private class LocalSocketRunner(name: String, config: Map<String, String>) : Ank
         if (_host != null) {
 
 
-            val lastColon = _host.lastIndexOf(":") ?: 0
+            val lastColon = _host.lastIndexOf(":")
             this.port = Integer.parseInt(_host.substring(lastColon + 1))
             this.host = _host.substring(0, lastColon)
 
@@ -411,7 +412,7 @@ private class LocalSocketRunner(name: String, config: Map<String, String>) : Ank
             from.read(head)
             to.write(head)
             to.flush()
-            val size = ByteBuffer.wrap(head, 0, 4).order(ByteOrder.BIG_ENDIAN).getInt()
+            val size = ByteBuffer.wrap(head, 0, 4).order(ByteOrder.BIG_ENDIAN).int
             var bytes: Long = 4
             val buffer = ByteArray(1024)
             debug("Will transfer: " + size)
@@ -435,13 +436,13 @@ private class LocalSocketRunner(name: String, config: Map<String, String>) : Ank
             try {
                 remoteSocket = factory?.createSocket(host, port) as SSLSocket
                 val finalRemoteSocket = remoteSocket
-                Compat.levelAware(16, Runnable { finalRemoteSocket!!.setEnabledProtocols(arrayOf("TLSv1", "TLSv1.1", "TLSv1.2")) }, Runnable { finalRemoteSocket!!.setEnabledProtocols(arrayOf("TLSv1")) })
+                Compat.levelAware(16, Runnable { finalRemoteSocket.enabledProtocols = arrayOf("TLSv1", "TLSv1.1", "TLSv1.2") }, Runnable { finalRemoteSocket.enabledProtocols = arrayOf("TLSv1") })
                 debug("Ready to establish TLS connection to:"+  host + port)
                 val localInput = socket.inputStream
                 val localOutput = socket.outputStream
-                val remoteInput = remoteSocket!!.getInputStream()
-                val remoteOutput = remoteSocket!!.getOutputStream()
-                debug("Connected to taskd server" + remoteSocket!!.getSession().getCipherSuite())
+                val remoteInput = remoteSocket.inputStream
+                val remoteOutput = remoteSocket.outputStream
+                debug("Connected to taskd server" + remoteSocket.session.cipherSuite)
                 val bread = recvSend(localInput, remoteOutput)
                 val bwrite = recvSend(remoteInput, localOutput)
 
@@ -450,7 +451,7 @@ private class LocalSocketRunner(name: String, config: Map<String, String>) : Ank
             } finally {
                 if (null != remoteSocket) {
                     try {
-                        remoteSocket!!.close()
+                        remoteSocket.close()
                     } catch (e: IOException) {
                     }
 

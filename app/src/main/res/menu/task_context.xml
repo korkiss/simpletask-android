@@ -29,12 +29,6 @@ You should have received a copy of the GNU General Public License along with Tod
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
     <item
-        android:id="@+id/multicomplete_checkbox"
-        android:title=""
-        app:showAsAction="always"
-        android:icon="@drawable/ic_check_box_outline_blank_white_24dp"
-        />
-    <item
         android:id="@+id/update"
         android:title="@string/update"
         android:icon="@drawable/ic_edit_white_24dp"
@@ -62,12 +56,12 @@ You should have received a copy of the GNU General Public License along with Tod
         android:id="@+id/defer_due"
         android:title="@string/defer_due"
         android:icon="@drawable/ic_schedule_white_24dp"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
     <item
         android:id="@+id/defer_threshold"
         android:title="@string/defer_wait"
         android:icon="@drawable/ic_clock_start_white_24dp"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
 </menu>
