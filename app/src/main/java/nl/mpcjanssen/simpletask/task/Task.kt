@@ -19,22 +19,11 @@ data class Task(
         val endDate: DateTime?,
         val entryDate: DateTime) {
 
-    val isCompleted: Boolean
-        get() {
-            return status == "completed"
-        }
+    val isCompleted = status == "completed"
 
-    val isDeleted: Boolean
-        get() {
-            return status == "deleted"
-        }
+    val isDeleted = status == "deleted"
 
-
-    fun inFuture(): Boolean {
-        return waitDate?.isInTheFuture(TimeZone.getDefault()) ?: false
-    }
-
-    val displayText: String = description
+    val displayText = description
 
     val asCliTxt: String
         get() {
