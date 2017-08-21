@@ -7,7 +7,6 @@ import java.util.*
 
 
 data class Task(
-        val json: JSONObject,
         val uuid: String,
         val description: String,
         val annotations: List<String>,
@@ -32,46 +31,42 @@ data class Task(
 
 
     fun inFuture(): Boolean {
-            if (waitDate != null) {
-                return (waitDate.isInTheFuture(TimeZone.getDefault()))
-            } else {
-                return false
-            }
-        }
+        return waitDate?.isInTheFuture(TimeZone.getDefault()) ?: false
+    }
 
     val displayText: String = description
 
     val asCliTxt: String
-    get() {
-        val resultBuilder = StringBuilder()
-        resultBuilder.append(description.trim())
-        resultBuilder.append(" entry:$entryDate")
+        get() {
+            val resultBuilder = StringBuilder()
+            resultBuilder.append(description.trim())
+            resultBuilder.append(" entry:$entryDate")
 
-        dueDate?.let {
-            resultBuilder.append(" due:$it")
-        }
-        waitDate?.let {
-            resultBuilder.append(" wait:$it")
-        }
-        project?.let {
-            resultBuilder.append(" proj:$project")
-        }
-        if (tags.isNotEmpty()) {
-            val tagsString = tags.map { "+$it" }.joinToString(" ")
-            resultBuilder.append(" $tagsString")
+            dueDate?.let {
+                resultBuilder.append(" due:$it")
+            }
+            waitDate?.let {
+                resultBuilder.append(" wait:$it")
+            }
+            project?.let {
+                resultBuilder.append(" proj:$project")
+            }
+            if (tags.isNotEmpty()) {
+                val tagsString = tags.joinToString(" ") { "+$it" }
+                resultBuilder.append(" $tagsString")
+            }
+
+            resultBuilder.append(" status:$status")
+            return resultBuilder.toString()
         }
 
-        resultBuilder.append(" status:${status}")
-        return resultBuilder.toString()
-    }
+    val links: List<String>
+        get() {
+            val text = description + " " + annotations.joinToString(" ")
+            return MATCH_URI.findAll(text).map { it.value }.toList()
+        }
 
-    val links : List<String>
-    get() {
-        val text = description + " " + annotations.joinToString(" ")
-        return MATCH_URI.findAll(text).map { it.value }.toList()
-    }
-
-    fun matchesQuickFilter(filterProjects: Set<String>?, filterTags: Set<String>?) : Boolean {
+    fun matchesQuickFilter(filterProjects: Set<String>?, filterTags: Set<String>?): Boolean {
         val matchProjects = when {
             filterProjects == null -> true
             filterProjects.isEmpty() -> true
@@ -82,7 +77,7 @@ data class Task(
         val matchTags = when {
             filterTags == null -> true
             filterTags.isEmpty() -> true
-            tags.intersect(filterTags).isNotEmpty()  -> true
+            tags.intersect(filterTags).isNotEmpty() -> true
             filterTags.contains("-") && tags.isEmpty() -> true
             else -> false
         }
@@ -92,7 +87,7 @@ data class Task(
 
     companion object {
         val MATCH_URI = Regex("[a-z]+://(\\S+)")
-        fun fromJSON (jsonStr: String) : Task {
+        fun fromJSON(jsonStr: String): Task {
             val json = JSONObject(jsonStr)
             val uuid = json.getString("uuid")
             val desc = json.getString("description")
@@ -104,20 +99,17 @@ data class Task(
             }
             val tags = ArrayList<String>()
             json.optJSONArray("tags")?.let {
-                for (i in 0..it.length() - 1) {
-                    tags.add(it.getString(i))
-                }
+                (0 until it.length()).mapTo(tags) { i -> it.getString(i) }
             }
             val annotations = ArrayList<String>()
             json.optJSONArray("annotations")?.let {
-                for (i in 0..it.length() - 1) {
-                    val annotationObj = it.getJSONObject(i)
-                    annotations.add(annotationObj.getString("description"))
-                }
+                (0 until it.length())
+                        .map { i -> it.getJSONObject(i) }
+                        .mapTo(annotations) { it.getString("description") }
             }
             val project = json.optString("project", null)
 
-            val status =  json.getString("status")
+            val status = json.getString("status")
 
             val waitDate = json.optString("wait", null)?.let {
                 fromISO8601(it)
@@ -128,24 +120,23 @@ data class Task(
             }
             val urgency = json.getDouble("urgency")
 
-            return Task(json, uuid, desc, annotations, project, tags, urgency, status, dueDate, waitDate, endDate, entryDate )
+            return Task(uuid, desc, annotations, project, tags, urgency, status, dueDate, waitDate, endDate, entryDate)
         }
     }
 }
 
 fun List<Task>.asCliList(): String {
-        return this.map { it.asCliTxt }.joinToString ("\n")
-    }
+    return this.joinToString("\n") { it.asCliTxt }
+}
 
 
 val iso8601dateFormatRegex = Regex("([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})Z")
 
 
-fun fromISO8601(dateStr: String) : DateTime {
+fun fromISO8601(dateStr: String): DateTime {
     val (year, month, day, hour, minutes, seconds) =
             iso8601dateFormatRegex.matchEntire(dateStr)?.destructured ?: return DateTime.now(TimeZone.getDefault())
     val UTCDate = DateTime("$year-$month-$day $hour:$minutes:$seconds")
-    val localDate = UTCDate.changeTimeZone(TimeZone.getTimeZone("UTC"), TimeZone.getDefault())
-    return localDate
+    return UTCDate.changeTimeZone(TimeZone.getTimeZone("UTC"), TimeZone.getDefault())
 }
 
