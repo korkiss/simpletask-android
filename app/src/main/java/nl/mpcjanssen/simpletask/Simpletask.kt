@@ -800,7 +800,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 if (newSelectedState) {
                     TaskList.selectTask(item)
                 } else {
-                    TaskList.unSelectTask(item)
+                    TaskList.deselectTask(item)
                 }
                 it.isActivated = newSelectedState
                 invalidateOptionsMenu()

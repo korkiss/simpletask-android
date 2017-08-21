@@ -59,18 +59,6 @@ object TaskList : AnkoLogger {
     private val selectedUUIDs = CopyOnWriteArraySet<String>()
     internal val TAG = TaskList::class.java.simpleName
 
-    fun hasPendingAction(): Boolean {
-        return ActionQueue.hasPending()
-    }
-
-    // Wait until there are no more pending actions
-    @Suppress("unused") // Used in test suite
-    fun settle() {
-        while (hasPendingAction()) {
-            Thread.sleep(10)
-        }
-    }
-
     fun queue(description: String, body: () -> Unit) {
         val r = Runnable(body)
         ActionQueue.add(description, r)
@@ -191,12 +179,12 @@ object TaskList : AnkoLogger {
         }
     }
 
-    fun unSelectTask(item: Task) {
-        unSelectTasks(listOf(item))
+    fun deselectTask(item: Task) {
+        deselectTasks(listOf(item))
     }
 
-    fun unSelectTasks(items: List<Task>) {
-        queue("Unselect") {
+    private fun deselectTasks(items: List<Task>) {
+        queue("Deselect") {
             val uuids = items.map(Task::uuid)
             selectedUUIDs.removeAll(uuids)
             broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
@@ -209,11 +197,6 @@ object TaskList : AnkoLogger {
             selectedUUIDs.clear()
             broadcastRefreshSelection(STWApplication.app.localBroadCastManager)
         }
-    }
-
-    fun getTaskCount(): Long {
-        val items = todoItems
-        return items.size.toLong()
     }
 
     fun add(tasks: List<String>) {
