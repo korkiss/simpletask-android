@@ -152,6 +152,7 @@ object TaskList : AnkoLogger {
             todoItems.addAll(TaskWarrior.taskList(Config.activeReport, reloadConfig))
             projects.clear()
             projects.addAll(TaskWarrior.allProjects())
+            tags.clear()
             tags.addAll(TaskWarrior.allTags())
             broadcastRefreshUI(STWApplication.app.localBroadCastManager)
         }
