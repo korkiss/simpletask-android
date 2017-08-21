@@ -99,7 +99,7 @@ data class Task(
             val status = json.getString("status")
 
             val endDate = json.getISO8601Date("end")
-            val entryDate = json.getISO8601Date("entry") as DateTime
+            val entryDate = json.getISO8601Date("entry") as DateTime // entry is always set, it's an error if not
             val waitDate = json.getISO8601Date("wait")
             val dueDate = json.getISO8601Date("due")
             val startDate = json.getISO8601Date("start")

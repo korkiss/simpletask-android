@@ -27,33 +27,6 @@ You should have received a copy of the GNU General Public License along with Tod
 
 <!--suppress ALL -->
 <resources>
-    <string-array name="sort">
-        <item>@string/completed</item>
-        <item>@string/by_project</item>
-        <item>@string/by_urgency</item>
-        <item>@string/alphabetical</item>
-        <item>@string/by_tag</item>
-        <item>@string/by_creation_date</item>
-        <item>@string/in_future</item>
-        <item>@string/by_due_date</item>
-        <item>@string/by_threshold_date</item>
-        <item>@string/by_completion_date</item>
-    </string-array>
-
-    <!-- will be prepended with "+!" or "-!" depending on direction -->
-    <string-array name="sortKeys">
-        <item>completed</item>
-        <item>by_context</item>
-        <item>by_prio</item>
-        <item>alphabetical</item>
-        <item>by_project</item>
-        <item>by_creation_date</item>
-        <item>in_future</item>
-        <item>by_due_date</item>
-        <item>by_threshold_date</item>
-        <item>by_completion_date</item>
-    </string-array>
-
     <!-- available options for deferring -->
     <string-array name="deferOptions">
         <item>@string/none</item>

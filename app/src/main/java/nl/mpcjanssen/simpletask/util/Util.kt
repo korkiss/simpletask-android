@@ -51,8 +51,6 @@ import java.io.*
 import java.util.*
 
 val TAG = "Util"
-val todayAsString: String
-    get() = DateTime.today(TimeZone.getDefault()).format(Constants.DATE_FORMAT)
 
 val mdParser: Parser = Parser.builder().build()
 val htmlRenderer : HtmlRenderer = HtmlRenderer.builder().build()

@@ -1,31 +1,5 @@
 /**
-
- * Copyright (c) 2009-2012 Todo.txt contributors (http://todotxt.com)
- * Copyright (c) 2013- Mark Janssen
- * Copyright (c) 2015 Vojtech Kral
-
- * LICENSE:
-
- * Simpletas is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any
- * later version.
-
- * Simpletask is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
-
- * You should have received a copy of the GNU General Public License along with Sinpletask.  If not, see
- * //www.gnu.org/licenses/>.
-
- * @author Todo.txt contributors @yahoogroups.com>
- * *
- * @license http://www.gnu.org/licenses/gpl.html
- * *
- * @copyright 2009-2012 Todo.txt contributors (http://todotxt.com)
- * *
  * @copyright 2013- Mark Janssen
- * *
- * @copyright 2015 Vojtech Kral
  */
 package nl.mpcjanssen.simpletask
 
@@ -39,7 +13,6 @@ import nl.mpcjanssen.simpletask.remote.*
 import nl.mpcjanssen.simpletask.task.TaskList
 import nl.mpcjanssen.simpletask.util.Config
 import nl.mpcjanssen.simpletask.util.appVersion
-import nl.mpcjanssen.simpletask.util.todayAsString
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.verbose
@@ -54,7 +27,7 @@ class STWApplication : Application(), FileSelectedListener , AnkoLogger {
         localBroadCastManager = LocalBroadcastManager.getInstance(this)
 
 
-        info("Created todolist " + TaskList)
+        info("Created task list " + TaskList)
         info("onCreate()")
         info("Started ${appVersion(this)}}")
         scheduleOnNewDay()
@@ -102,27 +75,16 @@ class STWApplication : Application(), FileSelectedListener , AnkoLogger {
         FileDialog.browseForNewFile(
                 act,
                 Config.rcFile.parent,
-                object : FileSelectedListener {
-                    override fun fileSelected(file: String) {
-                        switchTodoFile(file)
+                listener = object : FileSelectedListener {
+                    override fun fileSelected(fileName: String) {
+                        switchTodoFile(fileName)
                     }
                 })
-    }
-
-    fun getSortString(key: String): String {
-        val keys = Arrays.asList(*resources.getStringArray(R.array.sortKeys))
-        val values = resources.getStringArray(R.array.sort)
-        val index = keys.indexOf(key)
-        if (index == -1) {
-            return getString(R.string.none)
-        }
-        return values[index]
     }
 
     companion object {
         fun atLeastAPI(api: Int): Boolean = android.os.Build.VERSION.SDK_INT >= api
         lateinit var app : STWApplication
     }
-    var today: String = todayAsString
 }
 
