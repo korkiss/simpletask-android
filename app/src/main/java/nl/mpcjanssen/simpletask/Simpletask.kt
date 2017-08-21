@@ -15,7 +15,6 @@ import android.annotation.SuppressLint
 
 import android.app.DatePickerDialog
 import android.app.ProgressDialog
-import android.app.SearchManager
 import android.content.*
 import android.content.res.Configuration
 import android.content.res.TypedArray
@@ -24,7 +23,6 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.CalendarContract
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
@@ -239,7 +237,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             if (intent.hasExtra(Constants.INTENT_SELECTED_TASK_LINE)) {
                 val position = intent.getIntExtra(Constants.INTENT_SELECTED_TASK_LINE, -1)
                 intent.removeExtra(Constants.INTENT_SELECTED_TASK_LINE)
-                setIntent(intent)
+
                 if (position > -1) {
                     val itemAtPosition = adapter.getTask(position)
                     itemAtPosition?.let {
@@ -264,7 +262,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onResume() {
         super.onResume()
         Log.i(TAG, "onResume")
-        setTitle(Config.activeReport)
+        title = Config.activeReport
         handleIntent()
     }
 
@@ -344,7 +342,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 fab.visibility = View.VISIBLE
                 selection_fab.visibility = View.GONE
                 toolbar.visibility = View.GONE
-                setTitle(Config.activeReport)
+                title = Config.activeReport
             }
         }
         return super.onCreateOptionsMenu(menu)
@@ -615,7 +613,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
 
     private fun updateQuickFilterDrawer() {
-        val projectsInDrawer = TaskList.projects.union(Config.quickProjectsFilter?.toList()?:ArrayList<String>())
+        val projectsInDrawer = TaskList.projects.union(other = Config.quickProjectsFilter?.toList()?:ArrayList())
         val tagsInDrawer = TaskList.tags.union(Config.quickTagsFilter?.toList()?:ArrayList<String>())
         val decoratedContexts = alfaSortList(projectsInDrawer, Config.sortCaseSensitive, prefix="-").map { "@" + it }
         val decoratedProjects = alfaSortList(tagsInDrawer, Config.sortCaseSensitive, prefix="-").map { "+" + it }
@@ -951,10 +949,9 @@ class Simpletask : ThemedNoActionBarActivity() {
         val allItems = TaskList.projects
         allItems.add(0,"")
         allItems.sort()
-
-
-        val view = layoutInflater.inflate(R.layout.update_project_dialog, null, false)
+        val nullParent: ViewGroup? = null
         val builder = AlertDialog.Builder(this)
+        val view = layoutInflater.inflate(R.layout.update_project_dialog, nullParent, false)
         builder.setView(view)
 
         val rcv = view.current_projects_list
@@ -1004,7 +1001,8 @@ class Simpletask : ThemedNoActionBarActivity() {
         sortedAllItems += alfaSortList(onSomeTasks, Config.sortCaseSensitive)
         sortedAllItems += alfaSortList(allItems.toSet(), Config.sortCaseSensitive)
 
-        val view = layoutInflater.inflate(R.layout.update_tags_dialog, null, false)
+        val nullParent: ViewGroup? = null
+        val view = layoutInflater.inflate(R.layout.update_tags_dialog, nullParent, false)
         val builder = AlertDialog.Builder(this)
         builder.setView(view)
 
@@ -1085,9 +1083,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         private val ACTION_SMS = "sms"
         private val ACTION_PHONE = "phone"
         private val ACTION_MAIL = "mail"
-
-        val URI_BASE = Uri.fromParts("Simpletask", "", null)!!
-        val URI_SEARCH = Uri.withAppendedPath(URI_BASE, "search")!!
         private val TAG = "Simpletask"
     }
 }

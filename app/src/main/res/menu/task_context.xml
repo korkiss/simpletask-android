@@ -47,12 +47,6 @@ You should have received a copy of the GNU General Public License along with Tod
         app:showAsAction="always"
         />
     <item
-        android:id="@+id/priority"
-        android:title="@string/priority"
-        android:icon="@drawable/ic_star_border_white_24dp"
-        app:showAsAction="always"
-        />
-    <item
         android:id="@+id/defer_due"
         android:title="@string/defer_due"
         android:icon="@drawable/ic_schedule_white_24dp"

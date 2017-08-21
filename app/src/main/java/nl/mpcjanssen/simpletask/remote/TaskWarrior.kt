@@ -37,6 +37,9 @@ interface StreamConsumer {
     fun eat(line: String?)
 }
 
+val VIRTUAL_TAGS = arrayOf("ACTIVE", "ANNOTATED", "BLOCKED", "BLOCKING", "CHILD", "COMPLETED", "DELETED", "DUE", "DUETODAY", "MONTH", "ORPHAN", "OVERDUE", "PARENT", "PENDING", "READY", "SCHEDULED", "TAGGED", "TODAY", "TOMORROW", "UDA", "UNBLOCKED", "UNTIL", "WAITING", "WEEK", "YEAR", "YESTERDAY", "nocal", "nocolor", "nonag"
+)
+
 object TaskWarrior : AnkoLogger {
     private val errConsumer = object : StreamConsumer {
         val log = AnkoLogger("TaskWarrior")
@@ -110,6 +113,45 @@ object TaskWarrior : AnkoLogger {
             error("Error preparing file", e)
         }
         return null
+    }
+
+    fun allProjects(): List<String> {
+        val result = ArrayList<String>()
+        val params = ArrayList<String>()
+        params.add("rc.verbose=nothing")
+        params.add("_projects")
+        callTask(object : StreamConsumer {
+            override fun eat(line: String?) {
+                line?.let{result.add(it)}
+            }
+        }, object : StreamConsumer {
+            override fun eat(line: String?) {
+                line?.let{result.add(it)}
+            }}, *params.toTypedArray())
+        info("Projects size=${result.size}")
+        return result
+    }
+
+    fun allTags(): List<String> {
+        val result = ArrayList<String>()
+        val params = ArrayList<String>()
+        params.add("rc.verbose=nothing")
+        params.add("_tags")
+        callTask(object : StreamConsumer {
+            override fun eat(line: String?) {
+                if (!(line in VIRTUAL_TAGS)) {
+                    line?.let { result.add(it) }
+                }
+            }
+        }, object : StreamConsumer {
+            override fun eat(line: String?) {
+                line?.let{
+                        result.add(it)
+                    }
+                }
+            }, *params.toTypedArray())
+        info("Projects size=${result.size}")
+        return result
     }
 
     fun taskList(reportName: String, reloadConfig : Boolean = false): List<Task> {

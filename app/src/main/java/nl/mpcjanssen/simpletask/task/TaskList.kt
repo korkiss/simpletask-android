@@ -37,7 +37,6 @@ import nl.mpcjanssen.simpletask.remote.TaskWarrior
 import nl.mpcjanssen.simpletask.util.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
-import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.collections.ArrayList
 
@@ -54,8 +53,8 @@ import kotlin.collections.ArrayList
 
 object TaskList : AnkoLogger {
 
-    private var mLists: ArrayList<String>? = null
-    private var mTags: ArrayList<String>? = null
+    val tags = ArrayList<String>()
+    val projects = ArrayList<String>()
     private val todoItems = ArrayList<Task>()
     private val selectedUUIDs = CopyOnWriteArraySet<String>()
     internal val TAG = TaskList::class.java.simpleName
@@ -103,39 +102,6 @@ object TaskList : AnkoLogger {
     fun size(): Int {
         return todoItems.size
     }
-
-
-    val projects: ArrayList<String>
-        get() {
-            val lists = mLists
-            if (lists != null) {
-                return lists
-            }
-            val res = HashSet<String>()
-            todoItems.forEach {
-                it.project?.let { res.add(it)}
-            }
-            val newLists = ArrayList<String>()
-            newLists.addAll(res)
-            mLists = newLists
-            return newLists
-        }
-
-    val tags: ArrayList<String>
-        get() {
-            val tags = mTags
-            if (tags != null) {
-                return tags
-            }
-            val res = HashSet<String>()
-            todoItems.toMutableList().forEach {
-                res.addAll(it.tags)
-            }
-            val newTags = ArrayList<String>()
-            newTags.addAll(res)
-            mTags = newTags
-            return newTags
-        }
 
     fun uncomplete(tasks: List<Task>) {
         queue("Uncomplete") {
@@ -197,8 +163,9 @@ object TaskList : AnkoLogger {
             }
             todoItems.clear()
             todoItems.addAll(TaskWarrior.taskList(Config.activeReport, reloadConfig))
-            mLists = null
-            mTags = null
+            projects.clear()
+            projects.addAll(TaskWarrior.allProjects())
+            tags.addAll(TaskWarrior.allTags())
             broadcastRefreshUI(STWApplication.app.localBroadCastManager)
         }
     }
