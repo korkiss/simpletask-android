@@ -64,7 +64,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     var textSize: Float = 14.0F
 
-    internal var options_menu: Menu? = null
+    private var options_menu: Menu? = null
     internal lateinit var m_app: STWApplication
 
     internal var m_adapter: TaskAdapter? = null
@@ -77,7 +77,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private var m_drawerToggle: ActionBarDrawerToggle? = null
     private var m_savedInstanceState: Bundle? = null
-    internal var m_scrollPosition = 0
+    private var m_scrollPosition = 0
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -493,7 +493,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         return true
     }
 
-    internal fun clearQuickFilter() {
+    private fun clearQuickFilter() {
         Config.quickProjectsFilter = null
         Config.quickTagsFilter = null
         updateDrawers()
@@ -589,7 +589,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
     }
 
-    fun createReportShortcut(reportName: String) {
+    private fun createReportShortcut(reportName: String) {
         val shortcut = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
         val target = Intent(Constants.INTENT_START_REPORT)
 
@@ -608,7 +608,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun updateQuickFilterDrawer() {
         val projectsInDrawer = TaskList.projects.union(other = Config.quickProjectsFilter?.toList()?:ArrayList())
-        val tagsInDrawer = TaskList.tags.union(Config.quickTagsFilter?.toList()?:ArrayList<String>())
+        val tagsInDrawer = TaskList.tags.union(Config.quickTagsFilter?.toList()?:ArrayList())
         val decoratedContexts = alfaSortList(projectsInDrawer, Config.sortCaseSensitive, prefix="-").map { "@" + it }
         val decoratedProjects = alfaSortList(tagsInDrawer, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
@@ -637,18 +637,17 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     val listView: RecyclerView?
         get() {
-            val lv = list
-            return lv
+            return list
         }
 
     private var progressDialog: ProgressDialog? = null
 
     fun showProgress(show: Boolean) {
-        if (show && progressDialog == null) {
-            progressDialog = indeterminateProgressDialog(R.string.updating)
+        progressDialog = if (show && progressDialog == null) {
+            indeterminateProgressDialog(R.string.updating)
         } else {
             progressDialog?.cancel()
-            progressDialog = null
+            null
         }
     }
 
@@ -656,7 +655,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
 
     inner class TaskAdapter(private val m_inflater: LayoutInflater) : RecyclerView.Adapter <TaskViewHolder>() {
-        var visibleTasks : List<Task> = ArrayList<Task>()
+        var visibleTasks : List<Task> = ArrayList()
         override fun getItemCount(): Int {
             return visibleTasks.size + 1
         }
@@ -689,16 +688,13 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
 
 
-        fun bindTask (holder : TaskViewHolder, position: Int) {
+        private fun bindTask (holder : TaskViewHolder, position: Int) {
             val line = visibleTasks[position]
-            val item = line
             val view = holder.itemView
             val taskText = view.tasktext
             val taskAge = view.taskage
             val taskDue = view.taskdue
             val taskThreshold = view.taskthreshold
-
-            val task = item
 
             if (Config.showCompleteCheckbox) {
                 view.checkBox.visibility = View.VISIBLE
@@ -706,12 +702,12 @@ class Simpletask : ThemedNoActionBarActivity() {
                 view.checkBox.visibility = View.GONE
             }
 
-            val completed = task.isCompleted
-            val text = task.displayText
+            val completed = line.isCompleted
+            val text = line.displayText
 
             val startColorSpan = text.length
-            val tags = task.tags.map { "+"+it }.joinToString(" ")
-            val project = task.project?.let {" @" + it} ?: ""
+            val tags = line.tags.joinToString(" ") { "+"+it }
+            val project = line.project?.let {" @" + it} ?: ""
             val fullText = (text + project + " " + tags).trim()
             val ss = SpannableString(fullText)
 
@@ -731,7 +727,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskText.paintFlags = taskText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 taskAge.paintFlags = taskAge.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 cb.setOnClickListener({
-                    uncompleteTasks(item)
+                    uncompleteTasks(line)
                     // Update the tri state checkbox
                     if (activeMode() == Mode.SELECTION) invalidateOptionsMenu()
                 })
@@ -740,13 +736,13 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskAge.paintFlags = taskAge.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
 
                 cb.setOnClickListener {
-                    completeTasks(item)
+                    completeTasks(line)
                     // Update the tri state checkbox
                     if (activeMode() == Mode.SELECTION) invalidateOptionsMenu()
                 }
 
             }
-            if (task.isDeleted) {
+            if (line.isDeleted) {
                 view.deletedIndicator.visibility = View.VISIBLE
                 view.checkBox.isEnabled = false
             } else {
@@ -755,9 +751,9 @@ class Simpletask : ThemedNoActionBarActivity() {
             }
 
 
-            if (task.annotations.isNotEmpty()) {
+            if (line.annotations.isNotEmpty()) {
                 view.annotationbar.visibility=View.VISIBLE
-                view.annotationbar.annotations.text = task.annotations.map{"- $it"}.joinToString("\n")
+                view.annotationbar.annotations.text = line.annotations.joinToString("\n") {"- $it"}
                 view.annotationbar.annotations.textSize = textSize * Config.dateBarRelativeSize
             } else {
                 view.annotationbar.visibility=View.GONE
@@ -765,9 +761,9 @@ class Simpletask : ThemedNoActionBarActivity() {
 
             cb.isChecked = completed
 
-            val relAge = getRelativeAge(task, m_app)
-            val relDue = getRelativeDueDate(task, m_app)
-            val relativeThresholdDate = getRelativeWaitDate(task, m_app)
+            val relAge = getRelativeAge(line, m_app)
+            val relDue = getRelativeDueDate(line, m_app)
+            val relativeThresholdDate = getRelativeWaitDate(line, m_app)
             if (!isEmptyOrNull(relAge)) {
                 taskAge.text = relAge
                 taskAge.visibility = View.VISIBLE
@@ -791,16 +787,16 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskThreshold.visibility = View.GONE
             }
             // Set selected state
-            view.isActivated = TaskList.isSelected(item)
+            view.isActivated = TaskList.isSelected(line)
 
             // Set click listeners
             view.setOnClickListener { it ->
 
-                val newSelectedState = !TaskList.isSelected(item)
+                val newSelectedState = !TaskList.isSelected(line)
                 if (newSelectedState) {
-                    TaskList.selectTask(item)
+                    TaskList.selectTask(line)
                 } else {
-                    TaskList.deselectTask(item)
+                    TaskList.deselectTask(line)
                 }
                 it.isActivated = newSelectedState
                 invalidateOptionsMenu()
@@ -809,8 +805,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             view.setOnLongClickListener {
                 val links = ArrayList<String>()
                 val actions = ArrayList<String>()
-                val t = item
-                for (link in t.links) {
+                for (link in line.links) {
                     actions.add(ACTION_LINK)
                     links.add(link)
                 }
@@ -906,10 +901,10 @@ class Simpletask : ThemedNoActionBarActivity() {
         }
 
         override fun getItemViewType(position: Int): Int {
-            if (position == visibleTasks.size) {
-                return 2
+            return if (position == visibleTasks.size) {
+                2
             } else {
-                return 1
+                1
             }
         }
     }
@@ -920,13 +915,12 @@ class Simpletask : ThemedNoActionBarActivity() {
         val ellipsizePref = Config.prefs.getString(ellipsizeKey, noEllipsizeValue)
 
         if (noEllipsizeValue != ellipsizePref) {
-            val truncateAt: TextUtils.TruncateAt?
-            when (ellipsizePref) {
-                "start" -> truncateAt = TextUtils.TruncateAt.START
-                "end" -> truncateAt = TextUtils.TruncateAt.END
-                "middle" -> truncateAt = TextUtils.TruncateAt.MIDDLE
-                "marquee" -> truncateAt = TextUtils.TruncateAt.MARQUEE
-                else -> truncateAt = null
+            val truncateAt: TextUtils.TruncateAt? = when (ellipsizePref) {
+                "start" -> TextUtils.TruncateAt.START
+                "end" -> TextUtils.TruncateAt.END
+                "middle" -> TextUtils.TruncateAt.MIDDLE
+                "marquee" -> TextUtils.TruncateAt.MARQUEE
+                else -> null
             }
 
             if (truncateAt != null) {
