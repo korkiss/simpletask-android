@@ -627,7 +627,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                     .forEach { filter_drawer.setItemChecked(it, true) }
         }
 
-        Config.quickProjectsFilter?.let { it
+        Config.quickTagsFilter?.let { it
                     .map { drawerAdapter.getIndexOf("+" + it) }
                     .filter { it != -1 }
                     .forEach { filter_drawer.setItemChecked(it, true) }
