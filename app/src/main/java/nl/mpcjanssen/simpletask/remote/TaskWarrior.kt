@@ -17,8 +17,9 @@ import android.net.LocalSocket
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import com.taskwc2.controller.sync.SSLHelper
+import nl.mpcjanssen.simpletask.sort.AlphabeticalComparator
 import nl.mpcjanssen.simpletask.sort.CompReverser
-import nl.mpcjanssen.simpletask.sort.CompletionDateComparator
+import nl.mpcjanssen.simpletask.sort.DateComparator
 import nl.mpcjanssen.simpletask.sort.UrgencyComparator
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createParentDirectory
@@ -359,8 +360,14 @@ private fun List<Task>.sort(reportSort: String): List<Task> {
         }
         val (sortType, sortOrder, _) = match.destructured
         val comp = when (sortType) {
-            "end" -> CompletionDateComparator()
+            "end" -> DateComparator({it -> it.endDate})
+            "start" -> DateComparator({it -> it.startDate})
+            "wait" -> DateComparator({it -> it.waitDate})
+            "due" -> DateComparator({it -> it.dueDate})
+            "entry" -> DateComparator({it -> it.entryDate})
             "urgency" -> UrgencyComparator()
+            "tags" -> AlphabeticalComparator({it -> it.tags.joinToString(" ")}, Config.sortCaseSensitive)
+            "project" -> AlphabeticalComparator({it -> it.project}, Config.sortCaseSensitive)
             else -> {
                 log.warn("Unknown sort type $sortType")
                 return null

@@ -1,9 +1,9 @@
 package nl.mpcjanssen.simpletask.sort
 
+import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.task.Task
-import java.util.*
 
-class CompletionDateComparator : Comparator<Task> {
+class DateComparator(val dateLambda: (Task) -> DateTime?) : Comparator<Task> {
 
     override fun compare(a: Task?, b: Task?): Int {
         if (a === b) {
@@ -13,8 +13,8 @@ class CompletionDateComparator : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val aDate = a.endDate
-        val bDate = b.endDate
+        val aDate = dateLambda(a)
+        val bDate = dateLambda(b)
         if ( aDate == null && bDate == null) {
             return 0
         } else if (aDate == null) {

@@ -15,6 +15,7 @@ data class Task(
         val urgency: Double,
         val status: String,
         val dueDate: DateTime?,
+        val startDate: DateTime?,
         val waitDate: DateTime?,
         val endDate: DateTime?,
         val entryDate: DateTime) {
@@ -30,9 +31,11 @@ data class Task(
             val resultBuilder = StringBuilder()
             resultBuilder.append(description.trim())
             resultBuilder.append(" entry:$entryDate")
-
             dueDate?.let {
                 resultBuilder.append(" due:$it")
+            }
+            startDate?.let {
+                resultBuilder.append(" start:$it")
             }
             waitDate?.let {
                 resultBuilder.append(" wait:$it")
@@ -80,12 +83,7 @@ data class Task(
             val json = JSONObject(jsonStr)
             val uuid = json.getString("uuid")
             val desc = json.getString("description")
-            val endDate = json.optString("end", null)?.let {
-                fromISO8601(it)
-            }
-            val entryDate = json.getString("entry").let {
-                fromISO8601(it)
-            }
+
             val tags = ArrayList<String>()
             json.optJSONArray("tags")?.let {
                 (0 until it.length()).mapTo(tags) { i -> it.getString(i) }
@@ -100,16 +98,26 @@ data class Task(
 
             val status = json.getString("status")
 
-            val waitDate = json.optString("wait", null)?.let {
-                fromISO8601(it)
-            }
-
-            val dueDate = json.optString("due", null)?.let {
-                fromISO8601(it)
-            }
+            val endDate = json.getISO8601Date("end")
+            val entryDate = json.getISO8601Date("entry") as DateTime
+            val waitDate = json.getISO8601Date("wait")
+            val dueDate = json.getISO8601Date("due")
+            val startDate = json.getISO8601Date("start")
             val urgency = json.getDouble("urgency")
 
-            return Task(uuid, desc, annotations, project, tags, urgency, status, dueDate, waitDate, endDate, entryDate)
+            return Task(
+                    uuid=uuid,
+                    description=desc,
+                    annotations=annotations,
+                    project=project,
+                    tags=tags,
+                    urgency=urgency,
+                    status=status,
+                    dueDate=dueDate,
+                    waitDate=waitDate,
+                    endDate=endDate,
+                    entryDate=entryDate,
+                    startDate=startDate )
         }
     }
 }
@@ -118,14 +126,20 @@ fun List<Task>.asCliList(): String {
     return this.joinToString("\n") { it.asCliTxt }
 }
 
+fun JSONObject.getISO8601Date(name: String) : DateTime? {
+    val iso8601dateFormatRegex = Regex("([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})Z")
 
-val iso8601dateFormatRegex = Regex("([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})Z")
 
-
-fun fromISO8601(dateStr: String): DateTime {
-    val (year, month, day, hour, minutes, seconds) =
-            iso8601dateFormatRegex.matchEntire(dateStr)?.destructured ?: return DateTime.now(TimeZone.getDefault())
-    val UTCDate = DateTime("$year-$month-$day $hour:$minutes:$seconds")
-    return UTCDate.changeTimeZone(TimeZone.getTimeZone("UTC"), TimeZone.getDefault())
+    fun fromISO8601(dateStr: String): DateTime {
+        val (year, month, day, hour, minutes, seconds) =
+                iso8601dateFormatRegex.matchEntire(dateStr)?.destructured ?: return DateTime.now(TimeZone.getDefault())
+        val UTCDate = DateTime("$year-$month-$day $hour:$minutes:$seconds")
+        return UTCDate.changeTimeZone(TimeZone.getTimeZone("UTC"), TimeZone.getDefault())
+    }
+    return this.optString(name, null)?.let {
+        fromISO8601(it)
+    }
 }
+
+
 

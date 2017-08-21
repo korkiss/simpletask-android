@@ -3,9 +3,16 @@ package nl.mpcjanssen.simpletask.sort
 import nl.mpcjanssen.simpletask.task.Task
 import java.util.*
 
-class AlphabeticalComparator(caseSensitive: Boolean) : Comparator<Task> {
+class AlphabeticalComparator(val stringLambda: (Task)->String?, caseSensitive: Boolean) : Comparator<Task> {
     val stringComp = AlphabeticalStringComparator(caseSensitive)
     override fun compare(t1: Task?, t2: Task?): Int {
-        return stringComp.compare(t1?.description, t2?.description)
+        if (t1 === t2) {
+            return 0
+        } else if (t1 == null) {
+            return -1
+        } else if (t2 == null) {
+            return 1
+        }
+        return stringComp.compare(stringLambda(t1), stringLambda(t2))
     }
 }
