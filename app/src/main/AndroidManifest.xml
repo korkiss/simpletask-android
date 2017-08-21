@@ -123,7 +123,7 @@ You should have received a copy of the GNU General Public License along with Sim
 
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
-                <action android:name="nl.mpcjanssen.simpletask.START_WITH_FILTER" />
+                <action android:name="nl.mpcjanssen.simpletask.START_WITH_REPORT" />
             </intent-filter>
 
             <intent-filter>

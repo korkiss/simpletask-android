@@ -44,7 +44,7 @@ object Constants {
     const val SHARE_FILE_NAME = "simpletask.txt"
 
     // Public intents
-    const val INTENT_START_FILTER = "nl.mpcjanssen.simpletask.START_WITH_FILTER"
+    const val INTENT_START_REPORT = "nl.mpcjanssen.simpletask.START_WITH_REPORT"
     const val INTENT_BACKGROUND_TASK = "nl.mpcjanssen.simpletask.BACKGROUND_TASK"
 
     // Intent extras

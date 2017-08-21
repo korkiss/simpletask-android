@@ -264,6 +264,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     override fun onResume() {
         super.onResume()
         Log.i(TAG, "onResume")
+        setTitle(Config.activeReport)
         handleIntent()
     }
 
@@ -378,12 +379,11 @@ class Simpletask : ThemedNoActionBarActivity() {
 
                 inflater.inflate(R.menu.main, menu)
 
-                setTitle(Config.activeReport)
-
                 toggle.isDrawerIndicatorEnabled = true
                 fab.visibility = View.VISIBLE
                 selection_fab.visibility = View.GONE
                 toolbar.visibility = View.GONE
+                setTitle(Config.activeReport)
             }
         }
         return super.onCreateOptionsMenu(menu)
@@ -579,19 +579,13 @@ class Simpletask : ThemedNoActionBarActivity() {
         m_adapter?.setFilteredTasks()
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        if (Intent.ACTION_SEARCH == intent.action) {
-            val currentIntent = getIntent()
-            currentIntent.putExtra(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY))
-            setIntent(currentIntent)
-
-        } else if (CalendarContract.ACTION_HANDLE_CUSTOM_EVENT == intent.action) {
-            // Uri uri = Uri.parse(intent.getStringExtra(CalendarContract.EXTRA_CUSTOM_APP_URI));
-            Log.w(TAG, "Not implemented search")
-        } else if (intent.extras != null) {
+    override fun onNewIntent(newIntent: Intent) {
+        super.onNewIntent(newIntent)
+        if (newIntent.action == Constants.INTENT_START_REPORT) {
+            intent = newIntent
             // Only change intent if it actually contains a filter
-            setIntent(intent)
+            Config.activeReport = newIntent.getStringExtra("name")
+            TaskList.reload("launched with report ${Config.activeReport}")
         }
         Config.lastScrollPosition = -1
         Log.i(TAG, "onNewIntent: " + intent)
@@ -624,33 +618,29 @@ class Simpletask : ThemedNoActionBarActivity() {
             updateDrawers()
         }
         nav_drawer.onItemLongClickListener = OnItemLongClickListener { _, view, position, _ ->
-//            val filter = filters[position]
-//            val prefsName = filter.prefName!!
-//            val popupMenu = PopupMenu(this@Simpletask, view)
-//            popupMenu.setOnMenuItemClickListener { item ->
-//                val menuId = item.itemId
-//                when (menuId) {
-//                    R.id.menu_saved_filter_delete -> deleteSavedFilter(prefsName)
-//                    R.id.menu_saved_filter_shortcut -> createFilterShortcut(filter)
-//                    R.id.menu_saved_filter_rename -> renameSavedFilter(prefsName)
-//                    R.id.menu_saved_filter_update -> updateSavedFilter(prefsName)
-//                    else -> {
-//                    }
-//                }
-//                true
-//            }
-//            val inflater = popupMenu.menuInflater
-//            inflater.inflate(R.menu.saved_filter, popupMenu.menu)
-//            popupMenu.show()
+            val filter = names[position]
+            val popupMenu = PopupMenu(this@Simpletask, view)
+            popupMenu.setOnMenuItemClickListener { item ->
+                val menuId = item.itemId
+                when (menuId) {
+                      R.id.menu_saved_filter_shortcut -> createReportShortcut(filter)
+                    else -> {
+                    }
+                }
+                true
+            }
+            val inflater = popupMenu.menuInflater
+            inflater.inflate(R.menu.saved_filter, popupMenu.menu)
+            popupMenu.show()
             true
         }
     }
 
-    fun createFilterShortcut(filterName: String) {
+    fun createReportShortcut(reportName: String) {
         val shortcut = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
-        val target = Intent(Constants.INTENT_START_FILTER)
+        val target = Intent(Constants.INTENT_START_REPORT)
 
-        target.putExtra("name", filterName)
+        target.putExtra("name", reportName)
 
         // Setup target intent for shortcut
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_INTENT, target)
@@ -658,7 +648,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         // Set shortcut icon
         val iconRes = Intent.ShortcutIconResource.fromContext(this, R.drawable.ic_launcher)
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconRes)
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, filterName)
+        shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, reportName)
         sendBroadcast(shortcut)
     }
 
