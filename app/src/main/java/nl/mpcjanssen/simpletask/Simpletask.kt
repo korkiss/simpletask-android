@@ -664,8 +664,10 @@ class Simpletask : ThemedNoActionBarActivity() {
 
 
     private fun updateQuickFilterDrawer() {
-        val decoratedContexts = alfaSortList(TaskList.projects, Config.sortCaseSensitive, prefix="-").map { "@" + it }
-        val decoratedProjects = alfaSortList(TaskList.tags, Config.sortCaseSensitive, prefix="-").map { "+" + it }
+        val projectsInDrawer = TaskList.projects.union(Config.quickProjectsFilter?.toList()?:ArrayList<String>())
+        val tagsInDrawer = TaskList.tags.union(Config.quickTagsFilter?.toList()?:ArrayList<String>())
+        val decoratedContexts = alfaSortList(projectsInDrawer, Config.sortCaseSensitive, prefix="-").map { "@" + it }
+        val decoratedProjects = alfaSortList(tagsInDrawer, Config.sortCaseSensitive, prefix="-").map { "+" + it }
         val drawerAdapter = DrawerAdapter(layoutInflater,
                 Config.projectTerm,
                 decoratedContexts,
@@ -677,7 +679,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         filter_drawer.onItemClickListener = DrawerItemClickListener()
 
         Config.quickProjectsFilter?.let { it
-                    .map { drawerAdapter.getIndexOf(it) }
+                    .map { drawerAdapter.getIndexOf("@"+ it) }
                     .filter { it != -1 }
                     .forEach { filter_drawer.setItemChecked(it, true) }
         }
