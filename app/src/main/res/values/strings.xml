@@ -340,9 +340,8 @@
     <string name="dates_weeks_ago">%d weeks ago</string>
     <string name="dates_one_week_ago">1 week ago</string>
 
-    <string name="dates_one_week">1 week</string>
-    <string name="dates_two_weeks">2 weeks</string>
-    <string name="dates_one_month">1 month</string>
+    <string name="dates_one_week">next monday</string>
+    <string name="dates_one_month">next month</string>
 
     <string name="dates_today">today</string>
     <string name="date_pick">pick date</string>

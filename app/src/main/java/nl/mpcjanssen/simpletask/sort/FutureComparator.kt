@@ -13,8 +13,8 @@ class FutureComparator(val today: String) : Comparator<Task> {
         } else if (b == null) {
             return 1
         }
-        val futureA = if (a.inFuture(today)) 1 else 0
-        val futureB = if (b.inFuture(today)) 1 else 0
+        val futureA = if (a.inFuture()) 1 else 0
+        val futureB = if (b.inFuture()) 1 else 0
         return (futureA - futureB)
     }
 }

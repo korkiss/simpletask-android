@@ -32,10 +32,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.AssetManager
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.support.compat.BuildConfig
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
@@ -44,7 +40,6 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.Window
 import android.widget.ListView
 import hirondelle.date4j.DateTime
 import nl.mpcjanssen.simpletask.*
@@ -53,9 +48,7 @@ import nl.mpcjanssen.simpletask.task.Task
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.*
-import java.nio.channels.FileChannel
 import java.util.*
-import java.util.regex.Pattern
 
 val TAG = "Util"
 val todayAsString: String
@@ -64,23 +57,11 @@ val todayAsString: String
 val mdParser: Parser = Parser.builder().build()
 val htmlRenderer : HtmlRenderer = HtmlRenderer.builder().build()
 
-fun runOnMainThread(r: Runnable) {
-    val handler = Handler(Looper.getMainLooper())
-    handler.post(r)
-}
 
 fun getString (resId : Int) : String {
     return STWApplication.app.getString(resId)
 }
 
-fun showConfirmationDialog(cxt: Context,
-                           msgid: Int,
-                           okListener: DialogInterface.OnClickListener,
-                           titleid: Int) {
-    val builder = AlertDialog.Builder(cxt)
-    builder.setTitle(titleid)
-    showConfirmationDialog(msgid, okListener, builder)
-}
 
 fun showConfirmationDialog(cxt: Context,
                            msgid: Int,
@@ -128,98 +109,16 @@ fun createParentDirectory(dest: File?) {
     }
 }
 
-fun join(s: Collection<String>?, delimiter: String): String {
-    if (s == null) {
-        return ""
-    }
-    return s.joinToString(delimiter)
-}
-
-fun setColor(ss: SpannableString, color: Int, s: String) {
-    val strList = ArrayList<String>()
-    strList.add(s)
-    setColor(ss, color, strList)
-}
-
-fun setColor(ss: SpannableString, color: Int, items: List<String>) {
-    val data = ss.toString()
-    for (item in items) {
-        val i = data.indexOf(item)
-        if (i != -1) {
-            ss.setSpan(ForegroundColorSpan(color), i,
-                    i + item.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-    }
-}
-
 fun setColor(ss: SpannableString, color: Int) {
-
     ss.setSpan(ForegroundColorSpan(color), 0,
             ss.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 }
 
-fun addInterval(dateTimeStr: String?, interval: String): DateTime? {
-    return addInterval(dateTimeStr?.toDateTime(), interval)
-}
-
-fun addBusinessDays(originalDate: DateTime, days: Int): DateTime {
-    var date = originalDate
-    var amount = days
-    while (amount > 0) {
-        when (date.weekDay) {
-            6 -> { // Friday
-                date = date.plusDays(3)
-            }
-            7 -> { // Saturdau
-                date = date.plusDays(2)
-            }
-            else -> {
-                date = date.plusDays(1)
-            }
-
-        }
-        amount -= 1
-    }
-    return date
-}
-
-fun addInterval(date: DateTime?, interval: String): DateTime? {
-    var newDate = date
-    val p = Pattern.compile("(\\d+)([dDwWmMyYbB])")
-    val m = p.matcher(interval.toLowerCase(Locale.getDefault()))
-    val amount: Int
-    val type: String
-    if (newDate == null) {
-        newDate = DateTime.today(TimeZone.getDefault())
-    }
-    if (!m.find()) {
-        //If the interval is invalid, just return the original date
-        return newDate
-    }
-    if (m.groupCount() == 2) {
-        amount = Integer.parseInt(m.group(1))
-        type = m.group(2).toLowerCase(Locale.getDefault())
-    } else {
-        return newDate
-    }
-    when (type) {
-        "d" -> newDate = newDate!!.plusDays(amount)
-        "w" -> newDate = newDate!!.plusDays(7 * amount)
-        "m" -> newDate = newDate!!.plus(0, amount, 0, 0, 0, 0, 0, DateTime.DayOverflow.LastDay)
-        "y" -> newDate = newDate!!.plus(amount, 0, 0, 0, 0, 0, 0, DateTime.DayOverflow.LastDay)
-        "b" -> newDate = addBusinessDays(newDate!!, amount)
-        else -> {
-        }
-    } // Dont add anything
-    return newDate
-}
-
 fun getCheckedItems(listView: ListView, checked: Boolean): ArrayList<String> {
     val checks = listView.checkedItemPositions
     val items = ArrayList<String>()
-    for (i in 0..checks.size() - 1) {
+    for (i in 0 until checks.size()) {
         val item = listView.adapter.getItem(checks.keyAt(i)) as String
         if (checks.valueAt(i) && checked) {
             items.add(item)
@@ -230,76 +129,21 @@ fun getCheckedItems(listView: ListView, checked: Boolean): ArrayList<String> {
     return items
 }
 
-fun createAlertDialog(act: Activity, titleId: Int, alert: String): AlertDialog {
-    val builder = AlertDialog.Builder(act)
-    builder.setTitle(titleId)
-    builder.setPositiveButton(R.string.ok, null)
-    builder.setMessage(alert)
-    return builder.create()
-}
-
 fun createDeferDialog(act: Activity, titleId: Int, listener: InputDialogListener): AlertDialog {
     val keys = act.resources.getStringArray(R.array.deferOptions)
-    val today = "0d"
-    val tomorrow = "1d"
-    val oneWeek = "1w"
-    val twoWeeks = "2w"
-    val oneMonth = "1m"
-    val values = arrayOf("", today, tomorrow, oneWeek, twoWeeks, oneMonth, "pick")
+    val today = "today"
+    val tomorrow = "tomorrow"
+    val oneWeek = "monday"
+    val oneMonth = "som"
+    val values = arrayOf("", today, tomorrow, oneWeek, oneMonth, "pick")
 
     val builder = AlertDialog.Builder(act)
     builder.setTitle(titleId)
-    builder.setItems(keys) { dialog, whichButton ->
-        val which = whichButton
-        val selected = values[which]
+    builder.setItems(keys) { _, whichButton ->
+        val selected = values[whichButton]
         listener.onClick(selected)
     }
     return builder.create()
-}
-
-@Throws(IOException::class)
-fun createCachedFile(context: Context, fileName: String,
-                     content: String) {
-
-    val cacheFile = File(context.cacheDir, fileName)
-    if (cacheFile.createNewFile()) {
-        val fos = FileOutputStream(cacheFile, false)
-        val osw = OutputStreamWriter(fos, "UTF8")
-        val pw = PrintWriter(osw)
-        pw.println(content)
-        pw.flush()
-        pw.close()
-    }
-}
-
-@Throws(IOException::class)
-fun copyFile(sourceFile: File, destFile: File) {
-
-    if (destFile.createNewFile()) {
-        Log.d(TAG, "Destination file created {}" + destFile.absolutePath)
-    }
-
-    var source: FileChannel? = null
-    var destination: FileChannel? = null
-
-    try {
-        source = FileInputStream(sourceFile).channel
-        destination = FileOutputStream(destFile).channel
-        destination!!.transferFrom(source, 0, source!!.size())
-    } finally {
-        if (source != null) {
-            source.close()
-        }
-        if (destination != null) {
-            destination.close()
-        }
-    }
-}
-
-@Throws(IOException::class)
-fun createCachedDatabase(context: Context, dbFile: File) {
-    val cacheFile = File(context.cacheDir, dbFile.name)
-    copyFile(dbFile, cacheFile)
 }
 
 fun alfaSortList(items: List<String>, caseSensitive: Boolean, prefix: String?): ArrayList<String> {
@@ -336,23 +180,22 @@ fun showChangelogOverlay(act: Activity): Dialog? {
 
 fun markdownAssetAsHtml(ctxt: Context, name: String): String {
     var markdown: String
-    try {
-        markdown = readAsset(ctxt.assets, name)
+    markdown = try {
+        readAsset(ctxt.assets, name)
     } catch (e: IOException) {
         val fallbackAsset = name.replace("\\.[a-z]{2}\\.md$".toRegex(), ".en.md")
         Log.w(TAG, "Failed to load markdown asset: $name falling back to $fallbackAsset")
         try {
-            markdown = readAsset(ctxt.assets, fallbackAsset)
+            readAsset(ctxt.assets, fallbackAsset)
         } catch (e: IOException) {
-            markdown = "$name and fallback $fallbackAsset not found."
+            "$name and fallback $fallbackAsset not found."
         }
     }
     // Change issue numbers to links
     markdown = markdown.replace("(\\s)(#)([0-9]+)".toRegex(), "$1[$2$3](https://github.com/mpcjanssen/simpletask-android/issues/$3)")
     val document = mdParser.parse(markdown)
 
-    val html = "<html><head><link rel='stylesheet' type='text/css' href='css/light.css'></head><body>" + htmlRenderer.render(document) + "</body></html>"
-    return html
+    return "<html><head><link rel='stylesheet' type='text/css' href='css/light.css'></head><body>" + htmlRenderer.render(document) + "</body></html>"
 }
 
 @Throws(IOException::class)
@@ -393,14 +236,13 @@ fun getRelativeDueDate(task: Task, app: STWApplication): SpannableString? {
  * months, and years, you can add the other cases in by copying the logic
  * for hours, minutes, seconds.
 
- * @param dateString date to calculate difference to
+ * @param date date to calculate difference to
  * *
  * @return String representing the relative date
  */
 
-private fun getRelativeDate(app: STWApplication, prefix: String, dateString: String): SpannableString? {
-    val date = dateString.toDateTime() ?: return null
-    val now = DateTime.today(TimeZone.getDefault())
+private fun getRelativeDate(app: STWApplication, prefix: String, date: DateTime): SpannableString? {
+    val now = DateTime.today(TimeZone.getTimeZone("UTC"))
     val days = date.numDaysFrom(now)
     val months = days / 31
     val weeks = days / 7
@@ -416,7 +258,7 @@ private fun getRelativeDate(app: STWApplication, prefix: String, dateString: Str
         days > 1 -> app.getString(R.string.dates_days_ago, days)
         days == 0 -> app.getString(R.string.dates_today)
         days == -1 -> app.getString(R.string.dates_tomorrow)
-        else -> date.toString()
+        else -> date.format("YYYY-MM-DD")
     }
 
     val ss = SpannableString(prefix + s)
@@ -439,24 +281,12 @@ fun getRelativeAge(task: Task, app: STWApplication): String? {
     return getRelativeDate(app, "", task.entryDate).toString()
 }
 
-
-fun String.toDateTime(): DateTime? {
-    val date: DateTime?
-    if (DateTime.isParseable(this)) {
-        date = DateTime(this)
-    } else {
-        date = null
-    }
-    return date
-}
-
 fun ArrayList<HashSet<String>>.union(): Set<String> {
-    val result = this.fold(HashSet<String>()) {
+    return fold(HashSet()) {
         left, right ->
         left.addAll(right)
         left
     }
-    return result
 }
 
 fun ArrayList<HashSet<String>>.intersection(): Set<String> {

@@ -121,13 +121,12 @@ object TaskList : AnkoLogger {
 
     fun defer(deferString: String, tasks: List<Task>, dateType: DateType) {
         queue("Defer") {
-            // TODO: implement
-//            tasks.forEach {
-//                when (dateType) {
-//                    DateType.DUE -> it.deferDueDate(deferString, todayAsString)
-//                    DateType.THRESHOLD -> it.deferThresholdDate(deferString, todayAsString)
-//                }
-//            }
+            val prefix = when (dateType) {
+                DateType.THRESHOLD -> "wait"
+                else -> "due"
+            }
+            TaskWarrior.callTaskForSelection(tasks, "modify", "$prefix:$deferString")
+            reload()
         }
     }
 

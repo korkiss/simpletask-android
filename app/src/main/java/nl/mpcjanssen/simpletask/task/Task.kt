@@ -1,8 +1,9 @@
 package nl.mpcjanssen.simpletask.task
 
-import org.json.JSONArray
+
+import hirondelle.date4j.DateTime
 import org.json.JSONObject
-import java.util.regex.Pattern
+import java.util.*
 
 
 data class Task(
@@ -14,10 +15,10 @@ data class Task(
         val tags: List<String>,
         val urgency: Double,
         val status: String,
-        val dueDate: String?,
-        val waitDate: String?,
-        val endDate: String?,
-        val entryDate: String) {
+        val dueDate: DateTime?,
+        val waitDate: DateTime?,
+        val endDate: DateTime?,
+        val entryDate: DateTime) {
 
     val isCompleted: Boolean
         get() {
@@ -30,9 +31,9 @@ data class Task(
         }
 
 
-    fun inFuture(today: String): Boolean {
+    fun inFuture(): Boolean {
             if (waitDate != null) {
-                return (waitDate > today)
+                return (waitDate.isInTheFuture(TimeZone.getDefault()))
             } else {
                 return false
             }
@@ -88,48 +89,18 @@ data class Task(
         return matchProjects && matchTags
     }
 
-    fun getHeader(sort: String, empty: String): String {
-        if (sort.contains("by_context")) {
-            if (project != null) {
-                return project
-            } else {
-                return empty
-            }
-        } else if (sort.contains("by_project")) {
-            if (tags.isNotEmpty()) {
-                return tags.first()
-            } else {
-                return empty
-            }
-        } else if (sort.contains("by_threshold_date")) {
-            return waitDate ?: entryDate ?: empty
-        } else if (sort.contains("by_prio")) {
-            return urgency.toInt().toString()
-        } else if (sort.contains("by_due_date")) {
-            return dueDate ?: empty
-        }
-        return ""
-    }
-
 
     companion object {
-        const val DATE_FORMAT = "YYYY-MM-DD"
         val MATCH_URI = Regex("[a-z]+://(\\S+)")
         fun fromJSON (jsonStr: String) : Task {
             val json = JSONObject(jsonStr)
             val uuid = json.getString("uuid")
             val desc = json.getString("description")
             val endDate = json.optString("end", null)?.let {
-                val year = it.slice(0..3)
-                val month = it.slice(4..5)
-                val day = it.slice(6..7)
-                "$year-$month-$day"
+                fromISO8601(it)
             }
             val entryDate = json.getString("entry").let {
-                val year = it.slice(0..3)
-                val month = it.slice(4..5)
-                val day = it.slice(6..7)
-                "$year-$month-$day"
+                fromISO8601(it)
             }
             val tags = ArrayList<String>()
             json.optJSONArray("tags")?.let {
@@ -149,15 +120,15 @@ data class Task(
             val status =  json.getString("status")
 
             val waitDate = json.optString("wait", null)?.let {
-                val year = it.slice(0..3)
-                val month = it.slice(4..5)
-                val day = it.slice(6..7)
-                "$year-$month-$day"
+                fromISO8601(it)
             }
 
+            val dueDate = json.optString("due", null)?.let {
+                fromISO8601(it)
+            }
             val urgency = json.getDouble("urgency")
 
-            return Task(json, uuid, desc, annotations, project, tags, urgency, status, null, waitDate, endDate, entryDate )
+            return Task(json, uuid, desc, annotations, project, tags, urgency, status, dueDate, waitDate, endDate, entryDate )
         }
     }
 }
@@ -165,4 +136,16 @@ data class Task(
 fun List<Task>.asCliList(): String {
         return this.map { it.asCliTxt }.joinToString ("\n")
     }
+
+
+val iso8601dateFormatRegex = Regex("([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})Z")
+
+
+fun fromISO8601(dateStr: String) : DateTime {
+    val (year, month, day, hour, minutes, seconds) =
+            iso8601dateFormatRegex.matchEntire(dateStr)?.destructured ?: return DateTime.now(TimeZone.getDefault())
+    val UTCDate = DateTime("$year-$month-$day $hour:$minutes:$seconds")
+    val localDate = UTCDate.changeTimeZone(TimeZone.getTimeZone("UTC"), TimeZone.getDefault())
+    return localDate
+}
 

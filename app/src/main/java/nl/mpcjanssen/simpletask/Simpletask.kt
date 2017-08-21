@@ -564,12 +564,6 @@ class Simpletask : ThemedNoActionBarActivity() {
         nav_drawer.setSelection(if (index!=-1) index else 0)
         nav_drawer.isLongClickable = true
         nav_drawer.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-
-//            MainFilter = names[position]
-//            val intent = intent
-//            MainFilter.saveInIntent(intent)
-//            setIntent(intent)
-//            MainFilter.saveInPrefs(Config.prefs)
             Config.activeReport = names[position]
             closeDrawer(NAV_DRAWER)
             closeSelectionMode()
