@@ -2,6 +2,7 @@ package nl.mpcjanssen.simpletask.task
 
 
 import hirondelle.date4j.DateTime
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -80,44 +81,48 @@ data class Task(
     companion object {
         val MATCH_URI = Regex("[a-z]+://(\\S+)")
         fun fromJSON(jsonStr: String): Task {
-            val json = JSONObject(jsonStr)
-            val uuid = json.getString("uuid")
-            val desc = json.getString("description")
+            try {
+                val json = JSONObject(jsonStr)
+                val uuid = json.getString("uuid")
+                val desc = json.getString("description")
 
-            val tags = ArrayList<String>()
-            json.optJSONArray("tags")?.let {
-                (0 until it.length()).mapTo(tags) { i -> it.getString(i) }
+                val tags = ArrayList<String>()
+                json.optJSONArray("tags")?.let {
+                    (0 until it.length()).mapTo(tags) { i -> it.getString(i) }
+                }
+                val annotations = ArrayList<String>()
+                json.optJSONArray("annotations")?.let {
+                    (0 until it.length())
+                            .map { i -> it.getJSONObject(i) }
+                            .mapTo(annotations) { it.getString("description") }
+                }
+                val project = json.optString("project", null)
+
+                val status = json.getString("status")
+
+                val endDate = json.getISO8601Date("end")
+                val entryDate = json.getISO8601Date("entry") as DateTime // entry is always set, it's an error if not
+                val waitDate = json.getISO8601Date("wait")
+                val dueDate = json.getISO8601Date("due")
+                val startDate = json.getISO8601Date("start")
+                val urgency = json.getDouble("urgency")
+
+                return Task(
+                        uuid = uuid,
+                        description = desc,
+                        annotations = annotations,
+                        project = project,
+                        tags = tags,
+                        urgency = urgency,
+                        status = status,
+                        dueDate = dueDate,
+                        waitDate = waitDate,
+                        endDate = endDate,
+                        entryDate = entryDate,
+                        startDate = startDate)
+            } catch (e: JSONException) {
+                error("failed to parse JSON" + e.message)
             }
-            val annotations = ArrayList<String>()
-            json.optJSONArray("annotations")?.let {
-                (0 until it.length())
-                        .map { i -> it.getJSONObject(i) }
-                        .mapTo(annotations) { it.getString("description") }
-            }
-            val project = json.optString("project", null)
-
-            val status = json.getString("status")
-
-            val endDate = json.getISO8601Date("end")
-            val entryDate = json.getISO8601Date("entry") as DateTime // entry is always set, it's an error if not
-            val waitDate = json.getISO8601Date("wait")
-            val dueDate = json.getISO8601Date("due")
-            val startDate = json.getISO8601Date("start")
-            val urgency = json.getDouble("urgency")
-
-            return Task(
-                    uuid=uuid,
-                    description=desc,
-                    annotations=annotations,
-                    project=project,
-                    tags=tags,
-                    urgency=urgency,
-                    status=status,
-                    dueDate=dueDate,
-                    waitDate=waitDate,
-                    endDate=endDate,
-                    entryDate=entryDate,
-                    startDate=startDate )
         }
     }
 }

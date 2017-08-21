@@ -88,6 +88,7 @@ object TaskWarrior : AnkoLogger {
         return defaultRcFile
     }
 
+    @Suppress("DEPRECATION")
     private fun eabiExecutable(): String? {
         var arch = Arch.Arm7
         val eabi = Build.CPU_ABI
@@ -169,15 +170,24 @@ object TaskWarrior : AnkoLogger {
         params.add("rc.json.array=off")
         params.add("rc.verbose=nothing")
         params.add("export")
-        callTask(object : StreamConsumer {
+        val errorLines = ArrayList<String>()
+        val exitCode = callTask(object : StreamConsumer {
             override fun eat(line: String?) {
                 line?.let{result.add(it)}
             }
         }, object : StreamConsumer {
             override fun eat(line: String?) {
-                line?.let{result.add(it)}
+                line?.let{
+                    result.add(it)
+                    errorLines.add(it)
+                }
             }}, *params.toTypedArray())
+        if (exitCode!=0) {
+            STWApplication.app.longToast("Failed to load task list:\n" + errorLines[0])
+            return ArrayList<Task>()
+        }
         info("List size=${result.size}")
+
         val tasks =  result.map(Task.Companion::fromJSON)
         val reportSort = config.getOrDefault("report.$reportName.sort", "")
         return tasks.sort(reportSort)
@@ -233,8 +243,8 @@ object TaskWarrior : AnkoLogger {
             val outThread = readStream(p.inputStream, out, null )
             val errThread = readStream(p.errorStream, err, stderrOutput)
             val exitCode = p.waitFor()
-            debug("Exit code:  $exitCode")
-            //            debug("Execute result:", exitCode);
+            info("Exit code: $exitCode")
+            //
             if (null != outThread) outThread.join()
             if (null != errThread) errThread.join()
             if (syncSocket!=null) {

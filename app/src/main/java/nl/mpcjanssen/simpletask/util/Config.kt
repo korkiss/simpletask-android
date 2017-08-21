@@ -100,9 +100,6 @@ object Config : Preferences(STWApplication.app) {
 
     val showConfirmationDialogs by BooleanPreference(R.string.ui_show_confirmation_dialogs, true)
 
-    val defaultSorts: Array<String>
-        get() = STWApplication.app.resources.getStringArray(R.array.sortKeys)
-
     var rcFileName by StringOrNullPreference(R.string.taskrc_file_key)
 
     val rcFile: File
