@@ -370,14 +370,14 @@ private fun List<Task>.sort(reportSort: String): List<Task> {
         }
         val (sortType, sortOrder, _) = match.destructured
         val comp = when (sortType) {
-            "end" -> DateComparator({it -> it.endDate})
-            "start" -> DateComparator({it -> it.startDate})
-            "wait" -> DateComparator({it -> it.waitDate})
-            "due" -> DateComparator({it -> it.dueDate})
-            "entry" -> DateComparator({it -> it.entryDate})
+            "end" -> DateComparator { it.endDate }
+            "start" -> DateComparator { it.startDate}
+            "wait" -> DateComparator { it.waitDate }
+            "due" -> DateComparator { it.dueDate}
+            "entry" -> DateComparator {it -> it.entryDate }
             "urgency" -> UrgencyComparator()
-            "tags" -> AlphabeticalComparator({it -> it.tags.joinToString(" ")}, Config.sortCaseSensitive)
-            "project" -> AlphabeticalComparator({it -> it.project}, Config.sortCaseSensitive)
+            "tags" -> AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) {it -> it.tags.joinToString(" ")}
+            "project" -> AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) {it -> it.project}
             else -> {
                 log.warn("Unknown sort type $sortType")
                 return null

@@ -3,7 +3,7 @@ package nl.mpcjanssen.simpletask.sort
 import nl.mpcjanssen.simpletask.task.Task
 import java.util.*
 
-class AlphabeticalComparator(val stringLambda: (Task)->String?, caseSensitive: Boolean) : Comparator<Task> {
+class AlphabeticalComparator(caseSensitive: Boolean, val stringLambda: (Task)->String?) : Comparator<Task> {
     val stringComp = AlphabeticalStringComparator(caseSensitive)
     override fun compare(t1: Task?, t2: Task?): Int {
         if (t1 === t2) {
