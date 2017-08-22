@@ -374,10 +374,12 @@ private fun List<Task>.sort(reportSort: String): List<Task> {
             "start" -> DateComparator { it.startDate}
             "wait" -> DateComparator { it.waitDate }
             "due" -> DateComparator { it.dueDate}
-            "entry" -> DateComparator {it -> it.entryDate }
+            "entry" -> DateComparator { it.entryDate }
             "urgency" -> UrgencyComparator()
-            "tags" -> AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) {it -> it.tags.joinToString(" ")}
-            "project" -> AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) {it -> it.project}
+            "tags" ->
+                AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) { it.tags.joinToString(" ") }
+            "project" ->
+                AlphabeticalComparator(caseSensitive = Config.sortCaseSensitive) { it.project }
             else -> {
                 log.warn("Unknown sort type $sortType")
                 return null
