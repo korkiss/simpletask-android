@@ -54,6 +54,15 @@
             android:hint="@string/script_tab_test_task"
             android:gravity="top|left"
             />
+        <EditText
+                android:id="@+id/txt_testtask2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:singleLine="true"
+                android:hint="@string/script_tab_test_task"
+                android:gravity="top|left"
+        />
 
     </LinearLayout>
 

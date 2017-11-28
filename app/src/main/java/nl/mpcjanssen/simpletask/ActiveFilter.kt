@@ -9,10 +9,9 @@ import nl.mpcjanssen.simpletask.util.isEmptyOrNull
 import nl.mpcjanssen.simpletask.util.join
 import nl.mpcjanssen.simpletask.util.todayAsString
 import org.json.JSONObject
-import org.luaj.vm2.LuaError
 import java.util.*
 
-data class FilterOptions(val luaModule: String, val showSelected: Boolean = false)
+data class FilterOptions(val namespace: String, val showSelected: Boolean = false)
 
 /**
  * Active filter, has methods for serialization in several formats
@@ -129,12 +128,11 @@ class ActiveFilter(val options: FilterOptions) {
         if (contexts != null && contexts != "") {
             this.contexts = ArrayList(Arrays.asList(*contexts.split(INTENT_EXTRA_DELIMITERS.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()))
         }
-        initInterpreter()
     }
 
     fun hasFilter(): Boolean {
         return contexts.size + projects.size + priorities.size > 0
-                || !isEmptyOrNull(search) || LuaInterpreter.hasFilterCallback(options.luaModule)
+                || !isEmptyOrNull(search)
     }
 
     fun getTitle(visible: Int, total: Long, prio: CharSequence, tag: CharSequence, list: CharSequence, search: CharSequence, script: CharSequence, filterApplied: CharSequence, noFilter: CharSequence): String {
@@ -226,21 +224,8 @@ class ActiveFilter(val options: FilterOptions) {
         useScript = false
     }
 
-    fun initInterpreter() {
-        try {
-            val code = if (useScript) {
-                script
-            } else {
-                null
-            }
-            LuaInterpreter.clearOnFilter(options.luaModule)
-            LuaInterpreter.evalScript(options.luaModule, code)
-        } catch (e: LuaError) {
-            log.debug(TAG, "Lua execution failed " + e.message)
-        }
-    }
 
-    fun apply(items: Sequence<Task>?): Sequence<Task> {
+    fun apply(items: Sequence<Task>?, interp: Interpreter?): Sequence<Task> {
         if (useScript) {
             log.info(TAG, "Filtering with Lua $script")
         }
@@ -250,35 +235,31 @@ class ActiveFilter(val options: FilterOptions) {
         }
 
         val today = todayAsString
-        try {
-            return items.filter {
-                if (options.showSelected && TodoList.isSelected(it)) {
-                    return@filter true
-                }
-                if (this.hideCompleted && it.isCompleted()) {
-                    return@filter false
-                }
-                if (this.hideFuture && it.inFuture(today)) {
-                    return@filter false
-                }
-                if (this.hideHidden && it.isHidden()) {
-                    return@filter false
-                }
-                if ("" == it.inFileFormat().trim { it <= ' ' }) {
-                    return@filter false
-                }
-                if (!filter.apply(it)) {
-                    return@filter false
-                }
-                if (useScript && !LuaInterpreter.onFilterCallback(options.luaModule, it)) {
-                    return@filter false
-                }
+
+        return items.filter {
+            if (options.showSelected && TodoList.isSelected(it)) {
                 return@filter true
             }
-        } catch (e: LuaError) {
-            log.debug(TAG, "Lua execution failed " + e.message)
+            if (this.hideCompleted && it.isCompleted()) {
+                return@filter false
+            }
+            if (this.hideFuture && it.inFuture(today)) {
+                return@filter false
+            }
+            if (this.hideHidden && it.isHidden()) {
+                return@filter false
+            }
+            if ("" == it.inFileFormat().trim { it <= ' ' }) {
+                return@filter false
+            }
+            if (!filter.apply(it)) {
+                return@filter false
+            }
+            if (!(interp?.onFilterCallback(it)?:false)) {
+                return@filter false
+            }
+            return@filter true
         }
-        return emptySequence()
     }
 
     fun setSort(sort: ArrayList<String>) {
@@ -301,7 +282,7 @@ class ActiveFilter(val options: FilterOptions) {
             }
 
             if (!isEmptyOrNull(search)) {
-                addFilter(ByTextFilter(options.luaModule, search, false))
+                addFilter(ByTextFilter(options.namespace, search, false))
             }
         }
 
@@ -440,5 +421,4 @@ class ActiveFilter(val options: FilterOptions) {
             scriptTestTask = prefs.getString(INTENT_SCRIPT_TEST_TASK_FILTER, null)
         }
     }
-
 }

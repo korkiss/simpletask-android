@@ -52,7 +52,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
     fun updateFilter(): ActiveFilter {
 	    log.debug (TAG, "Getting filter from preferences for widget $widgetId")
 	    val preferences = TodoApplication.app.getSharedPreferences("" + widgetId, 0)
-        val filter = ActiveFilter(FilterOptions(luaModule = moduleName()))
+        val filter = ActiveFilter(FilterOptions(namespace = moduleName()))
         filter.initFromPrefs(preferences)
         log.debug(TAG, "Retrieved widget $widgetId filter")
 
@@ -80,7 +80,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
         val sorts = currentFilter.getSort(Config.defaultSorts)
 
         val newVisibleTasks = ArrayList<Task>()
-        newVisibleTasks.addAll(TodoList.getSortedTasks(currentFilter, sorts, Config.sortCaseSensitive))
+        newVisibleTasks.addAll(TodoList.getSortedTasks(currentFilter))
         log.debug(TAG, "Widget $widgetId: setFilteredTasks returned ${newVisibleTasks.size} tasks")
         visibleTasks = newVisibleTasks
     }
@@ -116,7 +116,7 @@ data class AppWidgetRemoteViewsFactory(val intent: Intent) : RemoteViewsService.
             tokensToShow = tokensToShow and TToken.TTAG.inv()
         }
 
-        val txt = LuaInterpreter.onDisplayCallback(currentFilter.options.luaModule, task) ?: task.showParts(tokensToShow).trim { it <= ' ' }
+        val txt = task.showParts(tokensToShow).trim { it <= ' ' }
         val ss = SpannableString(txt)
 
         if (Config.isDarkWidgetTheme) {

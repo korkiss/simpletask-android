@@ -160,14 +160,10 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
     val result = ArrayList<VisibleLine>()
     var count = 0
     var headerLine: HeaderLine? = null
-    val luaGrouping = moduleName != null && LuaInterpreter.hasOnGroupCallback(moduleName)
+
     for (item in visibleTasks) {
         val t = item
-        val newHeader = if ( moduleName!=null && luaGrouping ) {
-            LuaInterpreter.onGroupCallback(moduleName, t)
-        } else {
-            null
-        } ?: t.getHeader(firstSort, no_header, createIsThreshold)
+        val newHeader = t.getHeader(firstSort, no_header, createIsThreshold)
         if (header != newHeader) {
             if (headerLine != null) {
                 headerLine.title += " ($count)"
@@ -196,7 +192,7 @@ fun addHeaderLines(visibleTasks: Sequence<Task>, sorts: List<String>, no_header:
 
 fun addHeaderLines(visibleTasks: Sequence<Task>, filter: ActiveFilter, no_header: String): List<VisibleLine> {
     val sorts = filter.getSort(Config.defaultSorts)
-    return addHeaderLines(visibleTasks, sorts, no_header, filter.createIsThreshold, filter.options.luaModule)
+    return addHeaderLines(visibleTasks, sorts, no_header, filter.createIsThreshold, filter.options.namespace)
 }
 
 fun join(s: Collection<String>?, delimiter: String): String {

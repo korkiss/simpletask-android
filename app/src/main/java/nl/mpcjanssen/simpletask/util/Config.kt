@@ -3,18 +3,18 @@ package nl.mpcjanssen.simpletask.util
 import android.content.SharedPreferences
 import me.smichel.android.KPreferences.Preferences
 import nl.mpcjanssen.simpletask.CalendarSync
-import nl.mpcjanssen.simpletask.LuaInterpreter
+import nl.mpcjanssen.simpletask.Interpreter
 import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
 import nl.mpcjanssen.simpletask.remote.FileStore
 import nl.mpcjanssen.simpletask.task.Task
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.CopyOnWriteArrayList
 
 object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     val TAG = "Config"
+    val interp = Interpreter(null)
 
     init {
         prefs.registerOnSharedPreferenceChangeListener(this)
@@ -141,7 +141,7 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     private val _activeTheme by StringPreference(R.string.theme_pref_key, "light_darkactionbar")
     private val activeThemeString: String
-        get() = LuaInterpreter.configTheme() ?: _activeTheme
+        get() = interp.configTheme() ?: _activeTheme
 
     // Only used in Dropbox build
     @Suppress("unused")
@@ -155,18 +155,18 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     val showCalendar by BooleanPreference(R.string.ui_show_calendarview, false)
 
-    val tasklistTextSize: Float?
+    val tasklistTextSize: Double?
         get() {
-            val luaValue = LuaInterpreter.tasklistTextSize()
-            if (luaValue != null) {
-                return luaValue
+            val configValue = interp.tasklistTextSize()
+            if (configValue != null) {
+                return configValue
             }
             val customSize by BooleanPreference(R.string.custom_font_size, false)
             if (!customSize) {
-                return 14.0f
+                return 14.0
             }
             val font_size by IntPreference(R.string.font_size, 14)
-            return font_size.toFloat()
+            return font_size.toDouble()
         }
 
     val hasShareTaskShowsEdit by BooleanPreference(R.string.share_task_show_edit, false)

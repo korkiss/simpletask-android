@@ -24,7 +24,7 @@
  */
 package nl.mpcjanssen.simpletask.task
 
-import nl.mpcjanssen.simpletask.LuaInterpreter
+import nl.mpcjanssen.simpletask.Interpreter
 import java.util.*
 
 /**
@@ -43,11 +43,6 @@ class ByTextFilter(val moduleName : String, searchText: String?, internal val is
     }
 
     override fun apply(task: Task): Boolean {
-        val luaResult = LuaInterpreter.onTextSearchCallback(moduleName, task.text, text, isCaseSensitive)
-        if (luaResult != null) {
-            return luaResult
-        }
-
         val taskText = if (isCaseSensitive)
             task.text
         else

@@ -55,13 +55,10 @@ object TodoList {
 
     fun add(items: List<Task>, atEnd: Boolean) {
         todoQueue("Add task ${items.size} atEnd: $atEnd") {
-            val updatedItems = items.map {item ->
-                LuaInterpreter.onAddCallback(item) ?: item
-            }
             if (atEnd) {
-                todoItems.addAll(updatedItems)
+                todoItems.addAll(items)
             } else {
-                todoItems.addAll(0, updatedItems)
+                todoItems.addAll(0, items)
             }
         }
     }
@@ -208,17 +205,16 @@ object TodoList {
         }
     }
 
-    fun getSortedTasks(filter: ActiveFilter, sorts: ArrayList<String>, caseSensitive: Boolean): Sequence<Task> {
-        val comp = MultiComparator(sorts, TodoApplication.app.today, caseSensitive, filter.createIsThreshold, filter.options.luaModule)
-        val itemsToSort = if (comp.fileOrder) {
-            todoItems
+    fun getSortedTasks(filter: ActiveFilter): Sequence<Task> {
+        val interp = Interpreter(if (filter.useScript) filter.script else null)
+        val filterInterp = if (interp.hasOnFilterCallback()) interp else null
+        val sortInterp = if (interp.hasOnSortCallback()) interp else null
+        val sortedItems =  if (sortInterp!=null) {
+            todoItems.sortedWith(ScriptComparator(sortInterp))
         } else {
-            todoItems.reversed()
+            todoItems
         }
-        log.info(ActiveFilter.TAG, "Resetting callbacks in module ${filter.options.luaModule}")
-        filter.initInterpreter()
-        val sortedItems = comp.comparator?.let { itemsToSort.sortedWith(it) } ?: itemsToSort
-        return filter.apply(sortedItems.asSequence())
+        return filter.apply(sortedItems.asSequence(), filterInterp)
     }
 
     fun reload(backup: BackupInterface, eol: String, reason: String = "") {

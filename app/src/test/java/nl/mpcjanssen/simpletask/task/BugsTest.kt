@@ -21,7 +21,7 @@ class BugsTest : TestCase() {
     }
 
     fun testActiveSortNullCrash() {
-        val opt = FilterOptions(luaModule = "test")
+        val opt = FilterOptions(namespace = "test")
         val f = ActiveFilter(opt)
         val mc = MultiComparator(f.getSort(null), todayAsString, true, false)
         Assert.assertNotNull(mc)

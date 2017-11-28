@@ -104,7 +104,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         intentFilter.addAction(Constants.BROADCAST_UPDATE_PENDING_CHANGES)
         intentFilter.addAction(Constants.BROADCAST_HIGHLIGHT_SELECTION)
 
-        textSize = Config.tasklistTextSize ?: textSize
+        textSize = Config.tasklistTextSize?.toFloat() ?: textSize
         log.info(TAG, "Text size = $textSize")
         setContentView(R.layout.main)
 
@@ -167,7 +167,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     private fun refreshUI() {
         todoQueue("Refresh UI") {
             runOnUiThread {
-                textSize = Config.tasklistTextSize ?: textSize
+                textSize = Config.tasklistTextSize?.toFloat() ?: textSize
                 updateConnectivityIndicator()
                 invalidateOptionsMenu()
                 updateFilterBar()
@@ -216,7 +216,7 @@ class Simpletask : ThemedNoActionBarActivity() {
     private fun selectedTasksAsString(): String {
         val result = ArrayList<String>()
         TodoList.selectedTasks.forEach { task ->
-            val luaTxt = LuaInterpreter.onDisplayCallback(mainFilter.options.luaModule, task)
+            val luaTxt = null
             result.add(luaTxt ?: task.inFileFormat())
         }
         return join(result, "\n")
@@ -799,8 +799,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         if (checkedTasks.size == 1) {
             // Set the task as title
             val task = checkedTasks[0]
-            val luaTxt = LuaInterpreter.onDisplayCallback(mainFilter.options.luaModule, task)
-            calendarTitle = luaTxt ?: task.text
+            calendarTitle = task.text
         } else {
             // Set the tasks as description
             calendarDescription = selectedTasksAsString()
@@ -855,7 +854,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             val filterIds = saved_filter_ids.getStringSet("ids", HashSet<String>())
             for (id in filterIds) {
                 val filter_pref = getSharedPreferences(id, Context.MODE_PRIVATE)
-                val filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+                val filter = ActiveFilter(FilterOptions(namespace = "mainui", showSelected = true))
                 filter.initFromPrefs(filter_pref)
                 filter.prefName = id
                 saved_filters.add(filter)
@@ -869,7 +868,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 FileStore.readFile(importFile.canonicalPath) { contents ->
                     val jsonFilters = JSONObject(contents)
                     jsonFilters.keys().forEach {
-                        val filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+                        val filter = ActiveFilter(FilterOptions(namespace = "mainui", showSelected = true))
                         filter.initFromJSON(jsonFilters.getJSONObject(it))
                         saveFilterInPrefs(it, filter)
                     }
@@ -1083,7 +1082,7 @@ class Simpletask : ThemedNoActionBarActivity() {
         ids.remove(prefsName)
         saved_filters.edit().putStringSet("ids", ids).apply()
         val filter_prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val deleted_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val deleted_filter = ActiveFilter(FilterOptions(namespace = "mainui", showSelected = true))
         deleted_filter.initFromPrefs(filter_prefs)
         filter_prefs.edit().clear().apply()
         val prefs_path = File(this.filesDir, "../shared_prefs")
@@ -1097,7 +1096,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun updateSavedFilter(prefsName: String) {
         val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val old_filter = ActiveFilter(FilterOptions(namespace = "mainui", showSelected = true))
         old_filter.initFromPrefs(filter_pref)
         val filterName = old_filter.name
         mainFilter.name = filterName
@@ -1107,7 +1106,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     private fun renameSavedFilter(prefsName: String) {
         val filter_pref = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val old_filter = ActiveFilter(FilterOptions(luaModule = "mainui", showSelected = true))
+        val old_filter = ActiveFilter(FilterOptions(namespace = "mainui", showSelected = true))
         old_filter.initFromPrefs(filter_pref)
         val filterName = old_filter.name
         val alert = AlertDialog.Builder(this)
@@ -1269,7 +1268,7 @@ class Simpletask : ThemedNoActionBarActivity() {
             if (mainFilter.hideTags) {
                 tokensToShow = tokensToShow and TToken.TTAG.inv()
             }
-            val txt = LuaInterpreter.onDisplayCallback(mainFilter.options.luaModule, task) ?: task.showParts(tokensToShow)
+            val txt = task.showParts(tokensToShow)
             val ss = SpannableString(txt)
 
             val contexts = task.lists
@@ -1351,7 +1350,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 taskThreshold.visibility = View.GONE
             }
             // Set selected state
-            log.debug(TAG, "Setting selected state ${TodoList.isSelected(item)}")
+//            log.debug(TAG, "Setting selected state ${TodoList.isSelected(item)}")
             view.isActivated = TodoList.isSelected(item)
 
             // Set click listeners
@@ -1457,7 +1456,7 @@ class Simpletask : ThemedNoActionBarActivity() {
                 val visibleTasks: Sequence<Task>
                 log.info(TAG, "setFilteredTasks called: " + TodoList)
                 val sorts = mainFilter.getSort(Config.defaultSorts)
-                visibleTasks = TodoList.getSortedTasks(mainFilter, sorts, Config.sortCaseSensitive)
+                visibleTasks = TodoList.getSortedTasks(mainFilter)
                 val newVisibleLines = ArrayList<VisibleLine>()
 
                 newVisibleLines.addAll(addHeaderLines(visibleTasks, mainFilter, getString(R.string.no_header)))

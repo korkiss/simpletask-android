@@ -464,12 +464,12 @@ You should have received a copy of the GNU General Public License along with Tod
     <string name="keep_selection_summary">Keep task selection after changes.</string>
 
 
-    <string name="lua_error">Lua error</string>
-    <string name="lua_config_screen">Lua configuration</string>
+    <string name="script_error">Script error</string>
+    <string name="lua_config_screen">Script configuration</string>
     <string name="lua_run">Run</string>
-    <string name="lua_config_import_export">Import/export Lua configuration</string>
+    <string name="lua_config_import_export">Import/export script configuration</string>
     <string name="lua_config_export">Save and export</string>
     <string name="lua_config_import">Import</string>
     <string name="lua_config_share">Share</string>
-    <string name="lua_open_config">Lua config</string>
+    <string name="lua_open_config">Script config</string>
 </resources>

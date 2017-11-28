@@ -12,7 +12,7 @@ import android.widget.EditText
 import nl.mpcjanssen.simpletask.remote.FileStore
 import nl.mpcjanssen.simpletask.task.TodoList.todoQueue
 import nl.mpcjanssen.simpletask.util.*
-import org.luaj.vm2.LuaError
+import tcl.lang.TclException
 import java.io.File
 import java.io.IOException
 
@@ -81,10 +81,10 @@ class LuaConfigScreen : ThemedActionBarActivity() {
 
     private fun runScript() {
         try {
-            LuaInterpreter.evalScript(null, script)
-        } catch (e: LuaError) {
-            log.debug(FilterScriptFragment.TAG, "Lua execution failed " + e.message)
-            createAlertDialog(this, R.string.lua_error, e.message ?: "").show()
+            Interpreter(script)
+        } catch (e: TclException) {
+            log.debug(FilterScriptFragment.TAG, "Script execution failed " + e.message)
+            createAlertDialog(this, R.string.script_error, e.message ?: "").show()
         }
     }
 
