@@ -62,7 +62,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
         var arguments: Bundle
 
         val intent = intent
-        var environment: String = "mainui"
+        var environment = "mainui"
         if (intent.action != null) {
             asWidgetConfigure = getIntent().action == AppWidgetManager.ACTION_APPWIDGET_CONFIGURE
             environment = "widget" + getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 0).toString()
