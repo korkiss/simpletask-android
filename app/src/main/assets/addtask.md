@@ -6,6 +6,6 @@ This screen allows you to add new tasks or updateCache existing ones. Every line
 
 Links
 -----
-- [Todo.txt extensions](./extensions.en.md)
-- [Help index](./index.en.md)
+- [Todo.txt extensions](./extensions.md)
+- [Help index](./index.md)
 

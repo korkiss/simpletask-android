@@ -41,10 +41,10 @@ class HelpScreen : ThemedActionBarActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         log = Logger
-        var page = "index." + getText(R.string.help_locale).toString() + ".md"
+        var page = "index.md"
         val i = intent
         if (i.hasExtra(Constants.EXTRA_HELP_PAGE)) {
-            page = i.getStringExtra(Constants.EXTRA_HELP_PAGE) + "." + getText(R.string.help_locale).toString() + ".md"
+            page = i.getStringExtra(Constants.EXTRA_HELP_PAGE) + ".md"
         }
 
         setContentView(R.layout.help)
@@ -107,35 +107,35 @@ class HelpScreen : ThemedActionBarActivity() {
         log!!.debug(TAG, "Loading asset $name into $wv($ctxt)")
         val html = markdownAssetAsHtml(ctxt, name)
         history.push(name)
-        wv.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", "file:///android_asset/index." + getText(R.string.help_locale) + ".md")
+        wv.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", "file:///android_asset/index.md")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
         // Respond to the action bar's Up/Home button
             R.id.menu_simpletask -> {
-                showMarkdownAsset(wvHelp!!, this, "index." + getText(R.string.help_locale) + ".md")
+                showMarkdownAsset(wvHelp!!, this, "index.md")
                 return true
             }
         // Changelog is English only
             R.id.menu_changelog -> {
-                showMarkdownAsset(wvHelp!!, this, "changelog.en.md")
+                showMarkdownAsset(wvHelp!!, this, "changelog.md")
                 return true
             }
             R.id.menu_myn -> {
-                showMarkdownAsset(wvHelp!!, this, "MYN." + getText(R.string.help_locale) + ".md")
+                showMarkdownAsset(wvHelp!!, this, "MYN.md")
                 return true
             }
             R.id.menu_script -> {
-                showMarkdownAsset(wvHelp!!, this, "script." + getText(R.string.help_locale) + ".md")
+                showMarkdownAsset(wvHelp!!, this, "script.md")
                 return true
             }
             R.id.menu_intents -> {
-                showMarkdownAsset(wvHelp!!, this, "intents." + getText(R.string.help_locale) + ".md")
+                showMarkdownAsset(wvHelp!!, this, "intents.md")
                 return true
             }
             R.id.menu_ui -> {
-                showMarkdownAsset(wvHelp!!, this, "ui." + getText(R.string.help_locale) + ".md")
+                showMarkdownAsset(wvHelp!!, this, "ui.md")
                 return true
             }
             R.id.menu_donate -> {

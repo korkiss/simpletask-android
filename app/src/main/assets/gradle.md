@@ -1,4 +1,4 @@
-Using the new Gradle build system
+sing the new Gradle build system
 =================================
 
 The build system has been moved from ant/Eclipse/Idea to gradle for two main reasons:

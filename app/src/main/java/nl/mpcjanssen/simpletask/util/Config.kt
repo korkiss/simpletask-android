@@ -14,7 +14,7 @@ import java.io.IOException
 object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     val TAG = "Config"
-    val STDLIB = readAsset(TodoApplication.app.assets, "lua/stdlib.tcl")
+    val STDLIB = readAsset(TodoApplication.app.assets, "scripts/stdlib.tcl")
     init {
         prefs.registerOnSharedPreferenceChangeListener(this)
     }

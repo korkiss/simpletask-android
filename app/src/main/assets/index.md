@@ -1,6 +1,5 @@
 Simpletask
 ==========
-Ver en [Español](./index.es.md), auf [Deutsch](./index.de.md) 
 
 [Simpletask](https://github.com/mpcjanssen/simpletask-android) is based on the brilliant [todo.txt](http://todotxt.com) by [Gina Trapani](http://ginatrapani.org/). The goal of the application is to provide a tool to do GTD without providing an overwhelming amount of options. Even though Simpletask can be customised by a fairly large amount of settings, the defaults should be sane and require no change.
 
