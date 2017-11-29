@@ -24,7 +24,7 @@ class Interpreter(script: String?){
             script?.let {interp.eval(it)}
 
         } catch (e: InterpreterException) {
-            nl.mpcjanssen.simpletask.util.log.warn(Config.TAG, "Script execution failed " + e.message)
+            Logger.warn(Config.TAG, "Script execution failed " + interp.result)
             showToastLong(TodoApplication.app, "${getString(R.string.script_error)}:  ${e.message}")
         }
 

@@ -14,8 +14,6 @@ import java.io.IOException
 object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     val TAG = "Config"
-    val interp = Interpreter(null)
-
     init {
         prefs.registerOnSharedPreferenceChangeListener(this)
     }
@@ -141,7 +139,7 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     private val _activeTheme by StringPreference(R.string.theme_pref_key, "light_darkactionbar")
     private val activeThemeString: String
-        get() = interp.configTheme() ?: _activeTheme
+        get() =  _activeTheme
 
     // Only used in Dropbox build
     @Suppress("unused")
@@ -157,10 +155,6 @@ object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPref
 
     val tasklistTextSize: Double?
         get() {
-            val configValue = interp.tasklistTextSize()
-            if (configValue != null) {
-                return configValue
-            }
             val customSize by BooleanPreference(R.string.custom_font_size, false)
             if (!customSize) {
                 return 14.0
