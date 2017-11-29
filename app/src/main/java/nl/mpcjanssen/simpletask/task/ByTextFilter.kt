@@ -24,7 +24,6 @@
  */
 package nl.mpcjanssen.simpletask.task
 
-import nl.mpcjanssen.simpletask.Interpreter
 import java.util.*
 
 /**

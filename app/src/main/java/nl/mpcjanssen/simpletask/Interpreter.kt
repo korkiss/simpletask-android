@@ -6,196 +6,7 @@ import nl.mpcjanssen.simpletask.util.*
 
 import tcl.lang.*
 
-
-class Interpreter(script: String?){
-    private val interp = Interp()
-    private val log = Logger
-    private val TAG = "Interpreter"
-
-
-    val STDLIB = readAsset(TodoApplication.app.assets, "lua/stdlib.tcl")
-
-    init {
-
-        try {
-            interp.createCommand("toast", ToastShortCmd)
-            evalScript(STDLIB)
-            evalScript(Config.luaConfig)
-            script?.let {interp.eval(it)}
-
-        } catch (e: InterpreterException) {
-            Logger.warn(Config.TAG, "Script execution failed " + interp.result)
-            showToastLong(TodoApplication.app, "${getString(R.string.script_error)}:  ${e.message}")
-        }
-
-    }
-
-    fun tasklistTextSize(): Double? {
-        try {
-            return TclDouble.get(interp, interp.getVar(Vars.CONFIG_TASKLIST_TEXT_SIZE_SP, TCL.GLOBAL_ONLY))
-        } catch (e: TclException) {
-            return null
-        }
-    }
-
-    // Callback to determine the theme. Return true for dark.
-
-
-    fun configTheme(): String? {
-        try {
-            return interp.getVar(Vars.CONFIG_THEME, TCL.GLOBAL_ONLY).toString()
-        } catch (e: TclException) {
-            return null
-        }
-    }
-
-    fun hasOnFilterCallback(): Boolean {
-        val cmd = interp.getCommand(Callbacks.ON_FILTER_NAME)
-        return cmd != null
-    }
-
-    fun hasOnSortCallback(): Boolean {
-        val cmd = interp.getCommand(Callbacks.ON_SORT_NAME)
-        return cmd != null
-    }
-
-    fun hasOnDisplayCallback(): Boolean {
-        val cmd = interp.getCommand(Callbacks.ON_SORT_NAME)
-        return cmd != null
-    }
-
-    fun hasOnGroupCallback(): Boolean {
-        val cmd = interp.getCommand(Callbacks.ON_GROUP_NAME)
-        return cmd != null
-    }
-
-    fun onFilterCallback(t: Task): Boolean {
-        if (!hasOnFilterCallback()) {
-            return true
-        }
-        try {
-            executeCallbackCommand(Callbacks.ON_FILTER_NAME,  t)
-            return TclBoolean.get(interp, interp.result)
-        } catch (e: TclException) {
-            log.debug(TAG, "Tcl execution failed: ${interp.result}")
-            return true
-        }
-    }
-
-    fun onSortCallback(t1: Task?, t2: Task?): Int {
-        try {
-            val cmdList = TclList.newInstance()
-            TclList.append(interp, cmdList,  TclString.newInstance(Callbacks.ON_SORT_NAME) )
-            appendCallbackArgs(t1, cmdList)
-            appendCallbackArgs(t2, cmdList)
-            interp.eval(cmdList,TCL.GLOBAL_ONLY)
-            return TclInteger.getInt(interp, interp.result)
-        } catch (e: TclException) {
-            log.debug(TAG, "Tcl execution failed " + e.message)
-            return 0
-        }
-    }
-
-    fun onGroupCallback(t: Task): String? {
-        if (!hasOnGroupCallback()) {
-            return null
-        }
-        try {
-            executeCallbackCommand(Callbacks.ON_GROUP_NAME, t)
-           return interp.result.toString()
-        } catch (e: TclException) {
-            log.debug(TAG, "Tcl execution failed " + e.message)
-            return null
-        }
-    }
-
-    fun onDisplayCallback(t: Task): String? {
-        if (!hasOnDisplayCallback()) {
-            return null
-        }
-        try {
-            executeCallbackCommand(Callbacks.ON_DISPLAY_NAME, t)
-            return interp.result.toString()
-        } catch (e: TclException) {
-            log.debug(TAG, "Tcl execution failed " + e.message)
-            return null
-        }
-    }
-
-
-
-    fun evalScript(script: String?): Interpreter {
-        try {
-            interp.eval(TclString.newInstance(script),TCL.GLOBAL_ONLY)
-        } catch (e: TclException) {
-            throw InterpreterException(interp.result.toString())
-        }
-        return this
-    }
-
-
-    private fun executeCallbackCommand(command: String, t: Task) {
-        val cmdList = TclList.newInstance()
-        TclList.append(interp, cmdList, TclString.newInstance(command))
-        appendCallbackArgs(t, cmdList)
-        interp.eval(cmdList, TCL.GLOBAL_ONLY)
-    }
-
-    private fun appendCallbackArgs(t: Task?, cmdList: TclObject) {
-        val fieldDict = TclDict.newInstance()
-        val tokenList = TclList.newInstance()
-        val extensionDict = TclDict.newInstance()
-        t?.let {
-            t.tokens.forEach {
-                val item = TclList.newInstance()
-                TclList.append(interp, item, TclInteger.newInstance(it.type.toLong()))
-                TclList.append(interp, item, TclString.newInstance(it.text))
-                TclList.append(interp, tokenList, item)
-            }
-
-            fieldDict.put(interp, "task", t.inFileFormat())
-            fieldDict.put(interp, "tokens", tokenList)
-            fieldDict.put(interp, "due", t.dueDate ?: "")
-            fieldDict.put(interp, "threshold", t.thresholdDate ?: "")
-            fieldDict.put(interp, "createdate", t.createDate ?: "")
-            fieldDict.put(interp, "completiondate", t.completionDate ?: "")
-            fieldDict.put(interp, "text", t.showParts(TToken.TEXT))
-
-
-            val recPat = t.recurrencePattern
-            if (recPat != null) {
-                fieldDict.put(interp, "recurrence", recPat)
-            }
-            fieldDict.put(interp, "completed", if (t.isCompleted()) "1" else "0")
-            fieldDict.put(interp, "priority", t.priority.code)
-
-            fieldDict.put(interp, "tags", javaListToTclList(t.tags))
-            fieldDict.put(interp, "lists", javaListToTclList(t.lists))
-
-
-
-            for ((key, value) in t.extensions) {
-                extensionDict.put(interp, key, value)
-            }
-        }
-        TclList.append(interp, cmdList, TclString.newInstance(t?.inFileFormat()?: ""))
-        TclList.append(interp, cmdList, fieldDict)
-        TclList.append(interp, cmdList, extensionDict)
-
-    }
-
-
-    private fun javaListToTclList(javaList: Iterable<String>): TclObject {
-        val tclList = TclList.newInstance()
-        for (item in javaList) {
-            TclList.append(interp, tclList, TclString.newInstance(item))
-        }
-        return tclList
-    }
-
-}
-
-object ToastShortCmd : Command {
+class ToastShortCmd : Command {
     override fun cmdProc(interp: Interp?, objv: Array<out TclObject>?) {
         interp?.let {
             if (objv == null || objv.size != 2) {
@@ -208,7 +19,163 @@ object ToastShortCmd : Command {
 
 }
 
-class InterpreterException(message: String) : Throwable(message)
+fun Interp.init(script: String?) : Interp  {
+    try {
+        this.createCommand("toast", ToastShortCmd())
+        this.eval(Config.STDLIB)
+        this.eval(Config.luaConfig)
+        script?.let { this.eval(it) }
+    } catch (e: TclException) {
+        Logger.warn(Config.TAG, "Script execution failed " + this.result)
+        showToastLong(TodoApplication.app, "${getString(R.string.script_error)}:  ${e.message}")
+    }
+    return this
+}
+
+
+fun Interp.tasklistTextSize(): Double? {
+    try {
+        return TclDouble.get(this, this.getVar(Vars.CONFIG_TASKLIST_TEXT_SIZE_SP, TCL.GLOBAL_ONLY))
+    } catch (e: TclException) {
+        return null
+    }
+}
+
+// Callback to determine the theme. Return true for dark.
+
+
+fun Interp.configTheme(): String? {
+    try {
+        return this.getVar(Vars.CONFIG_THEME, TCL.GLOBAL_ONLY).toString()
+    } catch (e: TclException) {
+        return null
+    }
+}
+
+fun Interp.hasOnFilterCallback(): Boolean {
+    val cmd = this.getCommand(Callbacks.ON_FILTER_NAME)
+    return cmd != null
+}
+
+fun Interp.hasOnSortCallback(): Boolean {
+    val cmd = this.getCommand(Callbacks.ON_SORT_NAME)
+    return cmd != null
+}
+
+fun Interp.hasOnDisplayCallback(): Boolean {
+    val cmd = this.getCommand(Callbacks.ON_SORT_NAME)
+    return cmd != null
+}
+
+fun Interp.hasOnGroupCallback(): Boolean {
+    val cmd = this.getCommand(Callbacks.ON_GROUP_NAME)
+    return cmd != null
+}
+
+fun Interp.onFilterCallback(t: Task): Boolean {
+    if (!hasOnFilterCallback()) {
+        return true
+    }
+    try {
+        executeCallbackCommand(Callbacks.ON_FILTER_NAME, t)
+        return TclBoolean.get(this, this.result)
+    } catch (e: TclException) {
+        log.debug(TAG, "Tcl execution failed: ${this.result}")
+        return true
+    }
+}
+
+fun Interp.onSortCallback(t1: Task?, t2: Task?): Int {
+    try {
+        val cmdList = TclList.newInstance()
+        TclList.append(this, cmdList, TclString.newInstance(Callbacks.ON_SORT_NAME))
+        appendCallbackArgs(t1, cmdList)
+        appendCallbackArgs(t2, cmdList)
+        this.eval(cmdList, TCL.GLOBAL_ONLY)
+        return TclInteger.getInt(this, this.result)
+    } catch (e: TclException) {
+        log.debug(TAG, "Tcl execution failed " + e.message)
+        return 0
+    }
+}
+
+fun Interp.onGroupCallback(t: Task): String? {
+    if (!hasOnGroupCallback()) {
+        return null
+    }
+    try {
+        executeCallbackCommand(Callbacks.ON_GROUP_NAME, t)
+        return this.result.toString()
+    } catch (e: TclException) {
+        log.debug(TAG, "Tcl execution failed " + e.message)
+        return null
+    }
+}
+
+fun Interp.onDisplayCallback(t: Task): String? {
+    if (!hasOnDisplayCallback()) {
+        return null
+    }
+    try {
+        executeCallbackCommand(Callbacks.ON_DISPLAY_NAME, t)
+        return this.result.toString()
+    } catch (e: TclException) {
+        log.debug(TAG, "Tcl execution failed " + e.message)
+        return null
+    }
+}
+
+
+private fun Interp.executeCallbackCommand(command: String, t: Task) {
+    val cmdList = TclList.newInstance()
+    TclList.append(this, cmdList, TclString.newInstance(command))
+    appendCallbackArgs(t, cmdList)
+    this.eval(cmdList, TCL.GLOBAL_ONLY)
+}
+
+private fun Interp.appendCallbackArgs(t: Task?, cmdList: TclObject) {
+    val fieldDict = TclDict.newInstance()
+    val extensionDict = TclDict.newInstance()
+    t?.let {
+        fieldDict.put(this, "task", t.inFileFormat())
+        fieldDict.put(this, "due", t.dueDate ?: "")
+        fieldDict.put(this, "threshold", t.thresholdDate ?: "")
+        fieldDict.put(this, "createdate", t.createDate ?: "")
+        fieldDict.put(this, "completiondate", t.completionDate ?: "")
+        fieldDict.put(this, "text", t.showParts(TToken.TEXT))
+
+
+        val recPat = t.recurrencePattern
+        if (recPat != null) {
+            fieldDict.put(this, "recurrence", recPat)
+        }
+        fieldDict.put(this, "completed", if (t.isCompleted()) "1" else "0")
+        fieldDict.put(this, "priority", t.priority.code)
+
+        fieldDict.put(this, "tags", javaListToTclList(t.tags))
+        fieldDict.put(this, "lists", javaListToTclList(t.lists))
+
+
+
+        for ((key, value) in t.extensions) {
+            extensionDict.put(this, key, value)
+        }
+    }
+    TclList.append(this, cmdList, TclString.newInstance(t?.inFileFormat() ?: ""))
+    TclList.append(this, cmdList, fieldDict)
+    TclList.append(this, cmdList, extensionDict)
+
+}
+
+
+private fun Interp.javaListToTclList(javaList: Iterable<String>): TclObject {
+    val tclList = TclList.newInstance()
+    for (item in javaList) {
+        TclList.append(this, tclList, TclString.newInstance(item))
+    }
+    return tclList
+}
+
 
 object Vars {
     val CONFIG_TASKLIST_TEXT_SIZE_SP = "tasklistTextSize"
@@ -226,7 +193,7 @@ fun TclObject.put(interp: Interp, key: String, value: TclObject) {
     TclDict.put(interp, this, TclString.newInstance(key), value)
 }
 
-fun TclObject.put(interp: Interp, key: String, value: String)  {
+fun TclObject.put(interp: Interp, key: String, value: String) {
     this.put(interp, key, TclString.newInstance(value))
 }
 

@@ -3,7 +3,7 @@ package nl.mpcjanssen.simpletask.util
 import android.content.SharedPreferences
 import me.smichel.android.KPreferences.Preferences
 import nl.mpcjanssen.simpletask.CalendarSync
-import nl.mpcjanssen.simpletask.Interpreter
+
 import nl.mpcjanssen.simpletask.R
 import nl.mpcjanssen.simpletask.TodoApplication
 import nl.mpcjanssen.simpletask.remote.FileStore
@@ -14,6 +14,7 @@ import java.io.IOException
 object Config : Preferences(TodoApplication.app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     val TAG = "Config"
+    val STDLIB = readAsset(TodoApplication.app.assets, "lua/stdlib.tcl")
     init {
         prefs.registerOnSharedPreferenceChangeListener(this)
     }

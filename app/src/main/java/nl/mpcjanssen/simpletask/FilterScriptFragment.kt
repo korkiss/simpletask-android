@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.*
 import nl.mpcjanssen.simpletask.task.Task
 import nl.mpcjanssen.simpletask.util.createAlertDialog
+import tcl.lang.Interp
+import tcl.lang.TclException
 
 
 class FilterScriptFragment : Fragment() {
@@ -73,7 +75,7 @@ class FilterScriptFragment : Fragment() {
                     Callbacks.ON_SORT_NAME -> testOnSortCallback(barView, script, snackBar, t, t)
                 }
 
-            } catch (e: InterpreterException) {
+            } catch (e: TclException) {
                 log.debug(TAG, "Script execution failed " + e.message)
                 createAlertDialog(activity, R.string.script_error, e.message ?: "").show()
             }
@@ -91,7 +93,7 @@ class FilterScriptFragment : Fragment() {
     }
 
     private fun testOnFilterCallback(barView: View, script: String, snackBar: Snackbar, t: Task) {
-        if (script.trim { it <= ' ' }.isEmpty() || Interpreter(script).onFilterCallback(t)) {
+        if (script.trim { it <= ' ' }.isEmpty() || Interp().init(script).onFilterCallback(t)) {
             snackBar.setText(getString(R.string.script_tab_true_task_shown))
             barView.setBackgroundColor(0xff43a047.toInt())
         } else {
@@ -102,7 +104,7 @@ class FilterScriptFragment : Fragment() {
     }
     private fun testOnGroupCallback(barView: View, script: String, snackBar: Snackbar, t: Task) {
         if (!script.trim { it <= ' ' }.isEmpty()) {
-            snackBar.setText("Group: " + Interpreter(script).onGroupCallback(t))
+            snackBar.setText("Group: " + Interp().init(script).onGroupCallback(t))
             barView.setBackgroundColor(ContextCompat.getColor(activity, R.color.gray74))
         } else {
             snackBar.setText("Callback not defined")
@@ -113,7 +115,7 @@ class FilterScriptFragment : Fragment() {
 
     private fun testOnDisplayCallback(barView: View, script: String, snackBar: Snackbar, t: Task) {
         if (!script.trim { it <= ' ' }.isEmpty()) {
-            snackBar.setText("Display: " + Interpreter(script).onDisplayCallback(t))
+            snackBar.setText("Display: " + Interp().init(script).onDisplayCallback(t))
             barView.setBackgroundColor(ContextCompat.getColor(activity, R.color.gray74))
         } else {
             snackBar.setText("Callback not defined")
@@ -124,7 +126,7 @@ class FilterScriptFragment : Fragment() {
 
     private fun testOnSortCallback(barView: View, script: String, snackBar: Snackbar, t1: Task, t2: Task) {
         if (!script.trim { it <= ' ' }.isEmpty()) {
-            snackBar.setText("Display: " + Interpreter(script).onSortCallback(t1, t2))
+            snackBar.setText("Display: " + Interp().init(script).onSortCallback(t1, t2))
             barView.setBackgroundColor(ContextCompat.getColor(activity, R.color.gray74))
         } else {
             snackBar.setText("Callback not defined")

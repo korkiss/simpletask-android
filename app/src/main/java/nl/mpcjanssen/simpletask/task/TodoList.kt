@@ -7,6 +7,7 @@ import nl.mpcjanssen.simpletask.remote.BackupInterface
 import nl.mpcjanssen.simpletask.remote.FileStore
 import nl.mpcjanssen.simpletask.remote.IFileStore
 import nl.mpcjanssen.simpletask.util.*
+import tcl.lang.Interp
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -206,15 +207,8 @@ object TodoList {
     }
 
     fun getSortedTasks(filter: ActiveFilter): Sequence<Task> {
-        val interp = Interpreter(if (filter.useScript) filter.script else null)
-        val filterInterp = if (interp.hasOnFilterCallback()) interp else null
-        val sortInterp = if (interp.hasOnSortCallback()) interp else null
-        val sortedItems =  if (sortInterp!=null) {
-            todoItems.sortedWith(ScriptComparator(sortInterp))
-        } else {
-            todoItems
-        }
-        return filter.apply(sortedItems.asSequence(), filterInterp)
+        val results =  filter.apply(todoItems.asSequence())
+        return results
     }
 
     fun reload(backup: BackupInterface, eol: String, reason: String = "") {

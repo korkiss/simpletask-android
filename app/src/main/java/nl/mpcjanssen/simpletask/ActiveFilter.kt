@@ -9,6 +9,7 @@ import nl.mpcjanssen.simpletask.util.isEmptyOrNull
 import nl.mpcjanssen.simpletask.util.join
 import nl.mpcjanssen.simpletask.util.todayAsString
 import org.json.JSONObject
+import tcl.lang.Interp
 import java.util.*
 
 data class FilterOptions(val namespace: String, val showSelected: Boolean = false)
@@ -18,6 +19,7 @@ data class FilterOptions(val namespace: String, val showSelected: Boolean = fals
  */
 class ActiveFilter(val options: FilterOptions) {
     private val log: Logger
+    val interp = Interp()
     var priorities = ArrayList<Priority>()
     var contexts = ArrayList<String>()
     var projects = ArrayList<String>()
@@ -128,6 +130,7 @@ class ActiveFilter(val options: FilterOptions) {
         if (contexts != null && contexts != "") {
             this.contexts = ArrayList(Arrays.asList(*contexts.split(INTENT_EXTRA_DELIMITERS.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()))
         }
+        interp.init(script)
     }
 
     fun hasFilter(): Boolean {
@@ -225,7 +228,7 @@ class ActiveFilter(val options: FilterOptions) {
     }
 
 
-    fun apply(items: Sequence<Task>?, interp: Interpreter?): Sequence<Task> {
+    fun apply(items: Sequence<Task>?): Sequence<Task> {
         if (useScript) {
             log.info(TAG, "Filtering with Lua $script")
         }
