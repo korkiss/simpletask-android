@@ -355,7 +355,7 @@ class ActiveFilter(val options: FilterOptions) {
         const val INTENT_SCRIPT_FILTER = "LUASCRIPT"
         const val INTENT_SCRIPT_TEST_TASK_FILTER = "LUASCRIPT_TEST_TASK"
 
-        const val INTENT_EXTRA_DELIMITERS = "\n|,"
+        const val INTENT_EXTRA_DELIMITERS = "[\n,]"
     }
 
     fun initFromIntent(intent: Intent) {

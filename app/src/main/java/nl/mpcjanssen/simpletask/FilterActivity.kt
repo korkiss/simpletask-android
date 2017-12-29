@@ -241,7 +241,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
     private fun updateFilterFromFragments() {
         for (f in pagerAdapter!!.fragments) {
-            when (f.arguments.getString(TAB_TYPE, "")) {
+            when (f.arguments?.getString(TAB_TYPE, "") ?: "") {
                 "" -> {
                 }
                 OTHER_TAB -> {
@@ -388,7 +388,7 @@ class FilterActivity : ThemedNoActionBarActivity() {
 
         override fun getPageTitle(position: Int): CharSequence {
             val f = fragments[position]
-            val type = f.arguments.getString(TAB_TYPE, "unknown")
+            val type = f.arguments?.getString(TAB_TYPE, "unknown") ?: "unknown"
             when (type) {
                 PROJECT_TAB -> return Config.tagTerm
                 CONTEXT_TAB -> return Config.listTerm

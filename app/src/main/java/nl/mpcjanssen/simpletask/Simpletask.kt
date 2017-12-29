@@ -110,7 +110,7 @@ class Simpletask : ThemedNoActionBarActivity() {
 
         localBroadcastManager = m_app.localBroadCastManager
 
-        m_broadcastReceiver = object : BroadcastReceiver() {
+        val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, receivedIntent: Intent) {
                 if (receivedIntent.action == Constants.BROADCAST_ACTION_ARCHIVE) {
                     archiveTasks()
@@ -149,7 +149,8 @@ class Simpletask : ThemedNoActionBarActivity() {
                 }
             }
         }
-        localBroadcastManager!!.registerReceiver(m_broadcastReceiver, intentFilter)
+        localBroadcastManager!!.registerReceiver(receiver, intentFilter)
+        m_broadcastReceiver = receiver
 
         setSupportActionBar(main_actionbar)
 
@@ -256,12 +257,12 @@ class Simpletask : ThemedNoActionBarActivity() {
                  * Called when a drawer has settled in a completely closed
                  * state.
                  */
-                override fun onDrawerClosed(view: View?) {
+                override fun onDrawerClosed(view: View) {
                     invalidateOptionsMenu()
                 }
 
                 /** Called when a drawer has settled in a completely open state.  */
-                override fun onDrawerOpened(drawerView: View?) {
+                override fun onDrawerOpened(drawerView: View) {
                     invalidateOptionsMenu()
                 }
             }
@@ -387,7 +388,9 @@ class Simpletask : ThemedNoActionBarActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        localBroadcastManager!!.unregisterReceiver(m_broadcastReceiver)
+        m_broadcastReceiver?.let {
+            localBroadcastManager!!.unregisterReceiver(it)
+        }
     }
 
     override fun onResume() {

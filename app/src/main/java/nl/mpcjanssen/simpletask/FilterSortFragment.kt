@@ -22,7 +22,7 @@ class FilterSortFragment : Fragment() {
     internal var sortUpId: Int = 0
     internal var sortDownId: Int = 0
 
-    internal lateinit var m_app: TodoApplication
+    internal var m_app: TodoApplication? = null
 
     private val onDrop = DragSortListView.DropListener { from, to ->
         if (from != to) {
@@ -53,11 +53,11 @@ class FilterSortFragment : Fragment() {
             if (savedInstanceState != null) {
                 originalItems = savedInstanceState.getStringArrayList(STATE_SELECTED)
             } else {
-                originalItems = arguments.getStringArrayList(FilterActivity.FILTER_ITEMS)
+                originalItems = arguments?.getStringArrayList(FilterActivity.FILTER_ITEMS)
             }
         }
         log!!.debug(TAG, "Created view with: " + originalItems!!)
-        m_app = activity.application as TodoApplication
+        m_app = activity?.application as TodoApplication?
 
         // Set the proper theme
         if (Config.isDarkTheme || Config.isBlackTheme) {
@@ -146,12 +146,14 @@ class FilterSortFragment : Fragment() {
             } else if (originalItems != null) {
                 multiSort.addAll(originalItems as ArrayList<String>)
             } else {
-                multiSort.addAll(arguments.getStringArrayList(FilterActivity.FILTER_ITEMS))
+                arguments?.let {
+                    multiSort.addAll(it.getStringArrayList(FilterActivity.FILTER_ITEMS))
+                }
             }
             return multiSort
         }
 
-    inner class SortItemAdapter(context: Context, resource: Int, textViewResourceId: Int, objects: List<String>) : ArrayAdapter<String>(context, resource, textViewResourceId, objects) {
+    inner class SortItemAdapter(context: Context?, resource: Int, textViewResourceId: Int, objects: List<String>) : ArrayAdapter<String>(context, resource, textViewResourceId, objects) {
 
         private val names: Array<String>
 
@@ -163,7 +165,7 @@ class FilterSortFragment : Fragment() {
             val row = super.getView(position, convertView, parent)
             val reverseButton = row.findViewById(R.id.reverse_button) as ImageButton
             val label = row.findViewById(R.id.text) as TextView
-            label.text = m_app.getSortString(adapterList[position])
+            label.text = m_app?.getSortString(adapterList[position]) ?: ""
 
             if (directions[position] == ActiveFilter.REVERSED_SORT) {
                 reverseButton.setBackgroundResource(sortUpId)
